@@ -1,0 +1,874 @@
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
+    QDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
+    QPushButton,
+    QSplitter,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
+from dfg_kursverwaltung.core.models import (
+    Course,
+    CourseDay,
+    CourseType,
+)
+from dfg_kursverwaltung.gui.kurstag_dialog import (
+    KurstagDialog,
+)
+from dfg_kursverwaltung.gui.lehrgang_dialog import (
+    LehrgangDialog,
+)
+from dfg_kursverwaltung.services.kurstage_service import (
+    CourseDayService,
+)
+from dfg_kursverwaltung.services.lehrgaenge_service import (
+    CourseService,
+)
+from dfg_kursverwaltung.services.standorte_service import (
+    LocationService,
+)
+
+
+class LehrgaengeWidget(QWidget):
+    def __init__(
+        self,
+        course_service: CourseService,
+        course_day_service: CourseDayService,
+        location_service: LocationService,
+        parent: QWidget | None = None,
+    ):
+        super().__init__(parent)
+
+        self.course_service = course_service
+        self.course_day_service = course_day_service
+        self.location_service = location_service
+
+        self.current_course_id: str | None = None
+        self.current_course_day_id: str | None = None
+
+        self._create_ui()
+        self.load_courses()
+
+    def _create_ui(self):
+        main_layout = QVBoxLayout(self)
+
+        title = QLabel(
+            self.tr("Lehrgänge / Kurstage")
+        )
+
+        title.setStyleSheet(
+            "font-size: 22px; "
+            "font-weight: bold;"
+        )
+
+        main_layout.addWidget(title)
+
+        splitter = QSplitter(
+            Qt.Orientation.Horizontal
+        )
+
+        splitter.addWidget(
+            self._create_list_area()
+        )
+
+        splitter.addWidget(
+            self._create_detail_area()
+        )
+
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 3)
+
+        main_layout.addWidget(splitter)
+
+    def _create_list_area(
+        self,
+    ) -> QWidget:
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+
+        self.search_edit = QLineEdit()
+
+        self.search_edit.setPlaceholderText(
+            self.tr("Lehrgang suchen...")
+        )
+
+        self.search_edit.setClearButtonEnabled(
+            True
+        )
+
+        self.search_edit.textChanged.connect(
+            self._search_changed
+        )
+
+        self.course_list = QListWidget()
+
+        self.course_list.currentItemChanged.connect(
+            self._course_selected
+        )
+
+        button_layout = QHBoxLayout()
+
+        self.new_button = QPushButton(
+            self.tr("Neu")
+        )
+
+        self.edit_button = QPushButton(
+            self.tr("Bearbeiten")
+        )
+
+        self.new_button.clicked.connect(
+            self._new_course
+        )
+
+        self.edit_button.clicked.connect(
+            self._edit_course
+        )
+
+        button_layout.addWidget(
+            self.new_button
+        )
+
+        button_layout.addWidget(
+            self.edit_button
+        )
+
+        layout.addWidget(
+            self.search_edit
+        )
+
+        layout.addWidget(
+            self.course_list
+        )
+
+        layout.addLayout(
+            button_layout
+        )
+
+        return widget
+
+    def _create_detail_area(
+        self,
+    ) -> QWidget:
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+
+        self.detail_title = QLabel(
+            self.tr("Lehrgangsdetails")
+        )
+
+        self.detail_title.setStyleSheet(
+            "font-size: 18px; "
+            "font-weight: bold;"
+        )
+
+        layout.addWidget(
+            self.detail_title
+        )
+
+        course_group = QGroupBox(
+            self.tr("Lehrgang")
+        )
+
+        form = QFormLayout(
+            course_group
+        )
+
+        self.type_value = QLabel("-")
+        self.name_value = QLabel("-")
+
+        self.description_value = QTextEdit()
+        self.description_value.setReadOnly(
+            True
+        )
+        self.description_value.setMaximumHeight(
+            100
+        )
+
+        self.notes_value = QTextEdit()
+        self.notes_value.setReadOnly(
+            True
+        )
+        self.notes_value.setMaximumHeight(
+            80
+        )
+
+        form.addRow(
+            self.tr("Typ:"),
+            self.type_value,
+        )
+
+        form.addRow(
+            self.tr("Bezeichnung:"),
+            self.name_value,
+        )
+
+        form.addRow(
+            self.tr("Beschreibung:"),
+            self.description_value,
+        )
+
+        form.addRow(
+            self.tr("Bemerkungen:"),
+            self.notes_value,
+        )
+
+        layout.addWidget(
+            course_group
+        )
+
+        course_days_group = QGroupBox(
+            self.tr("Kurstage")
+        )
+
+        course_days_layout = QVBoxLayout(
+            course_days_group
+        )
+
+        self.course_days_list = QListWidget()
+
+        self.course_days_list.currentItemChanged.connect(
+            self._course_day_selected
+        )
+
+        self.course_days_list.itemDoubleClicked.connect(
+            self._course_day_double_clicked
+        )
+
+        course_days_layout.addWidget(
+            self.course_days_list
+        )
+
+        course_day_buttons = QHBoxLayout()
+
+        self.new_course_day_button = QPushButton(
+            self.tr("Kurstag hinzufügen")
+        )
+
+        self.edit_course_day_button = QPushButton(
+            self.tr("Kurstag bearbeiten")
+        )
+
+        self.new_course_day_button.clicked.connect(
+            self._new_course_day
+        )
+
+        self.edit_course_day_button.clicked.connect(
+            self._edit_course_day
+        )
+
+        course_day_buttons.addWidget(
+            self.new_course_day_button
+        )
+
+        course_day_buttons.addWidget(
+            self.edit_course_day_button
+        )
+
+        course_day_buttons.addStretch()
+
+        course_days_layout.addLayout(
+            course_day_buttons
+        )
+
+        layout.addWidget(
+            course_days_group
+        )
+
+        layout.addStretch()
+
+        self._clear_details()
+
+        return widget
+
+    def load_courses(
+        self,
+        *_args,
+    ):
+        search_text = (
+            self.search_edit.text().strip()
+        )
+
+        if search_text:
+            courses = (
+                self.course_service.search_courses(
+                    search_text
+                )
+            )
+        else:
+            courses = (
+                self.course_service.list_courses()
+            )
+
+        selected_id = self.current_course_id
+
+        self.course_list.blockSignals(True)
+        self.course_list.clear()
+
+        item_to_select = None
+
+        for course in courses:
+            item = QListWidgetItem(
+                self._course_list_text(
+                    course
+                )
+            )
+
+            item.setData(
+                Qt.ItemDataRole.UserRole,
+                course.id,
+            )
+
+            self.course_list.addItem(item)
+
+            if course.id == selected_id:
+                item_to_select = item
+
+        self.course_list.blockSignals(False)
+
+        if item_to_select is not None:
+            self.course_list.setCurrentItem(
+                item_to_select
+            )
+
+        elif self.course_list.count() > 0:
+            self.course_list.setCurrentRow(0)
+
+        else:
+            self.current_course_id = None
+            self._clear_details()
+
+    def _search_changed(
+        self,
+        _text: str,
+    ):
+        self.load_courses()
+
+    def _course_selected(
+        self,
+        current: QListWidgetItem | None,
+        _previous: QListWidgetItem | None,
+    ):
+        if current is None:
+            self.current_course_id = None
+            self._clear_details()
+            return
+
+        course_id = current.data(
+            Qt.ItemDataRole.UserRole
+        )
+
+        course = (
+            self.course_service.get_course(
+                course_id
+            )
+        )
+
+        if course is None:
+            self.current_course_id = None
+            self._clear_details()
+            return
+
+        self.current_course_id = course.id
+        self.current_course_day_id = None
+
+        self._show_course(course)
+
+    def _show_course(
+        self,
+        course: Course,
+    ):
+        self.type_value.setText(
+            self._course_type_text(
+                course.typ
+            )
+        )
+
+        self.name_value.setText(
+            course.bezeichnung
+        )
+
+        self.description_value.setPlainText(
+            course.beschreibung or ""
+        )
+
+        self.notes_value.setPlainText(
+            course.bemerkungen or ""
+        )
+
+        self.edit_button.setEnabled(True)
+
+        self.new_course_day_button.setEnabled(
+            True
+        )
+
+        self._load_course_days()
+
+    def _load_course_days(self):
+        self.course_days_list.clear()
+
+        self.current_course_day_id = None
+
+        self.edit_course_day_button.setEnabled(
+            False
+        )
+
+        if self.current_course_id is None:
+            return
+
+        course_days = (
+            self.course_day_service.list_course_days(
+                self.current_course_id
+            )
+        )
+
+        if not course_days:
+            item = QListWidgetItem(
+                self.tr(
+                    "Noch keine Kurstage vorhanden."
+                )
+            )
+
+            item.setFlags(
+                item.flags()
+                & ~Qt.ItemFlag.ItemIsSelectable
+            )
+
+            self.course_days_list.addItem(
+                item
+            )
+
+            return
+
+        for course_day in course_days:
+            item = QListWidgetItem(
+                self._course_day_list_text(
+                    course_day
+                )
+            )
+
+            item.setData(
+                Qt.ItemDataRole.UserRole,
+                course_day.id,
+            )
+
+            self.course_days_list.addItem(
+                item
+            )
+
+    def _course_day_selected(
+        self,
+        current: QListWidgetItem | None,
+        _previous: QListWidgetItem | None,
+    ):
+        if current is None:
+            self.current_course_day_id = None
+
+            self.edit_course_day_button.setEnabled(
+                False
+            )
+
+            return
+
+        course_day_id = current.data(
+            Qt.ItemDataRole.UserRole
+        )
+
+        if not course_day_id:
+            self.current_course_day_id = None
+
+            self.edit_course_day_button.setEnabled(
+                False
+            )
+
+            return
+
+        self.current_course_day_id = (
+            course_day_id
+        )
+
+        self.edit_course_day_button.setEnabled(
+            True
+        )
+
+    def _course_day_double_clicked(
+        self,
+        item: QListWidgetItem,
+    ):
+        course_day_id = item.data(
+            Qt.ItemDataRole.UserRole
+        )
+
+        if not course_day_id:
+            return
+
+        self.current_course_day_id = (
+            course_day_id
+        )
+
+        self._edit_course_day()
+
+    def _new_course(self):
+        dialog = LehrgangDialog(
+            parent=self
+        )
+
+        if (
+            dialog.exec()
+            != QDialog.DialogCode.Accepted
+        ):
+            return
+
+        data = dialog.get_data()
+
+        try:
+            course = (
+                self.course_service.create_course(
+                    **data
+                )
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                self.tr(
+                    "Der Lehrgang konnte nicht "
+                    "gespeichert werden."
+                )
+                + "\n\n"
+                + str(exc),
+            )
+            return
+
+        self.current_course_id = course.id
+
+        self.search_edit.clear()
+        self.load_courses()
+
+    def _edit_course(self):
+        if self.current_course_id is None:
+            return
+
+        course = (
+            self.course_service.get_course(
+                self.current_course_id
+            )
+        )
+
+        if course is None:
+            return
+
+        dialog = LehrgangDialog(
+            course=course,
+            parent=self,
+        )
+
+        if (
+            dialog.exec()
+            != QDialog.DialogCode.Accepted
+        ):
+            return
+
+        data = dialog.get_data()
+
+        course.typ = data["typ"]
+        course.bezeichnung = data[
+            "bezeichnung"
+        ]
+        course.beschreibung = data[
+            "beschreibung"
+        ]
+        course.bemerkungen = data[
+            "bemerkungen"
+        ]
+
+        try:
+            updated_course = (
+                self.course_service.update_course(
+                    course
+                )
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                self.tr(
+                    "Die Änderungen konnten nicht "
+                    "gespeichert werden."
+                )
+                + "\n\n"
+                + str(exc),
+            )
+            return
+
+        self.current_course_id = (
+            updated_course.id
+        )
+
+        self.load_courses()
+
+    def _new_course_day(self):
+        if self.current_course_id is None:
+            return
+
+        dialog = KurstagDialog(
+            location_service=self.location_service,
+            parent=self,
+        )
+
+        if (
+            dialog.exec()
+            != QDialog.DialogCode.Accepted
+        ):
+            return
+
+        data = dialog.get_data()
+
+        try:
+            course_day = (
+                self.course_day_service
+                .create_course_day(
+                    lehrgang_id=(
+                        self.current_course_id
+                    ),
+                    **data,
+                )
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                self.tr(
+                    "Der Kurstag konnte nicht "
+                    "gespeichert werden."
+                )
+                + "\n\n"
+                + str(exc),
+            )
+            return
+
+        self.current_course_day_id = (
+            course_day.id
+        )
+
+        self._load_course_days()
+
+        self._select_course_day(
+            course_day.id
+        )
+
+    def _edit_course_day(self):
+        if self.current_course_day_id is None:
+            return
+
+        course_day = (
+            self.course_day_service
+            .get_course_day(
+                self.current_course_day_id
+            )
+        )
+
+        if course_day is None:
+            return
+
+        dialog = KurstagDialog(
+            location_service=self.location_service,
+            course_day=course_day,
+            parent=self,
+        )
+
+        if (
+            dialog.exec()
+            != QDialog.DialogCode.Accepted
+        ):
+            return
+
+        data = dialog.get_data()
+
+        course_day.datum = data["datum"]
+        course_day.beginn = data["beginn"]
+        course_day.ende = data["ende"]
+        course_day.standort_id = data[
+            "standort_id"
+        ]
+        course_day.bezeichnung = data[
+            "bezeichnung"
+        ]
+        course_day.bemerkungen = data[
+            "bemerkungen"
+        ]
+
+        try:
+            updated_course_day = (
+                self.course_day_service
+                .update_course_day(
+                    course_day
+                )
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                self.tr(
+                    "Die Änderungen am Kurstag "
+                    "konnten nicht gespeichert werden."
+                )
+                + "\n\n"
+                + str(exc),
+            )
+            return
+
+        self.current_course_day_id = (
+            updated_course_day.id
+        )
+
+        self._load_course_days()
+
+        self._select_course_day(
+            updated_course_day.id
+        )
+
+    def _select_course_day(
+        self,
+        course_day_id: str,
+    ):
+        for row in range(
+            self.course_days_list.count()
+        ):
+            item = (
+                self.course_days_list.item(
+                    row
+                )
+            )
+
+            if (
+                item.data(
+                    Qt.ItemDataRole.UserRole
+                )
+                == course_day_id
+            ):
+                self.course_days_list.setCurrentItem(
+                    item
+                )
+                return
+
+    def _clear_details(self):
+        self.type_value.setText("-")
+        self.name_value.setText("-")
+
+        self.description_value.clear()
+        self.notes_value.clear()
+
+        self.course_days_list.clear()
+
+        self.edit_button.setEnabled(False)
+
+        self.new_course_day_button.setEnabled(
+            False
+        )
+
+        self.edit_course_day_button.setEnabled(
+            False
+        )
+
+    def _course_type_text(
+        self,
+        course_type: CourseType,
+    ) -> str:
+        if (
+            course_type
+            == CourseType.INTRODUCTORY_DAY
+        ):
+            return self.tr(
+                "Einführungstag"
+            )
+
+        if course_type == CourseType.COURSE:
+            return self.tr("Kurs")
+
+        if course_type == CourseType.EXAM:
+            return self.tr("Prüfung")
+
+        return course_type.value
+
+    def _course_list_text(
+        self,
+        course: Course,
+    ) -> str:
+        return (
+            f"{course.bezeichnung} "
+            f"({self._course_type_text(course.typ)})"
+        )
+
+    def _course_day_list_text(
+        self,
+        course_day: CourseDay,
+    ) -> str:
+        date_text = (
+            course_day.datum.strftime(
+                "%d.%m.%Y"
+            )
+        )
+
+        if (
+            course_day.beginn
+            and course_day.ende
+        ):
+            time_text = (
+                f"{course_day.beginn}"
+                f"–{course_day.ende}"
+            )
+
+        elif course_day.beginn:
+            time_text = (
+                f"ab {course_day.beginn}"
+            )
+
+        else:
+            time_text = ""
+
+        location_text = ""
+
+        if course_day.standort_id:
+            location = (
+                self.location_service
+                .get_location(
+                    course_day.standort_id
+                )
+            )
+
+            if location is not None:
+                location_text = (
+                    location.bezeichnung
+                )
+
+        parts = [
+            date_text,
+            time_text,
+            course_day.bezeichnung or "",
+        ]
+
+        text = "   ".join(
+            part
+            for part in parts
+            if part
+        )
+
+        if location_text:
+            text += (
+                f"   |   {location_text}"
+            )
+
+        return text

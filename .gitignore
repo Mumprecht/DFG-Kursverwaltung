@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.class
+
+# Virtuelle Python-Umgebung
+.venv/
+venv/
+
+# IDEs
+.idea/
+.vscode/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# Datenbanken und lokale Anwendungsdaten
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Lokale Daten
+data/*
+
+# data-Verzeichnis selbst im Repository behalten
+!data/.gitkeep
+
+# Temporäre Dateien
+*.tmp
+*.temp
+*.bak
+~*
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
