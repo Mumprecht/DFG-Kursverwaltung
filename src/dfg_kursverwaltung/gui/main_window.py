@@ -26,6 +26,9 @@ from dfg_kursverwaltung.gui.personen_widget import (
 from dfg_kursverwaltung.gui.standorte_widget import (
     StandorteWidget,
 )
+from dfg_kursverwaltung.services.drohnen_service import (
+    DroneService,
+)
 from dfg_kursverwaltung.services.kurstage_service import (
     CourseDayService,
 )
@@ -41,6 +44,9 @@ from dfg_kursverwaltung.services.personen_service import (
 from dfg_kursverwaltung.services.standorte_service import (
     LocationService,
 )
+from dfg_kursverwaltung.services.telefonnummern_service import (
+    PhoneNumberService,
+)
 
 
 class MainWindow(QMainWindow):
@@ -48,6 +54,8 @@ class MainWindow(QMainWindow):
         self,
         translation_manager: TranslationManager,
         person_service: PersonService,
+        phone_number_service: PhoneNumberService,
+        drone_service: DroneService,
         course_service: CourseService,
         course_day_service: CourseDayService,
         location_service: LocationService,
@@ -57,6 +65,8 @@ class MainWindow(QMainWindow):
 
         self.translation_manager = translation_manager
         self.person_service = person_service
+        self.phone_number_service = phone_number_service
+        self.drone_service = drone_service
         self.course_service = course_service
         self.course_day_service = course_day_service
         self.location_service = location_service
@@ -104,7 +114,12 @@ class MainWindow(QMainWindow):
         )
 
         self.people_tab = PersonenWidget(
-            self.person_service
+            self.person_service,
+            self.phone_number_service,
+            self.drone_service,
+            self.course_service,
+            self.course_day_service,
+            self.assignment_service,
         )
 
         self.courses_tab = LehrgaengeWidget(

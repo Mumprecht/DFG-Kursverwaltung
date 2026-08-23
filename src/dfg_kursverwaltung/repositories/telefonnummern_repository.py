@@ -71,7 +71,9 @@ class PhoneNumberRepository:
         if row is None:
             return None
 
-        return self._row_to_phone_number(row)
+        return self._row_to_phone_number(
+            row
+        )
 
     def list_for_person(
         self,
@@ -96,19 +98,75 @@ class PhoneNumberRepository:
             for row in rows
         ]
 
+    def update(
+        self,
+        phone_number: PhoneNumber,
+    ) -> PhoneNumber:
+        with self.database_manager.connect() as connection:
+            cursor = connection.execute(
+                """
+                UPDATE telefonnummern
+                SET
+                    typ = ?,
+                    nummer_e164 = ?,
+                    ist_primaer = ?,
+                    bemerkungen = ?,
+                    updated_at = ?
+                WHERE id = ?;
+                """,
+                (
+                    phone_number.typ.value,
+                    phone_number.nummer_e164,
+                    int(
+                        phone_number.ist_primaer
+                    ),
+                    phone_number.bemerkungen,
+                    self._datetime_to_db(
+                        phone_number.updated_at
+                    ),
+                    phone_number.id,
+                ),
+            )
+
+            if cursor.rowcount == 0:
+                raise KeyError(
+                    "Telefonnummer nicht gefunden: "
+                    f"{phone_number.id}"
+                )
+
+            connection.commit()
+
+        return phone_number
+
     def clear_primary(
         self,
         person_id: str,
+        except_id: str | None = None,
     ) -> None:
         with self.database_manager.connect() as connection:
-            connection.execute(
-                """
-                UPDATE telefonnummern
-                SET ist_primaer = 0
-                WHERE person_id = ?;
-                """,
-                (person_id,),
-            )
+            if except_id is None:
+                connection.execute(
+                    """
+                    UPDATE telefonnummern
+                    SET ist_primaer = 0
+                    WHERE person_id = ?;
+                    """,
+                    (person_id,),
+                )
+
+            else:
+                connection.execute(
+                    """
+                    UPDATE telefonnummern
+                    SET ist_primaer = 0
+                    WHERE person_id = ?
+                      AND id <> ?;
+                    """,
+                    (
+                        person_id,
+                        except_id,
+                    ),
+                )
 
             connection.commit()
 
@@ -140,17 +198,25 @@ class PhoneNumberRepository:
         return PhoneNumber(
             id=row["id"],
             person_id=row["person_id"],
-            typ=PhoneNumberType(row["typ"]),
+            typ=PhoneNumberType(
+                row["typ"]
+            ),
             nummer_e164=row["nummer_e164"],
-            ist_primaer=bool(row["ist_primaer"]),
+            ist_primaer=bool(
+                row["ist_primaer"]
+            ),
             bemerkungen=row["bemerkungen"],
             created_at=(
-                datetime.fromisoformat(row["created_at"])
+                datetime.fromisoformat(
+                    row["created_at"]
+                )
                 if row["created_at"]
                 else None
             ),
             updated_at=(
-                datetime.fromisoformat(row["updated_at"])
+                datetime.fromisoformat(
+                    row["updated_at"]
+                )
                 if row["updated_at"]
                 else None
             ),

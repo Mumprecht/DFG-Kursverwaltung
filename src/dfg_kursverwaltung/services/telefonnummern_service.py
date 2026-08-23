@@ -42,13 +42,17 @@ class PhoneNumberService:
         )
 
         for existing in existing_numbers:
-            if existing.nummer_e164 == nummer_e164:
+            if (
+                existing.nummer_e164
+                == nummer_e164
+            ):
                 raise ValueError(
                     "Diese Telefonnummer ist für "
                     "die Person bereits vorhanden."
                 )
 
-        # Die erste Telefonnummer wird automatisch primär.
+        # Die erste Telefonnummer wird
+        # automatisch zur primären Nummer.
         if not existing_numbers:
             ist_primaer = True
 
@@ -78,6 +82,14 @@ class PhoneNumberService:
             phone_number
         )
 
+    def get_phone_number(
+        self,
+        phone_number_id: str,
+    ) -> PhoneNumber | None:
+        return self.repository.get_by_id(
+            phone_number_id
+        )
+
     def list_phone_numbers(
         self,
         person_id: str,
@@ -86,13 +98,125 @@ class PhoneNumberService:
             person_id
         )
 
+    def update_phone_number(
+        self,
+        phone_number: PhoneNumber,
+        *,
+        typ: PhoneNumberType,
+        nummer: str,
+        ist_primaer: bool,
+        bemerkungen: str | None = None,
+    ) -> PhoneNumber:
+        existing = (
+            self.repository.get_by_id(
+                phone_number.id
+            )
+        )
+
+        if existing is None:
+            raise KeyError(
+                "Telefonnummer nicht gefunden: "
+                f"{phone_number.id}"
+            )
+
+        nummer_e164 = self.normalize_phone_number(
+            nummer
+        )
+
+        existing_numbers = (
+            self.repository.list_for_person(
+                phone_number.person_id
+            )
+        )
+
+        for other in existing_numbers:
+            if other.id == phone_number.id:
+                continue
+
+            if (
+                other.nummer_e164
+                == nummer_e164
+            ):
+                raise ValueError(
+                    "Diese Telefonnummer ist für "
+                    "die Person bereits vorhanden."
+                )
+
+        if ist_primaer:
+            self.repository.clear_primary(
+                phone_number.person_id,
+                except_id=phone_number.id,
+            )
+
+        phone_number.typ = typ
+        phone_number.nummer_e164 = (
+            nummer_e164
+        )
+        phone_number.ist_primaer = (
+            ist_primaer
+        )
+        phone_number.bemerkungen = (
+            self._clean_optional(
+                bemerkungen
+            )
+        )
+        phone_number.updated_at = (
+            datetime.now(
+                timezone.utc
+            )
+        )
+
+        return self.repository.update(
+            phone_number
+        )
+
     def delete_phone_number(
         self,
         phone_number_id: str,
     ) -> None:
+        phone_number = (
+            self.repository.get_by_id(
+                phone_number_id
+            )
+        )
+
+        if phone_number is None:
+            raise KeyError(
+                "Telefonnummer nicht gefunden: "
+                f"{phone_number_id}"
+            )
+
+        person_id = phone_number.person_id
+        was_primary = (
+            phone_number.ist_primaer
+        )
+
         self.repository.delete(
             phone_number_id
         )
+
+        # Falls die primäre Nummer gelöscht wurde,
+        # machen wir die erste verbleibende Nummer
+        # automatisch zur neuen primären Nummer.
+        if was_primary:
+            remaining = (
+                self.repository.list_for_person(
+                    person_id
+                )
+            )
+
+            if remaining:
+                new_primary = remaining[0]
+                new_primary.ist_primaer = True
+                new_primary.updated_at = (
+                    datetime.now(
+                        timezone.utc
+                    )
+                )
+
+                self.repository.update(
+                    new_primary
+                )
 
     @classmethod
     def normalize_phone_number(
@@ -111,20 +235,29 @@ class PhoneNumberService:
                 nummer,
                 cls.DEFAULT_REGION,
             )
-        except phonenumbers.NumberParseException as exc:
+
+        except (
+            phonenumbers.NumberParseException
+        ) as exc:
             raise ValueError(
                 "Die Telefonnummer konnte "
                 "nicht erkannt werden."
             ) from exc
 
-        if not phonenumbers.is_possible_number(parsed):
+        if not phonenumbers.is_possible_number(
+            parsed
+        ):
             raise ValueError(
-                "Die Telefonnummer ist nicht plausibel."
+                "Die Telefonnummer ist "
+                "nicht plausibel."
             )
 
-        if not phonenumbers.is_valid_number(parsed):
+        if not phonenumbers.is_valid_number(
+            parsed
+        ):
             raise ValueError(
-                "Die Telefonnummer ist nicht gültig."
+                "Die Telefonnummer ist "
+                "nicht gültig."
             )
 
         return phonenumbers.format_number(
@@ -141,7 +274,10 @@ class PhoneNumberService:
                 nummer_e164,
                 None,
             )
-        except phonenumbers.NumberParseException:
+
+        except (
+            phonenumbers.NumberParseException
+        ):
             return nummer_e164
 
         return phonenumbers.format_number(

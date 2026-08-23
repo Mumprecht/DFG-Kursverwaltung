@@ -13,6 +13,9 @@ from dfg_kursverwaltung.core.i18n import (
 from dfg_kursverwaltung.gui.main_window import (
     MainWindow,
 )
+from dfg_kursverwaltung.repositories.drohnen_repository import (
+    DroneRepository,
+)
 from dfg_kursverwaltung.repositories.kurstage_repository import (
     CourseDayRepository,
 )
@@ -28,6 +31,12 @@ from dfg_kursverwaltung.repositories.personen_repository import (
 from dfg_kursverwaltung.repositories.standorte_repository import (
     LocationRepository,
 )
+from dfg_kursverwaltung.repositories.telefonnummern_repository import (
+    PhoneNumberRepository,
+)
+from dfg_kursverwaltung.services.drohnen_service import (
+    DroneService,
+)
 from dfg_kursverwaltung.services.kurstage_service import (
     CourseDayService,
 )
@@ -42,6 +51,9 @@ from dfg_kursverwaltung.services.personen_service import (
 )
 from dfg_kursverwaltung.services.standorte_service import (
     LocationService,
+)
+from dfg_kursverwaltung.services.telefonnummern_service import (
+    PhoneNumberService,
 )
 
 
@@ -84,6 +96,14 @@ def main():
         database_manager
     )
 
+    phone_number_repository = PhoneNumberRepository(
+        database_manager
+    )
+
+    drone_repository = DroneRepository(
+        database_manager
+    )
+
     course_repository = CourseRepository(
         database_manager
     )
@@ -108,6 +128,14 @@ def main():
 
     person_service = PersonService(
         person_repository
+    )
+
+    phone_number_service = PhoneNumberService(
+        phone_number_repository
+    )
+
+    drone_service = DroneService(
+        drone_repository
     )
 
     course_service = CourseService(
@@ -152,6 +180,8 @@ def main():
     window = MainWindow(
         translation_manager,
         person_service,
+        phone_number_service,
+        drone_service,
         course_service,
         course_day_service,
         location_service,

@@ -19,12 +19,38 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from dfg_kursverwaltung.core.models import Person
+from dfg_kursverwaltung.core.models import (
+    Drone,
+    Person,
+    PhoneNumber,
+    PhoneNumberType,
+)
+from dfg_kursverwaltung.gui.drohne_dialog import (
+    DroneDialog,
+)
 from dfg_kursverwaltung.gui.person_dialog import (
     PersonDialog,
 )
+from dfg_kursverwaltung.gui.telefonnummer_dialog import (
+    PhoneNumberDialog,
+)
+from dfg_kursverwaltung.services.drohnen_service import (
+    DroneService,
+)
+from dfg_kursverwaltung.services.kurstage_service import (
+    CourseDayService,
+)
+from dfg_kursverwaltung.services.kurszuordnungen_service import (
+    CourseAssignmentService,
+)
+from dfg_kursverwaltung.services.lehrgaenge_service import (
+    CourseService,
+)
 from dfg_kursverwaltung.services.personen_service import (
     PersonService,
+)
+from dfg_kursverwaltung.services.telefonnummern_service import (
+    PhoneNumberService,
 )
 
 
@@ -32,12 +58,25 @@ class PersonenWidget(QWidget):
     def __init__(
         self,
         person_service: PersonService,
+        phone_number_service: PhoneNumberService,
+        drone_service: DroneService,
+        course_service: CourseService,
+        course_day_service: CourseDayService,
+        assignment_service: CourseAssignmentService,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
 
         self.person_service = person_service
+        self.phone_number_service = phone_number_service
+        self.drone_service = drone_service
+        self.course_service = course_service
+        self.course_day_service = course_day_service
+        self.assignment_service = assignment_service
+
         self.current_person_id: str | None = None
+        self.current_phone_number_id: str | None = None
+        self.current_drone_id: str | None = None
 
         self._create_ui()
         self.load_persons()
@@ -274,24 +313,10 @@ class PersonenWidget(QWidget):
             course_group
         )
 
-        self.course_participation_list = (
-            QListWidget()
-        )
+        self.course_participation_list = QListWidget()
 
         self.course_participation_list.setMaximumHeight(
-            140
-        )
-
-        self.course_participation_placeholder = (
-            QListWidgetItem(
-                self.tr(
-                    "Noch keine Kursteilnahmen vorhanden."
-                )
-            )
-        )
-
-        self.course_participation_list.addItem(
-            self.course_participation_placeholder
+            160
         )
 
         course_layout.addWidget(
@@ -310,15 +335,66 @@ class PersonenWidget(QWidget):
             phone_group
         )
 
-        self.phone_placeholder = QLabel(
-            self.tr(
-                "Die Telefonnummern werden "
-                "im nächsten Ausbauschritt eingebunden."
-            )
+        self.phone_list = QListWidget()
+
+        self.phone_list.setMaximumHeight(
+            130
+        )
+
+        self.phone_list.currentItemChanged.connect(
+            self._phone_number_selected
+        )
+
+        self.phone_list.itemDoubleClicked.connect(
+            self._phone_number_double_clicked
         )
 
         phone_layout.addWidget(
-            self.phone_placeholder
+            self.phone_list
+        )
+
+        phone_button_layout = QHBoxLayout()
+
+        self.phone_add_button = QPushButton(
+            self.tr("Hinzufügen")
+        )
+
+        self.phone_edit_button = QPushButton(
+            self.tr("Bearbeiten")
+        )
+
+        self.phone_delete_button = QPushButton(
+            self.tr("Löschen")
+        )
+
+        self.phone_add_button.clicked.connect(
+            self._add_phone_number
+        )
+
+        self.phone_edit_button.clicked.connect(
+            self._edit_phone_number
+        )
+
+        self.phone_delete_button.clicked.connect(
+            self._delete_phone_number
+        )
+
+        phone_button_layout.addWidget(
+            self.phone_add_button
+        )
+
+        phone_button_layout.addWidget(
+            self.phone_edit_button
+        )
+
+        phone_button_layout.addWidget(
+            self.phone_delete_button
+        )
+
+        phone_button_layout.addStretch()
+
+        phone_layout.addLayout(
+            phone_button_layout
         )
 
         layout.addWidget(
@@ -333,15 +409,66 @@ class PersonenWidget(QWidget):
             drone_group
         )
 
-        self.drone_placeholder = QLabel(
-            self.tr(
-                "Die Drohnen werden "
-                "im nächsten Ausbauschritt eingebunden."
-            )
+        self.drone_list = QListWidget()
+
+        self.drone_list.setMaximumHeight(
+            130
+        )
+
+        self.drone_list.currentItemChanged.connect(
+            self._drone_selected
+        )
+
+        self.drone_list.itemDoubleClicked.connect(
+            self._drone_double_clicked
         )
 
         drone_layout.addWidget(
-            self.drone_placeholder
+            self.drone_list
+        )
+
+        drone_button_layout = QHBoxLayout()
+
+        self.drone_add_button = QPushButton(
+            self.tr("Hinzufügen")
+        )
+
+        self.drone_edit_button = QPushButton(
+            self.tr("Bearbeiten")
+        )
+
+        self.drone_delete_button = QPushButton(
+            self.tr("Löschen")
+        )
+
+        self.drone_add_button.clicked.connect(
+            self._add_drone
+        )
+
+        self.drone_edit_button.clicked.connect(
+            self._edit_drone
+        )
+
+        self.drone_delete_button.clicked.connect(
+            self._delete_drone
+        )
+
+        drone_button_layout.addWidget(
+            self.drone_add_button
+        )
+
+        drone_button_layout.addWidget(
+            self.drone_edit_button
+        )
+
+        drone_button_layout.addWidget(
+            self.drone_delete_button
+        )
+
+        drone_button_layout.addStretch()
+
+        drone_layout.addLayout(
+            drone_button_layout
         )
 
         layout.addWidget(
@@ -455,6 +582,8 @@ class PersonenWidget(QWidget):
             return
 
         self.current_person_id = person.id
+        self.current_phone_number_id = None
+        self.current_drone_id = None
 
         self._show_person(
             person
@@ -530,6 +659,8 @@ class PersonenWidget(QWidget):
 
         self.edit_button.setEnabled(True)
         self.active_button.setEnabled(True)
+        self.phone_add_button.setEnabled(True)
+        self.drone_add_button.setEnabled(True)
 
         if person.aktiv:
             self.active_button.setText(
@@ -541,19 +672,692 @@ class PersonenWidget(QWidget):
             )
 
         self._load_course_participations()
+        self._load_phone_numbers()
+        self._load_drones()
 
     def _load_course_participations(self):
         self.course_participation_list.clear()
 
-        item = QListWidgetItem(
-            self.tr(
-                "Noch keine Kursteilnahmen vorhanden."
+        if self.current_person_id is None:
+            return
+
+        assignments = (
+            self.assignment_service
+            .list_assignments_for_person(
+                self.current_person_id
             )
         )
 
-        self.course_participation_list.addItem(
-            item
+        if not assignments:
+            self.course_participation_list.addItem(
+                self.tr(
+                    "Noch keine Kursteilnahmen vorhanden."
+                )
+            )
+            return
+
+        entries = []
+
+        for assignment in assignments:
+            course_day = (
+                self.course_day_service
+                .get_course_day(
+                    assignment.kurstag_id
+                )
+            )
+
+            if course_day is None:
+                continue
+
+            course = (
+                self.course_service.get_course(
+                    course_day.lehrgang_id
+                )
+            )
+
+            course_name = (
+                course.bezeichnung
+                if course is not None
+                else self.tr(
+                    "Unbekannter Lehrgang"
+                )
+            )
+
+            entries.append(
+                (
+                    course_day.datum,
+                    course_name,
+                    assignment,
+                )
+            )
+
+        entries.sort(
+            key=lambda entry: entry[0],
+            reverse=True,
         )
+
+        if not entries:
+            self.course_participation_list.addItem(
+                self.tr(
+                    "Noch keine Kursteilnahmen vorhanden."
+                )
+            )
+            return
+
+        for (
+            course_date,
+            course_name,
+            assignment,
+        ) in entries:
+            role_text = (
+                self._assignment_role_text(
+                    assignment.rolle.value
+                )
+            )
+
+            status_text = (
+                self._assignment_status_text(
+                    assignment.status.value
+                )
+            )
+
+            text = (
+                f"{course_date.strftime('%d.%m.%Y')}"
+                f" | {course_name}"
+                f" | {role_text}"
+                f" | {status_text}"
+            )
+
+            item = QListWidgetItem(
+                text
+            )
+
+            item.setData(
+                Qt.ItemDataRole.UserRole,
+                assignment.id,
+            )
+
+            self.course_participation_list.addItem(
+                item
+            )
+
+    def _load_phone_numbers(self):
+        self.phone_list.clear()
+        self.current_phone_number_id = None
+
+        self.phone_edit_button.setEnabled(False)
+        self.phone_delete_button.setEnabled(False)
+
+        if self.current_person_id is None:
+            return
+
+        phone_numbers = (
+            self.phone_number_service
+            .list_phone_numbers(
+                self.current_person_id
+            )
+        )
+
+        if not phone_numbers:
+            item = QListWidgetItem(
+                self.tr(
+                    "Noch keine Telefonnummern vorhanden."
+                )
+            )
+
+            item.setFlags(
+                item.flags()
+                & ~Qt.ItemFlag.ItemIsSelectable
+            )
+
+            self.phone_list.addItem(item)
+            return
+
+        for phone_number in phone_numbers:
+            item = QListWidgetItem(
+                self._phone_number_text(
+                    phone_number
+                )
+            )
+
+            item.setData(
+                Qt.ItemDataRole.UserRole,
+                phone_number.id,
+            )
+
+            self.phone_list.addItem(item)
+
+    def _phone_number_selected(
+        self,
+        current: QListWidgetItem | None,
+        _previous: QListWidgetItem | None,
+    ):
+        phone_number_id = (
+            current.data(
+                Qt.ItemDataRole.UserRole
+            )
+            if current is not None
+            else None
+        )
+
+        self.current_phone_number_id = (
+            phone_number_id
+        )
+
+        enabled = bool(phone_number_id)
+
+        self.phone_edit_button.setEnabled(
+            enabled
+        )
+
+        self.phone_delete_button.setEnabled(
+            enabled
+        )
+
+    def _phone_number_double_clicked(
+        self,
+        item: QListWidgetItem,
+    ):
+        phone_number_id = item.data(
+            Qt.ItemDataRole.UserRole
+        )
+
+        if not phone_number_id:
+            return
+
+        self.current_phone_number_id = (
+            phone_number_id
+        )
+
+        self._edit_phone_number()
+
+    def _add_phone_number(self):
+        if self.current_person_id is None:
+            return
+
+        dialog = PhoneNumberDialog(
+            parent=self
+        )
+
+        if (
+            dialog.exec()
+            != QDialog.DialogCode.Accepted
+        ):
+            return
+
+        data = dialog.get_data()
+
+        try:
+            phone_number = (
+                self.phone_number_service
+                .create_phone_number(
+                    person_id=self.current_person_id,
+                    **data,
+                )
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                self.tr(
+                    "Die Telefonnummer konnte "
+                    "nicht gespeichert werden."
+                )
+                + "\n\n"
+                + str(exc),
+            )
+            return
+
+        self._load_phone_numbers()
+
+        self._select_phone_number(
+            phone_number.id
+        )
+
+    def _edit_phone_number(self):
+        if self.current_phone_number_id is None:
+            return
+
+        phone_number = (
+            self.phone_number_service
+            .get_phone_number(
+                self.current_phone_number_id
+            )
+        )
+
+        if phone_number is None:
+            return
+
+        dialog = PhoneNumberDialog(
+            phone_number=phone_number,
+            parent=self,
+        )
+
+        if (
+            dialog.exec()
+            != QDialog.DialogCode.Accepted
+        ):
+            return
+
+        data = dialog.get_data()
+
+        try:
+            updated = (
+                self.phone_number_service
+                .update_phone_number(
+                    phone_number,
+                    typ=data["typ"],
+                    nummer=data["nummer"],
+                    ist_primaer=data[
+                        "ist_primaer"
+                    ],
+                    bemerkungen=data[
+                        "bemerkungen"
+                    ],
+                )
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                self.tr(
+                    "Die Telefonnummer konnte "
+                    "nicht geändert werden."
+                )
+                + "\n\n"
+                + str(exc),
+            )
+            return
+
+        self._load_phone_numbers()
+
+        self._select_phone_number(
+            updated.id
+        )
+
+    def _delete_phone_number(self):
+        if self.current_phone_number_id is None:
+            return
+
+        phone_number = (
+            self.phone_number_service
+            .get_phone_number(
+                self.current_phone_number_id
+            )
+        )
+
+        if phone_number is None:
+            return
+
+        number_text = (
+            self.phone_number_service
+            .format_for_display(
+                phone_number.nummer_e164
+            )
+        )
+
+        answer = QMessageBox.question(
+            self,
+            self.tr(
+                "Telefonnummer löschen"
+            ),
+            self.tr(
+                "Soll die Telefonnummer "
+            )
+            + number_text
+            + self.tr(
+                " wirklich gelöscht werden?"
+            ),
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        if (
+            answer
+            != QMessageBox.StandardButton.Yes
+        ):
+            return
+
+        try:
+            self.phone_number_service.delete_phone_number(
+                phone_number.id
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                str(exc),
+            )
+            return
+
+        self._load_phone_numbers()
+
+    def _select_phone_number(
+        self,
+        phone_number_id: str,
+    ):
+        for row in range(
+            self.phone_list.count()
+        ):
+            item = self.phone_list.item(row)
+
+            if (
+                item.data(
+                    Qt.ItemDataRole.UserRole
+                )
+                == phone_number_id
+            ):
+                self.phone_list.setCurrentItem(
+                    item
+                )
+                return
+
+    # ---------------------------------------------------------
+    # Drohnen
+    # ---------------------------------------------------------
+
+    def _load_drones(self):
+        self.drone_list.clear()
+        self.current_drone_id = None
+
+        self.drone_edit_button.setEnabled(False)
+        self.drone_delete_button.setEnabled(False)
+
+        if self.current_person_id is None:
+            return
+
+        drones = (
+            self.drone_service.list_drones(
+                self.current_person_id
+            )
+        )
+
+        if not drones:
+            item = QListWidgetItem(
+                self.tr(
+                    "Noch keine Drohnen vorhanden."
+                )
+            )
+
+            item.setFlags(
+                item.flags()
+                & ~Qt.ItemFlag.ItemIsSelectable
+            )
+
+            self.drone_list.addItem(item)
+            return
+
+        for drone in drones:
+            item = QListWidgetItem(
+                self._drone_text(drone)
+            )
+
+            item.setData(
+                Qt.ItemDataRole.UserRole,
+                drone.id,
+            )
+
+            self.drone_list.addItem(item)
+
+    def _drone_selected(
+        self,
+        current: QListWidgetItem | None,
+        _previous: QListWidgetItem | None,
+    ):
+        drone_id = (
+            current.data(
+                Qt.ItemDataRole.UserRole
+            )
+            if current is not None
+            else None
+        )
+
+        self.current_drone_id = drone_id
+
+        enabled = bool(drone_id)
+
+        self.drone_edit_button.setEnabled(
+            enabled
+        )
+
+        self.drone_delete_button.setEnabled(
+            enabled
+        )
+
+    def _drone_double_clicked(
+        self,
+        item: QListWidgetItem,
+    ):
+        drone_id = item.data(
+            Qt.ItemDataRole.UserRole
+        )
+
+        if not drone_id:
+            return
+
+        self.current_drone_id = drone_id
+
+        self._edit_drone()
+
+    def _add_drone(self):
+        if self.current_person_id is None:
+            return
+
+        dialog = DroneDialog(
+            parent=self
+        )
+
+        if (
+            dialog.exec()
+            != QDialog.DialogCode.Accepted
+        ):
+            return
+
+        data = dialog.get_data()
+
+        try:
+            drone = (
+                self.drone_service.create_drone(
+                    person_id=self.current_person_id,
+                    **data,
+                )
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                self.tr(
+                    "Die Drohne konnte nicht "
+                    "gespeichert werden."
+                )
+                + "\n\n"
+                + str(exc),
+            )
+            return
+
+        self._load_drones()
+
+        self._select_drone(
+            drone.id
+        )
+
+    def _edit_drone(self):
+        if self.current_drone_id is None:
+            return
+
+        drone = self.drone_service.get_drone(
+            self.current_drone_id
+        )
+
+        if drone is None:
+            return
+
+        dialog = DroneDialog(
+            drone=drone,
+            parent=self,
+        )
+
+        if (
+                dialog.exec()
+                != QDialog.DialogCode.Accepted
+        ):
+            return
+
+        data = dialog.get_data()
+
+        drone.hersteller = data[
+            "hersteller"
+        ]
+
+        drone.modell = data[
+            "modell"
+        ]
+
+        drone.seriennummer = data[
+            "seriennummer"
+        ]
+
+        drone.bemerkungen = data[
+            "bemerkungen"
+        ]
+
+        try:
+            updated = (
+                self.drone_service.update_drone(
+                    drone
+                )
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                self.tr(
+                    "Die Drohne konnte nicht "
+                    "geändert werden."
+                )
+                + "\n\n"
+                + str(exc),
+            )
+            return
+
+        self._load_drones()
+
+        self._select_drone(
+            updated.id
+        )
+
+    def _delete_drone(self):
+        if self.current_drone_id is None:
+            return
+
+        drone = self.drone_service.get_drone(
+            self.current_drone_id
+        )
+
+        if drone is None:
+            return
+
+        answer = QMessageBox.question(
+            self,
+            self.tr("Drohne löschen"),
+            self.tr(
+                'Soll die Drohne "%1" wirklich '
+                "gelöscht werden?"
+            ).replace(
+                "%1",
+                self._drone_name(drone),
+            ),
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        if (
+            answer
+            != QMessageBox.StandardButton.Yes
+        ):
+            return
+
+        try:
+            self.drone_service.delete_drone(
+                drone.id
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                self.tr(
+                    "Die Drohne konnte nicht "
+                    "gelöscht werden."
+                )
+                + "\n\n"
+                + str(exc),
+            )
+            return
+
+        self._load_drones()
+
+    def _select_drone(
+        self,
+        drone_id: str,
+    ):
+        for row in range(
+            self.drone_list.count()
+        ):
+            item = self.drone_list.item(row)
+
+            if (
+                item.data(
+                    Qt.ItemDataRole.UserRole
+                )
+                == drone_id
+            ):
+                self.drone_list.setCurrentItem(
+                    item
+                )
+                return
+
+    def _drone_text(
+        self,
+        drone: Drone,
+    ) -> str:
+        text = self._drone_name(
+            drone
+        )
+
+        if drone.seriennummer:
+            text += (
+                f"   |   SN: "
+                f"{drone.seriennummer}"
+            )
+
+        return text
+
+    @staticmethod
+    def _drone_name(
+        drone: Drone,
+    ) -> str:
+        parts = [
+            value
+            for value in (
+                drone.hersteller,
+                drone.modell,
+            )
+            if value
+        ]
+
+        return " ".join(parts)
+
+    # ---------------------------------------------------------
+    # Person
+    # ---------------------------------------------------------
 
     def _clear_details(self):
         self.name_value.setText("-")
@@ -568,9 +1372,22 @@ class PersonenWidget(QWidget):
         self.notes_value.clear()
 
         self.course_participation_list.clear()
+        self.phone_list.clear()
+        self.drone_list.clear()
+
+        self.current_phone_number_id = None
+        self.current_drone_id = None
 
         self.edit_button.setEnabled(False)
         self.active_button.setEnabled(False)
+
+        self.phone_add_button.setEnabled(False)
+        self.phone_edit_button.setEnabled(False)
+        self.phone_delete_button.setEnabled(False)
+
+        self.drone_add_button.setEnabled(False)
+        self.drone_edit_button.setEnabled(False)
+        self.drone_delete_button.setEnabled(False)
 
         self.active_button.setText(
             self.tr("Deaktivieren")
@@ -762,6 +1579,95 @@ class PersonenWidget(QWidget):
             self.current_person_id = None
 
         self.load_persons()
+
+    # ---------------------------------------------------------
+    # Hilfsfunktionen
+    # ---------------------------------------------------------
+
+    def _phone_number_text(
+        self,
+        phone_number: PhoneNumber,
+    ) -> str:
+        primary_text = (
+            "★ "
+            if phone_number.ist_primaer
+            else ""
+        )
+
+        type_text = self._phone_type_text(
+            phone_number.typ
+        )
+
+        number_text = (
+            self.phone_number_service
+            .format_for_display(
+                phone_number.nummer_e164
+            )
+        )
+
+        return (
+            f"{primary_text}"
+            f"{type_text}"
+            f"   {number_text}"
+        )
+
+    def _phone_type_text(
+        self,
+        phone_type: PhoneNumberType,
+    ) -> str:
+        if phone_type == PhoneNumberType.MOBILE:
+            return self.tr("Mobil")
+
+        if phone_type == PhoneNumberType.PRIVATE:
+            return self.tr("Privat")
+
+        if phone_type == PhoneNumberType.BUSINESS:
+            return self.tr("Geschäft")
+
+        if phone_type == PhoneNumberType.OTHER:
+            return self.tr("Andere")
+
+        return phone_type.value
+
+    def _assignment_role_text(
+        self,
+        role_value: str,
+    ) -> str:
+        if role_value == "participant":
+            return self.tr(
+                "Teilnehmer"
+            )
+
+        if role_value == "instructor":
+            return self.tr(
+                "Instruktor"
+            )
+
+        return role_value
+
+    def _assignment_status_text(
+        self,
+        status_value: str,
+    ) -> str:
+        status_names = {
+            "registered": self.tr(
+                "Angemeldet"
+            ),
+            "attended": self.tr(
+                "Teilgenommen"
+            ),
+            "absent": self.tr(
+                "Nicht erschienen"
+            ),
+            "cancelled": self.tr(
+                "Abgemeldet"
+            ),
+        }
+
+        return status_names.get(
+            status_value,
+            status_value,
+        )
 
     @staticmethod
     def _person_list_text(
