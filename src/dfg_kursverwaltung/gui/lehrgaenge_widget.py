@@ -346,6 +346,27 @@ class LehrgaengeWidget(QWidget):
             self.current_course_id = None
             self._clear_details()
 
+    def select_course(
+        self,
+        course_id: str,
+    ):
+        course = (
+            self.course_service.get_course(
+                course_id
+            )
+        )
+
+        if course is None:
+            return
+
+        self.current_course_id = course_id
+
+        self.search_edit.blockSignals(True)
+        self.search_edit.clear()
+        self.search_edit.blockSignals(False)
+
+        self.load_courses()
+
     def _search_changed(
         self,
         _text: str,

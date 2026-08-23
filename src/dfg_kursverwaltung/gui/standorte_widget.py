@@ -47,6 +47,7 @@ class StandorteWidget(QWidget):
         title = QLabel(
             self.tr("Ausführungsorte")
         )
+
         title.setStyleSheet(
             "font-size: 22px; "
             "font-weight: bold;"
@@ -61,6 +62,7 @@ class StandorteWidget(QWidget):
         splitter.addWidget(
             self._create_list_area()
         )
+
         splitter.addWidget(
             self._create_detail_area()
         )
@@ -70,19 +72,24 @@ class StandorteWidget(QWidget):
 
         main_layout.addWidget(splitter)
 
-    def _create_list_area(self) -> QWidget:
+    def _create_list_area(
+        self,
+    ) -> QWidget:
         widget = QWidget()
         layout = QVBoxLayout(widget)
 
         self.search_edit = QLineEdit()
+
         self.search_edit.setPlaceholderText(
             self.tr(
                 "Ausführungsort suchen..."
             )
         )
+
         self.search_edit.setClearButtonEnabled(
             True
         )
+
         self.search_edit.textChanged.connect(
             self._search_changed
         )
@@ -92,14 +99,17 @@ class StandorteWidget(QWidget):
                 "Deaktivierte anzeigen"
             )
         )
+
         self.include_inactive_checkbox.toggled.connect(
             self.load_locations
         )
 
         self.location_list = QListWidget()
+
         self.location_list.currentItemChanged.connect(
             self._location_selected
         )
+
         self.location_list.itemDoubleClicked.connect(
             self._location_double_clicked
         )
@@ -109,6 +119,7 @@ class StandorteWidget(QWidget):
         self.new_button = QPushButton(
             self.tr("Neu")
         )
+
         self.edit_button = QPushButton(
             self.tr("Bearbeiten")
         )
@@ -116,6 +127,7 @@ class StandorteWidget(QWidget):
         self.new_button.clicked.connect(
             self._new_location
         )
+
         self.edit_button.clicked.connect(
             self._edit_location
         )
@@ -123,6 +135,7 @@ class StandorteWidget(QWidget):
         button_layout.addWidget(
             self.new_button
         )
+
         button_layout.addWidget(
             self.edit_button
         )
@@ -130,25 +143,31 @@ class StandorteWidget(QWidget):
         layout.addWidget(
             self.search_edit
         )
+
         layout.addWidget(
             self.include_inactive_checkbox
         )
+
         layout.addWidget(
             self.location_list
         )
+
         layout.addLayout(
             button_layout
         )
 
         return widget
 
-    def _create_detail_area(self) -> QWidget:
+    def _create_detail_area(
+        self,
+    ) -> QWidget:
         widget = QWidget()
         layout = QVBoxLayout(widget)
 
         self.detail_title = QLabel(
             self.tr("Standortdetails")
         )
+
         self.detail_title.setStyleSheet(
             "font-size: 18px; "
             "font-weight: bold;"
@@ -161,6 +180,7 @@ class StandorteWidget(QWidget):
         location_group = QGroupBox(
             self.tr("Standort")
         )
+
         location_form = QFormLayout(
             location_group
         )
@@ -173,10 +193,12 @@ class StandorteWidget(QWidget):
             self.tr("Bezeichnung:"),
             self.name_value,
         )
+
         location_form.addRow(
             self.tr("Adresse:"),
             self.address_value,
         )
+
         location_form.addRow(
             self.tr("Status:"),
             self.status_value,
@@ -189,6 +211,7 @@ class StandorteWidget(QWidget):
         contact_group = QGroupBox(
             self.tr("Kontakt")
         )
+
         contact_form = QFormLayout(
             contact_group
         )
@@ -202,14 +225,17 @@ class StandorteWidget(QWidget):
             self.tr("Name:"),
             self.contact_value,
         )
+
         contact_form.addRow(
             self.tr("Telefon:"),
             self.phone_value,
         )
+
         contact_form.addRow(
             self.tr("E-Mail:"),
             self.email_value,
         )
+
         contact_form.addRow(
             self.tr("Webseite:"),
             self.website_value,
@@ -222,6 +248,7 @@ class StandorteWidget(QWidget):
         notes_group = QGroupBox(
             self.tr("Bemerkungen")
         )
+
         notes_layout = QVBoxLayout(
             notes_group
         )
@@ -245,6 +272,7 @@ class StandorteWidget(QWidget):
         action_layout = QHBoxLayout()
 
         self.status_button = QPushButton()
+
         self.status_button.clicked.connect(
             self._toggle_active_status
         )
@@ -252,11 +280,13 @@ class StandorteWidget(QWidget):
         action_layout.addWidget(
             self.status_button
         )
+
         action_layout.addStretch()
 
         layout.addLayout(
             action_layout
         )
+
         layout.addStretch()
 
         self._clear_details()
@@ -303,6 +333,7 @@ class StandorteWidget(QWidget):
         self.location_list.blockSignals(
             True
         )
+
         self.location_list.clear()
 
         item_to_select = None
@@ -339,13 +370,62 @@ class StandorteWidget(QWidget):
             self.location_list.setCurrentItem(
                 item_to_select
             )
+
         elif self.location_list.count() > 0:
             self.location_list.setCurrentRow(
                 0
             )
+
         else:
             self.current_location_id = None
             self._clear_details()
+
+    def select_location(
+        self,
+        location_id: str,
+    ):
+        location = (
+            self.location_service
+            .get_location(
+                location_id
+            )
+        )
+
+        if location is None:
+            return
+
+        self.current_location_id = (
+            location_id
+        )
+
+        self.search_edit.blockSignals(
+            True
+        )
+
+        self.search_edit.clear()
+
+        self.search_edit.blockSignals(
+            False
+        )
+
+        if (
+            not location.aktiv
+            and not self.include_inactive_checkbox
+            .isChecked()
+        ):
+            self.include_inactive_checkbox.blockSignals(
+                True
+            )
+
+            self.include_inactive_checkbox.setChecked(
+                True
+            )
+
+            self.include_inactive_checkbox.blockSignals(
+                False
+            )
+
+        self.load_locations()
 
     def _search_changed(
         self,
@@ -427,13 +507,16 @@ class StandorteWidget(QWidget):
             self.status_value.setText(
                 self.tr("Aktiv")
             )
+
             self.status_button.setText(
                 self.tr("Deaktivieren")
             )
+
         else:
             self.status_value.setText(
                 self.tr("Deaktiviert")
             )
+
             self.status_button.setText(
                 self.tr("Wieder aktivieren")
             )
@@ -441,6 +524,7 @@ class StandorteWidget(QWidget):
         self.edit_button.setEnabled(
             True
         )
+
         self.status_button.setEnabled(
             True
         )
@@ -503,6 +587,7 @@ class StandorteWidget(QWidget):
             )
 
         self.search_edit.clear()
+
         self.load_locations()
 
     def _edit_location(self):
@@ -535,6 +620,7 @@ class StandorteWidget(QWidget):
         requested_active = data.pop(
             "aktiv"
         )
+
         telefon = data.pop(
             "telefon"
         )
@@ -542,26 +628,32 @@ class StandorteWidget(QWidget):
         location.bezeichnung = data[
             "bezeichnung"
         ]
+
         location.strasse = data[
             "strasse"
         ]
+
         location.hausnummer = data[
             "hausnummer"
         ]
+
         location.plz = data["plz"]
         location.ort = data["ort"]
 
         location.kontakt_vorname = data[
             "kontakt_vorname"
         ]
+
         location.kontakt_nachname = data[
             "kontakt_nachname"
         ]
 
         location.email = data["email"]
+
         location.webseite = data[
             "webseite"
         ]
+
         location.bemerkungen = data[
             "bemerkungen"
         ]
@@ -651,6 +743,7 @@ class StandorteWidget(QWidget):
             .isChecked()
         ):
             self.current_location_id = None
+
         else:
             self.current_location_id = (
                 location.id
@@ -690,9 +783,11 @@ class StandorteWidget(QWidget):
         self.edit_button.setEnabled(
             False
         )
+
         self.status_button.setEnabled(
             False
         )
+
         self.status_button.setText(
             self.tr("Deaktivieren")
         )

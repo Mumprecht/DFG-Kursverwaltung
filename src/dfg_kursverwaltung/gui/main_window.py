@@ -14,6 +14,9 @@ from dfg_kursverwaltung.core.i18n import (
     SUPPORTED_LANGUAGES,
     TranslationManager,
 )
+from dfg_kursverwaltung.gui.export_widget import (
+    ExportWidget,
+)
 from dfg_kursverwaltung.gui.kurszuordnungen_widget import (
     KurszuordnungenWidget,
 )
@@ -26,8 +29,14 @@ from dfg_kursverwaltung.gui.personen_widget import (
 from dfg_kursverwaltung.gui.standorte_widget import (
     StandorteWidget,
 )
+from dfg_kursverwaltung.gui.suche_widget import (
+    SucheWidget,
+)
 from dfg_kursverwaltung.services.drohnen_service import (
     DroneService,
+)
+from dfg_kursverwaltung.services.export_service import (
+    ExportService,
 )
 from dfg_kursverwaltung.services.kurstage_service import (
     CourseDayService,
@@ -43,6 +52,9 @@ from dfg_kursverwaltung.services.personen_service import (
 )
 from dfg_kursverwaltung.services.standorte_service import (
     LocationService,
+)
+from dfg_kursverwaltung.services.suche_service import (
+    SearchService,
 )
 from dfg_kursverwaltung.services.telefonnummern_service import (
     PhoneNumberService,
@@ -60,6 +72,8 @@ class MainWindow(QMainWindow):
         course_day_service: CourseDayService,
         location_service: LocationService,
         assignment_service: CourseAssignmentService,
+        search_service: SearchService,
+        export_service: ExportService,
     ):
         super().__init__()
 
@@ -71,6 +85,8 @@ class MainWindow(QMainWindow):
         self.course_day_service = course_day_service
         self.location_service = location_service
         self.assignment_service = assignment_service
+        self.search_service = search_service
+        self.export_service = export_service
 
         self.setWindowTitle(
             self.tr(
@@ -140,9 +156,27 @@ class MainWindow(QMainWindow):
             self.location_service,
         )
 
-        self.search_tab = QWidget()
+        self.search_tab = SucheWidget(
+            self.search_service
+        )
+
+        self.search_tab.person_requested.connect(
+            self._open_person_from_search
+        )
+
+        self.search_tab.course_requested.connect(
+            self._open_course_from_search
+        )
+
+        self.search_tab.location_requested.connect(
+            self._open_location_from_search
+        )
+
         self.import_tab = QWidget()
-        self.export_tab = QWidget()
+
+        self.export_tab = ExportWidget(
+            self.export_service
+        )
 
         self.tabs.addTab(
             self.people_tab,
@@ -314,6 +348,42 @@ class MainWindow(QMainWindow):
                 language_code
             ] = action
 
+    def _open_person_from_search(
+        self,
+        person_id: str,
+    ):
+        self.tabs.setCurrentWidget(
+            self.people_tab
+        )
+
+        self.people_tab.select_person(
+            person_id
+        )
+
+    def _open_course_from_search(
+        self,
+        course_id: str,
+    ):
+        self.tabs.setCurrentWidget(
+            self.courses_tab
+        )
+
+        self.courses_tab.select_course(
+            course_id
+        )
+
+    def _open_location_from_search(
+        self,
+        location_id: str,
+    ):
+        self.tabs.setCurrentWidget(
+            self.locations_tab
+        )
+
+        self.locations_tab.select_location(
+            location_id
+        )
+
     def _on_current_tab_changed(
         self,
         index: int,
@@ -343,6 +413,9 @@ class MainWindow(QMainWindow):
 
         elif current_widget is self.assignments_tab:
             self.assignments_tab.load_data()
+
+        elif current_widget is self.search_tab:
+            self.search_tab.refresh()
 
     def _on_tab_clicked(
         self,

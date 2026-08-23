@@ -313,7 +313,9 @@ class PersonenWidget(QWidget):
             course_group
         )
 
-        self.course_participation_list = QListWidget()
+        self.course_participation_list = (
+            QListWidget()
+        )
 
         self.course_participation_list.setMaximumHeight(
             160
@@ -552,6 +554,45 @@ class PersonenWidget(QWidget):
             self.current_person_id = None
             self._clear_details()
 
+    def select_person(
+        self,
+        person_id: str,
+    ):
+        person = self.person_service.get_person(
+            person_id
+        )
+
+        if person is None:
+            return
+
+        self.current_person_id = person_id
+
+        # Eine bestehende Suche kann verhindern,
+        # dass die gewünschte Person sichtbar ist.
+        self.search_edit.blockSignals(True)
+        self.search_edit.clear()
+        self.search_edit.blockSignals(False)
+
+        # Bei einer direkten Navigation muss auch
+        # eine inaktive Person sichtbar gemacht werden.
+        if (
+            not person.aktiv
+            and not self.show_inactive_checkbox.isChecked()
+        ):
+            self.show_inactive_checkbox.blockSignals(
+                True
+            )
+
+            self.show_inactive_checkbox.setChecked(
+                True
+            )
+
+            self.show_inactive_checkbox.blockSignals(
+                False
+            )
+
+        self.load_persons()
+
     def _search_changed(
         self,
         _text: str,
@@ -785,8 +826,13 @@ class PersonenWidget(QWidget):
         self.phone_list.clear()
         self.current_phone_number_id = None
 
-        self.phone_edit_button.setEnabled(False)
-        self.phone_delete_button.setEnabled(False)
+        self.phone_edit_button.setEnabled(
+            False
+        )
+
+        self.phone_delete_button.setEnabled(
+            False
+        )
 
         if self.current_person_id is None:
             return
@@ -810,7 +856,10 @@ class PersonenWidget(QWidget):
                 & ~Qt.ItemFlag.ItemIsSelectable
             )
 
-            self.phone_list.addItem(item)
+            self.phone_list.addItem(
+                item
+            )
+
             return
 
         for phone_number in phone_numbers:
@@ -825,7 +874,9 @@ class PersonenWidget(QWidget):
                 phone_number.id,
             )
 
-            self.phone_list.addItem(item)
+            self.phone_list.addItem(
+                item
+            )
 
     def _phone_number_selected(
         self,
@@ -844,7 +895,9 @@ class PersonenWidget(QWidget):
             phone_number_id
         )
 
-        enabled = bool(phone_number_id)
+        enabled = bool(
+            phone_number_id
+        )
 
         self.phone_edit_button.setEnabled(
             enabled
@@ -1043,7 +1096,9 @@ class PersonenWidget(QWidget):
         for row in range(
             self.phone_list.count()
         ):
-            item = self.phone_list.item(row)
+            item = self.phone_list.item(
+                row
+            )
 
             if (
                 item.data(
@@ -1056,16 +1111,17 @@ class PersonenWidget(QWidget):
                 )
                 return
 
-    # ---------------------------------------------------------
-    # Drohnen
-    # ---------------------------------------------------------
-
     def _load_drones(self):
         self.drone_list.clear()
         self.current_drone_id = None
 
-        self.drone_edit_button.setEnabled(False)
-        self.drone_delete_button.setEnabled(False)
+        self.drone_edit_button.setEnabled(
+            False
+        )
+
+        self.drone_delete_button.setEnabled(
+            False
+        )
 
         if self.current_person_id is None:
             return
@@ -1088,12 +1144,17 @@ class PersonenWidget(QWidget):
                 & ~Qt.ItemFlag.ItemIsSelectable
             )
 
-            self.drone_list.addItem(item)
+            self.drone_list.addItem(
+                item
+            )
+
             return
 
         for drone in drones:
             item = QListWidgetItem(
-                self._drone_text(drone)
+                self._drone_text(
+                    drone
+                )
             )
 
             item.setData(
@@ -1101,7 +1162,9 @@ class PersonenWidget(QWidget):
                 drone.id,
             )
 
-            self.drone_list.addItem(item)
+            self.drone_list.addItem(
+                item
+            )
 
     def _drone_selected(
         self,
@@ -1118,7 +1181,9 @@ class PersonenWidget(QWidget):
 
         self.current_drone_id = drone_id
 
-        enabled = bool(drone_id)
+        enabled = bool(
+            drone_id
+        )
 
         self.drone_edit_button.setEnabled(
             enabled
@@ -1203,8 +1268,8 @@ class PersonenWidget(QWidget):
         )
 
         if (
-                dialog.exec()
-                != QDialog.DialogCode.Accepted
+            dialog.exec()
+            != QDialog.DialogCode.Accepted
         ):
             return
 
@@ -1271,7 +1336,9 @@ class PersonenWidget(QWidget):
                 "gelöscht werden?"
             ).replace(
                 "%1",
-                self._drone_name(drone),
+                self._drone_name(
+                    drone
+                ),
             ),
             QMessageBox.StandardButton.Yes
             | QMessageBox.StandardButton.No,
@@ -1311,7 +1378,9 @@ class PersonenWidget(QWidget):
         for row in range(
             self.drone_list.count()
         ):
-            item = self.drone_list.item(row)
+            item = self.drone_list.item(
+                row
+            )
 
             if (
                 item.data(
@@ -1323,41 +1392,6 @@ class PersonenWidget(QWidget):
                     item
                 )
                 return
-
-    def _drone_text(
-        self,
-        drone: Drone,
-    ) -> str:
-        text = self._drone_name(
-            drone
-        )
-
-        if drone.seriennummer:
-            text += (
-                f"   |   SN: "
-                f"{drone.seriennummer}"
-            )
-
-        return text
-
-    @staticmethod
-    def _drone_name(
-        drone: Drone,
-    ) -> str:
-        parts = [
-            value
-            for value in (
-                drone.hersteller,
-                drone.modell,
-            )
-            if value
-        ]
-
-        return " ".join(parts)
-
-    # ---------------------------------------------------------
-    # Person
-    # ---------------------------------------------------------
 
     def _clear_details(self):
         self.name_value.setText("-")
@@ -1378,16 +1412,37 @@ class PersonenWidget(QWidget):
         self.current_phone_number_id = None
         self.current_drone_id = None
 
-        self.edit_button.setEnabled(False)
-        self.active_button.setEnabled(False)
+        self.edit_button.setEnabled(
+            False
+        )
 
-        self.phone_add_button.setEnabled(False)
-        self.phone_edit_button.setEnabled(False)
-        self.phone_delete_button.setEnabled(False)
+        self.active_button.setEnabled(
+            False
+        )
 
-        self.drone_add_button.setEnabled(False)
-        self.drone_edit_button.setEnabled(False)
-        self.drone_delete_button.setEnabled(False)
+        self.phone_add_button.setEnabled(
+            False
+        )
+
+        self.phone_edit_button.setEnabled(
+            False
+        )
+
+        self.phone_delete_button.setEnabled(
+            False
+        )
+
+        self.drone_add_button.setEnabled(
+            False
+        )
+
+        self.drone_edit_button.setEnabled(
+            False
+        )
+
+        self.drone_delete_button.setEnabled(
+            False
+        )
 
         self.active_button.setText(
             self.tr("Deaktivieren")
@@ -1580,10 +1635,6 @@ class PersonenWidget(QWidget):
 
         self.load_persons()
 
-    # ---------------------------------------------------------
-    # Hilfsfunktionen
-    # ---------------------------------------------------------
-
     def _phone_number_text(
         self,
         phone_number: PhoneNumber,
@@ -1667,6 +1718,39 @@ class PersonenWidget(QWidget):
         return status_names.get(
             status_value,
             status_value,
+        )
+
+    def _drone_text(
+        self,
+        drone: Drone,
+    ) -> str:
+        text = self._drone_name(
+            drone
+        )
+
+        if drone.seriennummer:
+            text += (
+                f"   |   SN: "
+                f"{drone.seriennummer}"
+            )
+
+        return text
+
+    @staticmethod
+    def _drone_name(
+        drone: Drone,
+    ) -> str:
+        parts = [
+            value
+            for value in (
+                drone.hersteller,
+                drone.modell,
+            )
+            if value
+        ]
+
+        return " ".join(
+            parts
         )
 
     @staticmethod

@@ -31,11 +31,17 @@ from dfg_kursverwaltung.repositories.personen_repository import (
 from dfg_kursverwaltung.repositories.standorte_repository import (
     LocationRepository,
 )
+from dfg_kursverwaltung.repositories.suche_repository import (
+    SearchRepository,
+)
 from dfg_kursverwaltung.repositories.telefonnummern_repository import (
     PhoneNumberRepository,
 )
 from dfg_kursverwaltung.services.drohnen_service import (
     DroneService,
+)
+from dfg_kursverwaltung.services.export_service import (
+    ExportService,
 )
 from dfg_kursverwaltung.services.kurstage_service import (
     CourseDayService,
@@ -51,6 +57,9 @@ from dfg_kursverwaltung.services.personen_service import (
 )
 from dfg_kursverwaltung.services.standorte_service import (
     LocationService,
+)
+from dfg_kursverwaltung.services.suche_service import (
+    SearchService,
 )
 from dfg_kursverwaltung.services.telefonnummern_service import (
     PhoneNumberService,
@@ -116,10 +125,12 @@ def main():
         database_manager
     )
 
-    assignment_repository = (
-        CourseAssignmentRepository(
-            database_manager
-        )
+    assignment_repository = CourseAssignmentRepository(
+        database_manager
+    )
+
+    search_repository = SearchRepository(
+        database_manager
     )
 
     # ---------------------------------------------------------
@@ -150,10 +161,17 @@ def main():
         location_repository
     )
 
-    assignment_service = (
-        CourseAssignmentService(
-            assignment_repository
-        )
+    assignment_service = CourseAssignmentService(
+        assignment_repository
+    )
+
+    search_service = SearchService(
+        search_repository
+    )
+
+    export_service = ExportService(
+        person_service,
+        phone_number_service,
     )
 
     # ---------------------------------------------------------
@@ -186,6 +204,8 @@ def main():
         course_day_service,
         location_service,
         assignment_service,
+        search_service,
+        export_service,
     )
 
     if icon_path.exists():
