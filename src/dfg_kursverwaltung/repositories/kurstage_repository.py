@@ -78,6 +78,26 @@ class CourseDayRepository:
             row
         )
 
+    def list_all(
+        self,
+    ) -> list[CourseDay]:
+        with self.database_manager.connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT *
+                FROM kurstage
+                ORDER BY
+                    datum ASC,
+                    beginn ASC,
+                    lehrgang_id ASC;
+                """
+            ).fetchall()
+
+        return [
+            self._row_to_course_day(row)
+            for row in rows
+        ]
+
     def list_for_course(
         self,
         course_id: str,
@@ -109,6 +129,7 @@ class CourseDayRepository:
                 """
                 UPDATE kurstage
                 SET
+                    lehrgang_id = ?,
                     standort_id = ?,
                     datum = ?,
                     beginn = ?,
@@ -119,6 +140,7 @@ class CourseDayRepository:
                 WHERE id = ?;
                 """,
                 (
+                    course_day.lehrgang_id,
                     course_day.standort_id,
                     self._date_to_db(
                         course_day.datum

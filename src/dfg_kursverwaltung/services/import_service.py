@@ -4,10 +4,20 @@ from datetime import date
 from pathlib import Path
 
 from dfg_kursverwaltung.core.models import (
+    CourseType,
     PhoneNumberType,
+)
+from dfg_kursverwaltung.services.kurstage_service import (
+    CourseDayService,
+)
+from dfg_kursverwaltung.services.lehrgaenge_service import (
+    CourseService,
 )
 from dfg_kursverwaltung.services.personen_service import (
     PersonService,
+)
+from dfg_kursverwaltung.services.standorte_service import (
+    LocationService,
 )
 from dfg_kursverwaltung.services.telefonnummern_service import (
     PhoneNumberService,
@@ -19,6 +29,10 @@ class ImportIssue:
     row_number: int
     message: str
 
+
+# ============================================================
+# Personen
+# ============================================================
 
 @dataclass(slots=True)
 class PersonImportRow:
@@ -85,8 +99,156 @@ class ImportPreview:
         )
 
 
+# ============================================================
+# Ausführungsorte
+# ============================================================
+
+@dataclass(slots=True)
+class LocationImportRow:
+    row_number: int
+    location_id: str | None
+    action: str
+
+    bezeichnung: str
+    strasse: str | None
+    hausnummer: str | None
+    plz: str | None
+    ort: str | None
+
+    kontakt_vorname: str | None
+    kontakt_nachname: str | None
+
+    telefon: str | None
+    email: str | None
+    webseite: str | None
+
+    aktiv: bool
+    bemerkungen: str | None
+
+
+@dataclass(slots=True)
+class LocationImportPreview:
+    rows: list[LocationImportRow]
+    issues: list[ImportIssue]
+
+    @property
+    def new_count(self) -> int:
+        return sum(
+            1
+            for row in self.rows
+            if row.action == "create"
+        )
+
+    @property
+    def update_count(self) -> int:
+        return sum(
+            1
+            for row in self.rows
+            if row.action == "update"
+        )
+
+    @property
+    def error_count(self) -> int:
+        return len(
+            self.issues
+        )
+
+
+# ============================================================
+# Lehrgänge
+# ============================================================
+
+@dataclass(slots=True)
+class CourseImportRow:
+    row_number: int
+    course_id: str | None
+    action: str
+
+    typ: CourseType
+    bezeichnung: str
+    beschreibung: str | None
+    bemerkungen: str | None
+
+
+@dataclass(slots=True)
+class CourseImportPreview:
+    rows: list[CourseImportRow]
+    issues: list[ImportIssue]
+
+    @property
+    def new_count(self) -> int:
+        return sum(
+            1
+            for row in self.rows
+            if row.action == "create"
+        )
+
+    @property
+    def update_count(self) -> int:
+        return sum(
+            1
+            for row in self.rows
+            if row.action == "update"
+        )
+
+    @property
+    def error_count(self) -> int:
+        return len(
+            self.issues
+        )
+
+
+# ============================================================
+# Kurstage
+# ============================================================
+
+@dataclass(slots=True)
+class CourseDayImportRow:
+    row_number: int
+    course_day_id: str | None
+    action: str
+
+    course_id: str
+    course_name: str | None
+    datum: date
+    beginn: str | None
+    ende: str | None
+    location_id: str | None
+    location_name: str | None
+    bezeichnung: str | None
+    bemerkungen: str | None
+
+
+@dataclass(slots=True)
+class CourseDayImportPreview:
+    rows: list[CourseDayImportRow]
+    issues: list[ImportIssue]
+
+    @property
+    def new_count(self) -> int:
+        return sum(
+            1
+            for row in self.rows
+            if row.action == "create"
+        )
+
+    @property
+    def update_count(self) -> int:
+        return sum(
+            1
+            for row in self.rows
+            if row.action == "update"
+        )
+
+    @property
+    def error_count(self) -> int:
+        return len(
+            self.issues
+        )
+
+
 class ImportService:
-    REQUIRED_COLUMNS = {
+    PERSON_REQUIRED_COLUMNS = {
         "ID",
         "Nachname",
         "Vorname",
@@ -107,13 +269,60 @@ class ImportService:
         "Bemerkungen",
     }
 
+    LOCATION_REQUIRED_COLUMNS = {
+        "ID",
+        "Bezeichnung",
+        "Strasse",
+        "Hausnummer",
+        "PLZ",
+        "Ort",
+        "Kontakt Vorname",
+        "Kontakt Nachname",
+        "Telefon",
+        "E-Mail",
+        "Webseite",
+        "Aktiv",
+        "Bemerkungen",
+    }
+
+    COURSE_REQUIRED_COLUMNS = {
+        "ID",
+        "Typ",
+        "Bezeichnung",
+        "Beschreibung",
+        "Bemerkungen",
+    }
+
+    COURSE_DAY_REQUIRED_COLUMNS = {
+        "ID",
+        "Lehrgang ID",
+        "Lehrgang",
+        "Datum",
+        "Beginn",
+        "Ende",
+        "Standort ID",
+        "Standort",
+        "Bezeichnung",
+        "Bemerkungen",
+    }
+
     def __init__(
         self,
         person_service: PersonService,
         phone_number_service: PhoneNumberService,
+        location_service: LocationService,
+        course_service: CourseService,
+        course_day_service: CourseDayService,
     ):
         self.person_service = person_service
         self.phone_number_service = phone_number_service
+        self.location_service = location_service
+        self.course_service = course_service
+        self.course_day_service = course_day_service
+
+    # ========================================================
+    # Personen – Vorschau
+    # ========================================================
 
     def preview_person_import(
         self,
@@ -141,29 +350,10 @@ class ImportService:
                 delimiter=";",
             )
 
-            if reader.fieldnames is None:
-                raise ValueError(
-                    "Die CSV-Datei enthält "
-                    "keine Kopfzeile."
-                )
-
-            missing_columns = (
-                self.REQUIRED_COLUMNS
-                - set(reader.fieldnames)
+            self._validate_columns(
+                reader.fieldnames,
+                self.PERSON_REQUIRED_COLUMNS,
             )
-
-            if missing_columns:
-                missing_text = ", ".join(
-                    sorted(
-                        missing_columns
-                    )
-                )
-
-                raise ValueError(
-                    "In der CSV-Datei fehlen "
-                    "Spalten:\n"
-                    + missing_text
-                )
 
             for row_number, csv_row in enumerate(
                 reader,
@@ -194,6 +384,10 @@ class ImportService:
             rows=rows,
             issues=issues,
         )
+
+    # ========================================================
+    # Personen – Import
+    # ========================================================
 
     def import_persons(
         self,
@@ -310,6 +504,457 @@ class ImportService:
             created_count,
             updated_count,
         )
+
+    # ========================================================
+    # Ausführungsorte – Vorschau
+    # ========================================================
+
+    def preview_location_import(
+        self,
+        file_path: str | Path,
+    ) -> LocationImportPreview:
+        path = Path(
+            file_path
+        )
+
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Datei nicht gefunden: {path}"
+            )
+
+        rows: list[LocationImportRow] = []
+        issues: list[ImportIssue] = []
+
+        with path.open(
+            "r",
+            encoding="utf-8-sig",
+            newline="",
+        ) as csv_file:
+            reader = csv.DictReader(
+                csv_file,
+                delimiter=";",
+            )
+
+            self._validate_columns(
+                reader.fieldnames,
+                self.LOCATION_REQUIRED_COLUMNS,
+            )
+
+            for row_number, csv_row in enumerate(
+                reader,
+                start=2,
+            ):
+                try:
+                    parsed_row = (
+                        self._parse_location_row(
+                            csv_row,
+                            row_number,
+                        )
+                    )
+
+                except ValueError as exc:
+                    issues.append(
+                        ImportIssue(
+                            row_number=row_number,
+                            message=str(exc),
+                        )
+                    )
+                    continue
+
+                rows.append(
+                    parsed_row
+                )
+
+        return LocationImportPreview(
+            rows=rows,
+            issues=issues,
+        )
+
+    # ========================================================
+    # Ausführungsorte – Import
+    # ========================================================
+
+    def import_locations(
+        self,
+        preview: LocationImportPreview,
+    ) -> tuple[int, int]:
+        created_count = 0
+        updated_count = 0
+
+        for row in preview.rows:
+            if row.action == "create":
+                location = (
+                    self.location_service
+                    .create_location(
+                        bezeichnung=(
+                            row.bezeichnung
+                        ),
+                        strasse=row.strasse,
+                        hausnummer=(
+                            row.hausnummer
+                        ),
+                        plz=row.plz,
+                        ort=row.ort,
+                        kontakt_vorname=(
+                            row.kontakt_vorname
+                        ),
+                        kontakt_nachname=(
+                            row.kontakt_nachname
+                        ),
+                        telefon=row.telefon,
+                        email=row.email,
+                        webseite=row.webseite,
+                        bemerkungen=(
+                            row.bemerkungen
+                        ),
+                    )
+                )
+
+                if not row.aktiv:
+                    self.location_service.deactivate_location(
+                        location.id
+                    )
+
+                created_count += 1
+
+            elif row.action == "update":
+                if row.location_id is None:
+                    raise ValueError(
+                        "Bei einer Aktualisierung "
+                        "fehlt die Standort-ID."
+                    )
+
+                location = (
+                    self.location_service
+                    .get_location(
+                        row.location_id
+                    )
+                )
+
+                if location is None:
+                    raise ValueError(
+                        "Ausführungsort für "
+                        "Aktualisierung nicht "
+                        "gefunden: "
+                        f"{row.location_id}"
+                    )
+
+                location.bezeichnung = (
+                    row.bezeichnung
+                )
+                location.strasse = row.strasse
+                location.hausnummer = (
+                    row.hausnummer
+                )
+                location.plz = row.plz
+                location.ort = row.ort
+                location.kontakt_vorname = (
+                    row.kontakt_vorname
+                )
+                location.kontakt_nachname = (
+                    row.kontakt_nachname
+                )
+                location.email = row.email
+                location.webseite = row.webseite
+                location.bemerkungen = (
+                    row.bemerkungen
+                )
+
+                self.location_service.update_location(
+                    location,
+                    telefon=(
+                        row.telefon
+                        if row.telefon is not None
+                        else ""
+                    ),
+                )
+
+                if row.aktiv and not location.aktiv:
+                    self.location_service.activate_location(
+                        location.id
+                    )
+
+                elif (
+                    not row.aktiv
+                    and location.aktiv
+                ):
+                    self.location_service.deactivate_location(
+                        location.id
+                    )
+
+                updated_count += 1
+
+        return (
+            created_count,
+            updated_count,
+        )
+
+    # ========================================================
+    # Lehrgänge – Vorschau
+    # ========================================================
+
+    def preview_course_import(
+        self,
+        file_path: str | Path,
+    ) -> CourseImportPreview:
+        path = Path(
+            file_path
+        )
+
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Datei nicht gefunden: {path}"
+            )
+
+        rows: list[CourseImportRow] = []
+        issues: list[ImportIssue] = []
+
+        with path.open(
+            "r",
+            encoding="utf-8-sig",
+            newline="",
+        ) as csv_file:
+            reader = csv.DictReader(
+                csv_file,
+                delimiter=";",
+            )
+
+            self._validate_columns(
+                reader.fieldnames,
+                self.COURSE_REQUIRED_COLUMNS,
+            )
+
+            for row_number, csv_row in enumerate(
+                reader,
+                start=2,
+            ):
+                try:
+                    parsed_row = (
+                        self._parse_course_row(
+                            csv_row,
+                            row_number,
+                        )
+                    )
+
+                except ValueError as exc:
+                    issues.append(
+                        ImportIssue(
+                            row_number=row_number,
+                            message=str(exc),
+                        )
+                    )
+                    continue
+
+                rows.append(
+                    parsed_row
+                )
+
+        return CourseImportPreview(
+            rows=rows,
+            issues=issues,
+        )
+
+    # ========================================================
+    # Lehrgänge – Import
+    # ========================================================
+
+    def import_courses(
+        self,
+        preview: CourseImportPreview,
+    ) -> tuple[int, int]:
+        created_count = 0
+        updated_count = 0
+
+        for row in preview.rows:
+            if row.action == "create":
+                self.course_service.create_course(
+                    typ=row.typ,
+                    bezeichnung=row.bezeichnung,
+                    beschreibung=row.beschreibung,
+                    bemerkungen=row.bemerkungen,
+                )
+
+                created_count += 1
+
+            elif row.action == "update":
+                if row.course_id is None:
+                    raise ValueError(
+                        "Bei einer Aktualisierung "
+                        "fehlt die Lehrgangs-ID."
+                    )
+
+                course = (
+                    self.course_service.get_course(
+                        row.course_id
+                    )
+                )
+
+                if course is None:
+                    raise ValueError(
+                        "Lehrgang für Aktualisierung "
+                        "nicht gefunden: "
+                        f"{row.course_id}"
+                    )
+
+                course.typ = row.typ
+                course.bezeichnung = (
+                    row.bezeichnung
+                )
+                course.beschreibung = (
+                    row.beschreibung
+                )
+                course.bemerkungen = (
+                    row.bemerkungen
+                )
+
+                self.course_service.update_course(
+                    course
+                )
+
+                updated_count += 1
+
+        return (
+            created_count,
+            updated_count,
+        )
+
+    # ========================================================
+    # Kurstage – Vorschau
+    # ========================================================
+
+    def preview_course_day_import(
+        self,
+        file_path: str | Path,
+    ) -> CourseDayImportPreview:
+        path = Path(
+            file_path
+        )
+
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Datei nicht gefunden: {path}"
+            )
+
+        rows: list[CourseDayImportRow] = []
+        issues: list[ImportIssue] = []
+
+        with path.open(
+            "r",
+            encoding="utf-8-sig",
+            newline="",
+        ) as csv_file:
+            reader = csv.DictReader(
+                csv_file,
+                delimiter=";",
+            )
+
+            self._validate_columns(
+                reader.fieldnames,
+                self.COURSE_DAY_REQUIRED_COLUMNS,
+            )
+
+            for row_number, csv_row in enumerate(
+                reader,
+                start=2,
+            ):
+                try:
+                    parsed_row = (
+                        self._parse_course_day_row(
+                            csv_row,
+                            row_number,
+                        )
+                    )
+
+                except ValueError as exc:
+                    issues.append(
+                        ImportIssue(
+                            row_number=row_number,
+                            message=str(exc),
+                        )
+                    )
+                    continue
+
+                rows.append(
+                    parsed_row
+                )
+
+        return CourseDayImportPreview(
+            rows=rows,
+            issues=issues,
+        )
+
+    # ========================================================
+    # Kurstage – Import
+    # ========================================================
+
+    def import_course_days(
+        self,
+        preview: CourseDayImportPreview,
+    ) -> tuple[int, int]:
+        created_count = 0
+        updated_count = 0
+
+        for row in preview.rows:
+            if row.action == "create":
+                self.course_day_service.create_course_day(
+                    lehrgang_id=row.course_id,
+                    datum=row.datum,
+                    standort_id=row.location_id,
+                    beginn=row.beginn,
+                    ende=row.ende,
+                    bezeichnung=row.bezeichnung,
+                    bemerkungen=row.bemerkungen,
+                )
+
+                created_count += 1
+
+            elif row.action == "update":
+                if row.course_day_id is None:
+                    raise ValueError(
+                        "Bei einer Aktualisierung "
+                        "fehlt die Kurstag-ID."
+                    )
+
+                course_day = (
+                    self.course_day_service
+                    .get_course_day(
+                        row.course_day_id
+                    )
+                )
+
+                if course_day is None:
+                    raise ValueError(
+                        "Kurstag für Aktualisierung "
+                        "nicht gefunden: "
+                        f"{row.course_day_id}"
+                    )
+
+                course_day.lehrgang_id = row.course_id
+                course_day.standort_id = row.location_id
+                course_day.datum = row.datum
+                course_day.beginn = row.beginn
+                course_day.ende = row.ende
+                course_day.bezeichnung = (
+                    row.bezeichnung
+                )
+                course_day.bemerkungen = (
+                    row.bemerkungen
+                )
+
+                self.course_day_service.update_course_day(
+                    course_day
+                )
+
+                updated_count += 1
+
+        return (
+            created_count,
+            updated_count,
+        )
+
+    # ========================================================
+    # Personen – CSV-Zeile
+    # ========================================================
 
     def _parse_person_row(
         self,
@@ -474,6 +1119,338 @@ class ImportService:
             telefon_andere=telefon_andere,
         )
 
+    # ========================================================
+    # Ausführungsorte – CSV-Zeile
+    # ========================================================
+
+    def _parse_location_row(
+        self,
+        csv_row: dict[str, str],
+        row_number: int,
+    ) -> LocationImportRow:
+        bezeichnung = self._required_text(
+            csv_row.get(
+                "Bezeichnung"
+            ),
+            "Bezeichnung",
+        )
+
+        location_id = self._clean_optional(
+            csv_row.get(
+                "ID"
+            )
+        )
+
+        if location_id:
+            existing = (
+                self.location_service
+                .get_location(
+                    location_id
+                )
+            )
+
+            action = (
+                "update"
+                if existing is not None
+                else "create"
+            )
+
+        else:
+            action = "create"
+
+        telefon = self._clean_optional(
+            csv_row.get(
+                "Telefon"
+            )
+        )
+
+        if telefon:
+            self.location_service.normalize_phone_number(
+                telefon
+            )
+
+        email = self._clean_optional(
+            csv_row.get(
+                "E-Mail"
+            )
+        )
+
+        self.location_service._validate_email(
+            email
+        )
+
+        aktiv = self._parse_bool(
+            csv_row.get(
+                "Aktiv"
+            ),
+            "Aktiv",
+        )
+
+        return LocationImportRow(
+            row_number=row_number,
+            location_id=location_id,
+            action=action,
+            bezeichnung=bezeichnung,
+            strasse=self._clean_optional(
+                csv_row.get(
+                    "Strasse"
+                )
+            ),
+            hausnummer=self._clean_optional(
+                csv_row.get(
+                    "Hausnummer"
+                )
+            ),
+            plz=self._clean_optional(
+                csv_row.get(
+                    "PLZ"
+                )
+            ),
+            ort=self._clean_optional(
+                csv_row.get(
+                    "Ort"
+                )
+            ),
+            kontakt_vorname=self._clean_optional(
+                csv_row.get(
+                    "Kontakt Vorname"
+                )
+            ),
+            kontakt_nachname=self._clean_optional(
+                csv_row.get(
+                    "Kontakt Nachname"
+                )
+            ),
+            telefon=telefon,
+            email=email,
+            webseite=self._clean_optional(
+                csv_row.get(
+                    "Webseite"
+                )
+            ),
+            aktiv=aktiv,
+            bemerkungen=self._clean_optional(
+                csv_row.get(
+                    "Bemerkungen"
+                )
+            ),
+        )
+
+    # ========================================================
+    # Lehrgänge – CSV-Zeile
+    # ========================================================
+
+    def _parse_course_row(
+        self,
+        csv_row: dict[str, str],
+        row_number: int,
+    ) -> CourseImportRow:
+        course_id = self._clean_optional(
+            csv_row.get(
+                "ID"
+            )
+        )
+
+        type_text = self._required_text(
+            csv_row.get(
+                "Typ"
+            ),
+            "Typ",
+        )
+
+        try:
+            course_type = CourseType(
+                type_text
+            )
+
+        except ValueError as exc:
+            allowed_values = ", ".join(
+                course_type.value
+                for course_type in CourseType
+            )
+
+            raise ValueError(
+                "Ungültiger Lehrgangstyp: "
+                f"{type_text}. "
+                "Erlaubt sind: "
+                f"{allowed_values}."
+            ) from exc
+
+        bezeichnung = self._required_text(
+            csv_row.get(
+                "Bezeichnung"
+            ),
+            "Bezeichnung",
+        )
+
+        if course_id:
+            existing = (
+                self.course_service
+                .get_course(
+                    course_id
+                )
+            )
+
+            action = (
+                "update"
+                if existing is not None
+                else "create"
+            )
+
+        else:
+            action = "create"
+
+        return CourseImportRow(
+            row_number=row_number,
+            course_id=course_id,
+            action=action,
+            typ=course_type,
+            bezeichnung=bezeichnung,
+            beschreibung=self._clean_optional(
+                csv_row.get(
+                    "Beschreibung"
+                )
+            ),
+            bemerkungen=self._clean_optional(
+                csv_row.get(
+                    "Bemerkungen"
+                )
+            ),
+        )
+
+    # ========================================================
+    # Kurstage – CSV-Zeile
+    # ========================================================
+
+    def _parse_course_day_row(
+        self,
+        csv_row: dict[str, str],
+        row_number: int,
+    ) -> CourseDayImportRow:
+        course_day_id = self._clean_optional(
+            csv_row.get(
+                "ID"
+            )
+        )
+
+        course_id = self._required_text(
+            csv_row.get(
+                "Lehrgang ID"
+            ),
+            "Lehrgang ID",
+        )
+
+        course = (
+            self.course_service.get_course(
+                course_id
+            )
+        )
+
+        if course is None:
+            raise ValueError(
+                "Die Lehrgang ID ist unbekannt: "
+                f"{course_id}"
+            )
+
+        date_text = self._required_text(
+            csv_row.get(
+                "Datum"
+            ),
+            "Datum",
+        )
+
+        course_date = self._parse_course_day_date(
+            date_text
+        )
+
+        beginn = self._clean_optional(
+            csv_row.get(
+                "Beginn"
+            )
+        )
+
+        ende = self._clean_optional(
+            csv_row.get(
+                "Ende"
+            )
+        )
+
+        self.course_day_service._validate_times(
+            beginn,
+            ende,
+        )
+
+        location_id = self._clean_optional(
+            csv_row.get(
+                "Standort ID"
+            )
+        )
+
+        if location_id:
+            location = (
+                self.location_service.get_location(
+                    location_id
+                )
+            )
+
+            if location is None:
+                raise ValueError(
+                    "Die Standort ID ist unbekannt: "
+                    f"{location_id}"
+                )
+
+        if course_day_id:
+            existing = (
+                self.course_day_service
+                .get_course_day(
+                    course_day_id
+                )
+            )
+
+            action = (
+                "update"
+                if existing is not None
+                else "create"
+            )
+
+        else:
+            action = "create"
+
+        return CourseDayImportRow(
+            row_number=row_number,
+            course_day_id=course_day_id,
+            action=action,
+            course_id=course_id,
+            course_name=self._clean_optional(
+                csv_row.get(
+                    "Lehrgang"
+                )
+            ),
+            datum=course_date,
+            beginn=beginn,
+            ende=ende,
+            location_id=location_id,
+            location_name=self._clean_optional(
+                csv_row.get(
+                    "Standort"
+                )
+            ),
+            bezeichnung=self._clean_optional(
+                csv_row.get(
+                    "Bezeichnung"
+                )
+            ),
+            bemerkungen=self._clean_optional(
+                csv_row.get(
+                    "Bemerkungen"
+                )
+            ),
+        )
+
+    # ========================================================
+    # Telefonnummern Personen
+    # ========================================================
+
     def _replace_phone_numbers(
         self,
         person_id: str,
@@ -612,6 +1589,39 @@ class ImportService:
                     "enthalten sein."
                 )
 
+    # ========================================================
+    # Hilfsmethoden
+    # ========================================================
+
+    @staticmethod
+    def _validate_columns(
+        fieldnames: list[str] | None,
+        required_columns: set[str],
+    ) -> None:
+        if fieldnames is None:
+            raise ValueError(
+                "Die CSV-Datei enthält "
+                "keine Kopfzeile."
+            )
+
+        missing_columns = (
+            required_columns
+            - set(fieldnames)
+        )
+
+        if missing_columns:
+            missing_text = ", ".join(
+                sorted(
+                    missing_columns
+                )
+            )
+
+            raise ValueError(
+                "In der CSV-Datei fehlen "
+                "Spalten:\n"
+                + missing_text
+            )
+
     @staticmethod
     def _parse_phone_list(
         value: str | None,
@@ -654,6 +1664,38 @@ class ImportService:
                 "Ungültiges Geburtsdatum: "
                 f"{value}. "
                 "Erwartet wird JJJJ-MM-TT."
+            ) from exc
+
+    @staticmethod
+    def _parse_course_day_date(
+        value: str,
+    ) -> date:
+        value = value.strip()
+
+        try:
+            return date.fromisoformat(
+                value
+            )
+        except ValueError:
+            pass
+
+        try:
+            day, month, year = value.split(".")
+
+            return date(
+                int(year),
+                int(month),
+                int(day),
+            )
+        except (
+            ValueError,
+            TypeError,
+        ) as exc:
+            raise ValueError(
+                "Ungültiges Datum: "
+                f"{value}. "
+                "Erwartet wird JJJJ-MM-TT "
+                "oder TT.MM.JJJJ."
             ) from exc
 
     @staticmethod

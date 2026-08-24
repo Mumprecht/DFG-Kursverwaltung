@@ -70,6 +70,11 @@ class CourseDayService:
             course_day_id
         )
 
+    def list_all_course_days(
+        self,
+    ) -> list[CourseDay]:
+        return self.repository.list_all()
+
     def list_course_days(
         self,
         course_id: str,

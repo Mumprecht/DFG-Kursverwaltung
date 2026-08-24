@@ -37,11 +37,17 @@ from dfg_kursverwaltung.repositories.suche_repository import (
 from dfg_kursverwaltung.repositories.telefonnummern_repository import (
     PhoneNumberRepository,
 )
+from dfg_kursverwaltung.services.backup_service import (
+    BackupService,
+)
 from dfg_kursverwaltung.services.drohnen_service import (
     DroneService,
 )
 from dfg_kursverwaltung.services.export_service import (
     ExportService,
+)
+from dfg_kursverwaltung.services.import_service import (
+    ImportService,
 )
 from dfg_kursverwaltung.services.kurstage_service import (
     CourseDayService,
@@ -172,6 +178,21 @@ def main():
     export_service = ExportService(
         person_service,
         phone_number_service,
+        location_service,
+        course_service,
+        course_day_service,
+    )
+
+    import_service = ImportService(
+        person_service,
+        phone_number_service,
+        location_service,
+        course_service,
+        course_day_service,
+    )
+
+    backup_service = BackupService(
+        database_manager
     )
 
     # ---------------------------------------------------------
@@ -205,7 +226,9 @@ def main():
         location_service,
         assignment_service,
         search_service,
+        import_service,
         export_service,
+        backup_service,
     )
 
     if icon_path.exists():

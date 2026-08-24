@@ -17,6 +17,12 @@ from dfg_kursverwaltung.core.i18n import (
 from dfg_kursverwaltung.gui.export_widget import (
     ExportWidget,
 )
+from dfg_kursverwaltung.gui.import_widget import (
+    ImportWidget,
+)
+from dfg_kursverwaltung.gui.kurstage_widget import (
+    KurstageWidget,
+)
 from dfg_kursverwaltung.gui.kurszuordnungen_widget import (
     KurszuordnungenWidget,
 )
@@ -26,17 +32,26 @@ from dfg_kursverwaltung.gui.lehrgaenge_widget import (
 from dfg_kursverwaltung.gui.personen_widget import (
     PersonenWidget,
 )
+from dfg_kursverwaltung.gui.sicherung_widget import (
+    SicherungWidget,
+)
 from dfg_kursverwaltung.gui.standorte_widget import (
     StandorteWidget,
 )
 from dfg_kursverwaltung.gui.suche_widget import (
     SucheWidget,
 )
+from dfg_kursverwaltung.services.backup_service import (
+    BackupService,
+)
 from dfg_kursverwaltung.services.drohnen_service import (
     DroneService,
 )
 from dfg_kursverwaltung.services.export_service import (
     ExportService,
+)
+from dfg_kursverwaltung.services.import_service import (
+    ImportService,
 )
 from dfg_kursverwaltung.services.kurstage_service import (
     CourseDayService,
@@ -73,7 +88,9 @@ class MainWindow(QMainWindow):
         location_service: LocationService,
         assignment_service: CourseAssignmentService,
         search_service: SearchService,
+        import_service: ImportService,
         export_service: ExportService,
+        backup_service: BackupService,
     ):
         super().__init__()
 
@@ -86,7 +103,9 @@ class MainWindow(QMainWindow):
         self.location_service = location_service
         self.assignment_service = assignment_service
         self.search_service = search_service
+        self.import_service = import_service
         self.export_service = export_service
+        self.backup_service = backup_service
 
         self.setWindowTitle(
             self.tr(
@@ -144,6 +163,16 @@ class MainWindow(QMainWindow):
             self.location_service,
         )
 
+        self.course_days_tab = KurstageWidget(
+            self.course_day_service,
+            self.course_service,
+            self.location_service,
+        )
+
+        self.course_days_tab.course_requested.connect(
+            self._open_course_from_search
+        )
+
         self.locations_tab = StandorteWidget(
             self.location_service
         )
@@ -172,10 +201,16 @@ class MainWindow(QMainWindow):
             self._open_location_from_search
         )
 
-        self.import_tab = QWidget()
+        self.import_tab = ImportWidget(
+            self.import_service
+        )
 
         self.export_tab = ExportWidget(
             self.export_service
+        )
+
+        self.backup_tab = SicherungWidget(
+            self.backup_service
         )
 
         self.tabs.addTab(
@@ -188,6 +223,11 @@ class MainWindow(QMainWindow):
             self.tr(
                 "Lehrgänge / Kurstage"
             ),
+        )
+
+        self.tabs.addTab(
+            self.course_days_tab,
+            self.tr("Kurstage"),
         )
 
         self.tabs.addTab(
@@ -217,6 +257,11 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(
             self.export_tab,
             self.tr("Export"),
+        )
+
+        self.tabs.addTab(
+            self.backup_tab,
+            self.tr("Sicherung"),
         )
 
         self.settings_tab = QWidget()
@@ -284,8 +329,8 @@ class MainWindow(QMainWindow):
             )
         )
 
-        self.language_group = (
-            QActionGroup(self)
+        self.language_group = QActionGroup(
+            self
         )
 
         self.language_group.setExclusive(
@@ -394,12 +439,10 @@ class MainWindow(QMainWindow):
         ):
             return
 
-        self.last_content_tab_index = (
-            index
-        )
+        self.last_content_tab_index = index
 
-        current_widget = (
-            self.tabs.widget(index)
+        current_widget = self.tabs.widget(
+            index
         )
 
         if current_widget is self.people_tab:
@@ -407,6 +450,9 @@ class MainWindow(QMainWindow):
 
         elif current_widget is self.courses_tab:
             self.courses_tab.load_courses()
+
+        elif current_widget is self.course_days_tab:
+            self.course_days_tab.load_course_days()
 
         elif current_widget is self.locations_tab:
             self.locations_tab.load_locations()
@@ -442,14 +488,10 @@ class MainWindow(QMainWindow):
         self._show_settings_menu()
 
     def _show_settings_menu(self):
-        tab_bar = (
-            self.tabs.tabBar()
-        )
+        tab_bar = self.tabs.tabBar()
 
-        tab_rect = (
-            tab_bar.tabRect(
-                self.settings_tab_index
-            )
+        tab_rect = tab_bar.tabRect(
+            self.settings_tab_index
         )
 
         menu_position = (
@@ -474,10 +516,7 @@ class MainWindow(QMainWindow):
             .get_saved_language()
         )
 
-        if (
-            language_code
-            == saved_language
-        ):
+        if language_code == saved_language:
             return
 
         TranslationManager.save_language(
