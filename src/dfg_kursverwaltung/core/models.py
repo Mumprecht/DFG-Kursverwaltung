@@ -46,6 +46,8 @@ class Person:
     organisation: str | None = None
 
     mitglied: bool = False
+    ist_teilnehmer: bool = False
+    ist_instruktor: bool = False
     aktiv: bool = True
 
     bemerkungen: str | None = None

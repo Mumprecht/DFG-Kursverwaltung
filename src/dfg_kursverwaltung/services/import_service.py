@@ -52,6 +52,8 @@ class PersonImportRow:
     organisation: str | None
 
     mitglied: bool
+    ist_teilnehmer: bool
+    ist_instruktor: bool
     aktiv: bool
 
     bemerkungen: str | None
@@ -260,6 +262,8 @@ class ImportService:
         "Ort",
         "Organisation",
         "Mitglied",
+        "Teilnehmer",
+        "Instruktor",
         "Aktiv",
         "Telefon Primär",
         "Telefon Mobil",
@@ -417,6 +421,12 @@ class ImportService:
                             row.organisation
                         ),
                         mitglied=row.mitglied,
+                        ist_teilnehmer=(
+                            row.ist_teilnehmer
+                        ),
+                        ist_instruktor=(
+                            row.ist_instruktor
+                        ),
                         bemerkungen=(
                             row.bemerkungen
                         ),
@@ -472,6 +482,12 @@ class ImportService:
                     row.organisation
                 )
                 person.mitglied = row.mitglied
+                person.ist_teilnehmer = (
+                    row.ist_teilnehmer
+                )
+                person.ist_instruktor = (
+                    row.ist_instruktor
+                )
                 person.bemerkungen = (
                     row.bemerkungen
                 )
@@ -1011,6 +1027,20 @@ class ImportService:
             "Mitglied",
         )
 
+        ist_teilnehmer = self._parse_bool(
+            csv_row.get(
+                "Teilnehmer"
+            ),
+            "Teilnehmer",
+        )
+
+        ist_instruktor = self._parse_bool(
+            csv_row.get(
+                "Instruktor"
+            ),
+            "Instruktor",
+        )
+
         aktiv = self._parse_bool(
             csv_row.get(
                 "Aktiv"
@@ -1104,6 +1134,8 @@ class ImportService:
                 )
             ),
             mitglied=mitglied,
+            ist_teilnehmer=ist_teilnehmer,
+            ist_instruktor=ist_instruktor,
             aktiv=aktiv,
             bemerkungen=self._clean_optional(
                 csv_row.get(

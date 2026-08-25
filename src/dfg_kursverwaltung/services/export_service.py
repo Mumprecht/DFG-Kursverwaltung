@@ -107,6 +107,16 @@ class ExportService:
                             if person.mitglied
                             else "Nein"
                         ),
+                        "Teilnehmer": (
+                            "Ja"
+                            if person.ist_teilnehmer
+                            else "Nein"
+                        ),
+                        "Instruktor": (
+                            "Ja"
+                            if person.ist_instruktor
+                            else "Nein"
+                        ),
                         "Aktiv": (
                             "Ja"
                             if person.aktiv
@@ -457,6 +467,8 @@ class ExportService:
             "Ort",
             "Organisation",
             "Mitglied",
+            "Teilnehmer",
+            "Instruktor",
             "Aktiv",
             "Telefon Primär",
             "Telefon Mobil",

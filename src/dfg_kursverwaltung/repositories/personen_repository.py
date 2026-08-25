@@ -31,13 +31,16 @@ class PersonRepository:
                     ort,
                     organisation,
                     mitglied,
+                    ist_teilnehmer,
+                    ist_instruktor,
                     aktiv,
                     bemerkungen,
                     created_at,
                     updated_at
                 )
                 VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?
                 );
                 """,
                 (
@@ -54,6 +57,8 @@ class PersonRepository:
                     person.ort,
                     person.organisation,
                     int(person.mitglied),
+                    int(person.ist_teilnehmer),
+                    int(person.ist_instruktor),
                     int(person.aktiv),
                     person.bemerkungen,
                     self._datetime_to_db(
@@ -195,6 +200,8 @@ class PersonRepository:
                     ort = ?,
                     organisation = ?,
                     mitglied = ?,
+                    ist_teilnehmer = ?,
+                    ist_instruktor = ?,
                     aktiv = ?,
                     bemerkungen = ?,
                     updated_at = ?
@@ -213,6 +220,8 @@ class PersonRepository:
                     person.ort,
                     person.organisation,
                     int(person.mitglied),
+                    int(person.ist_teilnehmer),
+                    int(person.ist_instruktor),
                     int(person.aktiv),
                     person.bemerkungen,
                     self._datetime_to_db(
@@ -306,6 +315,12 @@ class PersonRepository:
             organisation=row["organisation"],
             mitglied=bool(
                 row["mitglied"]
+            ),
+            ist_teilnehmer=bool(
+                row["ist_teilnehmer"]
+            ),
+            ist_instruktor=bool(
+                row["ist_instruktor"]
             ),
             aktiv=bool(
                 row["aktiv"]

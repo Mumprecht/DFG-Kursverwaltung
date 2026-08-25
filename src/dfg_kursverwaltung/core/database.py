@@ -4,7 +4,7 @@ from pathlib import Path
 import sqlite3
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 
 class DatabaseManager:
@@ -16,11 +16,15 @@ class DatabaseManager:
             Path(__file__).resolve().parents[3]
         )
 
-        self.data_dir = self.project_root / "data"
+        self.data_dir = (
+            self.project_root
+            / "data"
+        )
 
         if database_path is None:
             self.database_path = (
-                self.data_dir / "DFG-Kursverwaltung.db"
+                self.data_dir
+                / "DFG-Kursverwaltung.db"
             )
         else:
             self.database_path = Path(
@@ -46,7 +50,9 @@ class DatabaseManager:
             self.database_path
         )
 
-        connection.row_factory = sqlite3.Row
+        connection.row_factory = (
+            sqlite3.Row
+        )
 
         connection.execute(
             "PRAGMA foreign_keys = ON;"
@@ -62,21 +68,54 @@ class DatabaseManager:
         finally:
             connection.close()
 
-    def initialize_database(self) -> None:
+    def initialize_database(
+        self,
+    ) -> None:
         if not self.schema_path.exists():
             raise FileNotFoundError(
-                f"Schema-Datei nicht gefunden: "
+                "Schema-Datei nicht gefunden: "
                 f"{self.schema_path}"
             )
 
-        schema_sql = self.schema_path.read_text(
-            encoding="utf-8"
+        schema_sql = (
+            self.schema_path.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        database_exists = (
+            self.database_path.exists()
         )
 
         with self.connect() as connection:
-            connection.executescript(
-                schema_sql
-            )
+            # -------------------------------------------------
+            # Neue Datenbank
+            # -------------------------------------------------
+
+            if not database_exists:
+                connection.executescript(
+                    schema_sql
+                )
+
+                connection.execute(
+                    """
+                    INSERT INTO schema_info (
+                        version
+                    )
+                    VALUES (?);
+                    """,
+                    (
+                        SCHEMA_VERSION,
+                    ),
+                )
+
+                connection.commit()
+
+                return
+
+            # -------------------------------------------------
+            # Bestehende Datenbank
+            # -------------------------------------------------
 
             current_version = (
                 self._get_schema_version(
@@ -85,37 +124,157 @@ class DatabaseManager:
             )
 
             if current_version is None:
-                connection.execute(
-                    """
-                    INSERT INTO schema_info (version)
-                    VALUES (?);
-                    """,
-                    (SCHEMA_VERSION,),
+                raise RuntimeError(
+                    "Die bestehende Datenbank "
+                    "enthält keine gültige "
+                    "Schema-Version."
                 )
 
-            elif current_version != SCHEMA_VERSION:
+            if (
+                current_version
+                > SCHEMA_VERSION
+            ):
+                raise RuntimeError(
+                    "Die Datenbank verwendet "
+                    "eine neuere Schema-Version "
+                    "als diese Programmversion: "
+                    f"{current_version}. "
+                    "Unterstützt wird "
+                    f"{SCHEMA_VERSION}."
+                )
+
+            # -------------------------------------------------
+            # Migrationen zuerst ausführen
+            # -------------------------------------------------
+
+            current_version = (
+                self._migrate_database(
+                    connection,
+                    current_version,
+                )
+            )
+
+            if (
+                current_version
+                != SCHEMA_VERSION
+            ):
                 raise RuntimeError(
                     "Nicht unterstützte "
                     "Datenbankschema-Version: "
                     f"{current_version}. "
-                    f"Erwartet: {SCHEMA_VERSION}."
+                    "Erwartet: "
+                    f"{SCHEMA_VERSION}."
                 )
 
+            # -------------------------------------------------
+            # Danach aktuelles Schema anwenden
+            #
+            # CREATE TABLE/INDEX IF NOT EXISTS sorgt dafür,
+            # dass auch neue Indizes etc. ergänzt werden.
+            # -------------------------------------------------
+
+            connection.executescript(
+                schema_sql
+            )
+
             connection.commit()
+
+    def _migrate_database(
+        self,
+        connection: sqlite3.Connection,
+        current_version: int,
+    ) -> int:
+        if current_version == 3:
+            self._migrate_3_to_4(
+                connection
+            )
+
+            current_version = 4
+
+        return current_version
+
+    @staticmethod
+    def _migrate_3_to_4(
+        connection: sqlite3.Connection,
+    ) -> None:
+        columns = {
+            row["name"]
+            for row in connection.execute(
+                """
+                PRAGMA table_info(personen);
+                """
+            ).fetchall()
+        }
+
+        if (
+            "ist_teilnehmer"
+            not in columns
+        ):
+            connection.execute(
+                """
+                ALTER TABLE personen
+                ADD COLUMN ist_teilnehmer
+                    INTEGER NOT NULL
+                    DEFAULT 0
+                    CHECK (
+                        ist_teilnehmer
+                        IN (0, 1)
+                    );
+                """
+            )
+
+        if (
+            "ist_instruktor"
+            not in columns
+        ):
+            connection.execute(
+                """
+                ALTER TABLE personen
+                ADD COLUMN ist_instruktor
+                    INTEGER NOT NULL
+                    DEFAULT 0
+                    CHECK (
+                        ist_instruktor
+                        IN (0, 1)
+                    );
+                """
+            )
+
+        connection.execute(
+            """
+            UPDATE schema_info
+            SET version = 4;
+            """
+        )
 
     @staticmethod
     def _get_schema_version(
         connection: sqlite3.Connection,
     ) -> int | None:
-        cursor = connection.execute(
-            """
-            SELECT version
-            FROM schema_info
-            LIMIT 1;
-            """
+        table_exists = (
+            connection.execute(
+                """
+                SELECT name
+                FROM sqlite_master
+                WHERE
+                    type = 'table'
+                    AND name = 'schema_info';
+                """
+            ).fetchone()
         )
 
-        row = cursor.fetchone()
+        if table_exists is None:
+            return None
+
+        row = (
+            connection.execute(
+                """
+                SELECT version
+                FROM schema_info
+                LIMIT 1;
+                """
+            ).fetchone()
+        )
 
         if row is None:
             return None

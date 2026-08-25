@@ -4,7 +4,7 @@ PRAGMA foreign_keys = ON;
 -- ============================================================
 -- DFG-Kursverwaltung
 -- SQLite-Datenbankschema
--- Schema-Version: 3
+-- Schema-Version: 4
 -- ============================================================
 
 
@@ -39,6 +39,8 @@ CREATE TABLE IF NOT EXISTS personen (
     organisation TEXT,
 
     mitglied INTEGER NOT NULL DEFAULT 0,
+    ist_teilnehmer INTEGER NOT NULL DEFAULT 0,
+    ist_instruktor INTEGER NOT NULL DEFAULT 0,
     aktiv INTEGER NOT NULL DEFAULT 1,
 
     bemerkungen TEXT,
@@ -47,6 +49,8 @@ CREATE TABLE IF NOT EXISTS personen (
     updated_at TEXT NOT NULL,
 
     CHECK (mitglied IN (0, 1)),
+    CHECK (ist_teilnehmer IN (0, 1)),
+    CHECK (ist_instruktor IN (0, 1)),
     CHECK (aktiv IN (0, 1))
 );
 
@@ -312,6 +316,21 @@ ON personen(nachname, vorname);
 CREATE INDEX IF NOT EXISTS
     idx_personen_ort
 ON personen(ort);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_personen_mitglied
+ON personen(mitglied);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_personen_teilnehmer
+ON personen(ist_teilnehmer);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_personen_instruktor
+ON personen(ist_instruktor);
 
 
 CREATE INDEX IF NOT EXISTS

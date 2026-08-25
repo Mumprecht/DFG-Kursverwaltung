@@ -30,7 +30,7 @@ class PersonDialog(QDialog):
         self.person = person
 
         self.setModal(True)
-        self.resize(600, 620)
+        self.resize(600, 680)
 
         self._create_ui()
 
@@ -148,8 +148,47 @@ class PersonDialog(QDialog):
 
         self.organisation_edit = QLineEdit()
 
+        # -----------------------------------------------------
+        # Status / Funktion
+        # -----------------------------------------------------
+
         self.member_checkbox = QCheckBox(
-            self.tr("Person ist Mitglied der DFG Pfannenstiel")
+            self.tr(
+                "Person ist Mitglied der DFG Pfannenstiel"
+            )
+        )
+
+        self.participant_checkbox = QCheckBox(
+            self.tr(
+                "Person ist Teilnehmer"
+            )
+        )
+
+        self.instructor_checkbox = QCheckBox(
+            self.tr(
+                "Person ist Instruktor"
+            )
+        )
+
+        status_widget = QWidget()
+        status_layout = QVBoxLayout(
+            status_widget
+        )
+        status_layout.setContentsMargins(
+            0,
+            0,
+            0,
+            0,
+        )
+
+        status_layout.addWidget(
+            self.member_checkbox
+        )
+        status_layout.addWidget(
+            self.participant_checkbox
+        )
+        status_layout.addWidget(
+            self.instructor_checkbox
         )
 
         self.notes_edit = QTextEdit()
@@ -223,8 +262,8 @@ class PersonDialog(QDialog):
         )
 
         form.addRow(
-            self.tr("DFG-Mitglied:"),
-            self.member_checkbox,
+            self.tr("Status / Funktion:"),
+            status_widget,
         )
 
         form.addRow(
@@ -322,6 +361,14 @@ class PersonDialog(QDialog):
 
         self.member_checkbox.setChecked(
             self.person.mitglied
+        )
+
+        self.participant_checkbox.setChecked(
+            self.person.ist_teilnehmer
+        )
+
+        self.instructor_checkbox.setChecked(
+            self.person.ist_instruktor
         )
 
         self.notes_edit.setPlainText(
@@ -426,6 +473,12 @@ class PersonDialog(QDialog):
             ),
             "mitglied": (
                 self.member_checkbox.isChecked()
+            ),
+            "ist_teilnehmer": (
+                self.participant_checkbox.isChecked()
+            ),
+            "ist_instruktor": (
+                self.instructor_checkbox.isChecked()
             ),
             "bemerkungen": self._optional_text(
                 self.notes_edit.toPlainText()

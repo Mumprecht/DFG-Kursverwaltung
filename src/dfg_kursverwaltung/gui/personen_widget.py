@@ -237,6 +237,8 @@ class PersonenWidget(QWidget):
         self.location_value = QLabel("-")
         self.organisation_value = QLabel("-")
         self.member_value = QLabel("-")
+        self.participant_value = QLabel("-")
+        self.instructor_value = QLabel("-")
         self.active_value = QLabel("-")
 
         form.addRow(
@@ -274,6 +276,16 @@ class PersonenWidget(QWidget):
         form.addRow(
             self.tr("DFG-Mitglied:"),
             self.member_value,
+        )
+
+        form.addRow(
+            self.tr("Teilnehmer:"),
+            self.participant_value,
+        )
+
+        form.addRow(
+            self.tr("Instruktor:"),
+            self.instructor_value,
         )
 
         form.addRow(
@@ -685,6 +697,18 @@ class PersonenWidget(QWidget):
         self.member_value.setText(
             self.tr("Ja")
             if person.mitglied
+            else self.tr("Nein")
+        )
+
+        self.participant_value.setText(
+            self.tr("Ja")
+            if person.ist_teilnehmer
+            else self.tr("Nein")
+        )
+
+        self.instructor_value.setText(
+            self.tr("Ja")
+            if person.ist_instruktor
             else self.tr("Nein")
         )
 
@@ -1401,6 +1425,8 @@ class PersonenWidget(QWidget):
         self.location_value.setText("-")
         self.organisation_value.setText("-")
         self.member_value.setText("-")
+        self.participant_value.setText("-")
+        self.instructor_value.setText("-")
         self.active_value.setText("-")
 
         self.notes_value.clear()
@@ -1529,6 +1555,12 @@ class PersonenWidget(QWidget):
             "organisation"
         ]
         person.mitglied = data["mitglied"]
+        person.ist_teilnehmer = data[
+            "ist_teilnehmer"
+        ]
+        person.ist_instruktor = data[
+            "ist_instruktor"
+        ]
         person.bemerkungen = data[
             "bemerkungen"
         ]

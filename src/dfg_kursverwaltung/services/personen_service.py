@@ -27,6 +27,8 @@ class PersonService:
         ort: str | None = None,
         organisation: str | None = None,
         mitglied: bool = False,
+        ist_teilnehmer: bool = False,
+        ist_instruktor: bool = False,
         bemerkungen: str | None = None,
     ) -> Person:
         nachname = nachname.strip()
@@ -79,6 +81,8 @@ class PersonService:
                 organisation
             ),
             mitglied=mitglied,
+            ist_teilnehmer=ist_teilnehmer,
+            ist_instruktor=ist_instruktor,
             aktiv=True,
             bemerkungen=self._clean_optional(
                 bemerkungen
@@ -128,8 +132,12 @@ class PersonService:
         self,
         person: Person,
     ) -> Person:
-        person.nachname = person.nachname.strip()
-        person.vorname = person.vorname.strip()
+        person.nachname = (
+            person.nachname.strip()
+        )
+        person.vorname = (
+            person.vorname.strip()
+        )
 
         if not person.nachname:
             raise ValueError(
