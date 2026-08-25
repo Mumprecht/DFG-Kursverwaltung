@@ -131,6 +131,30 @@ class PersonenWidget(QWidget):
             self._search_changed
         )
 
+        self.member_filter_checkbox = QCheckBox(
+            self.tr("DFG-Mitglied")
+        )
+
+        self.participant_filter_checkbox = QCheckBox(
+            self.tr("Teilnehmer")
+        )
+
+        self.instructor_filter_checkbox = QCheckBox(
+            self.tr("Instruktor")
+        )
+
+        self.member_filter_checkbox.toggled.connect(
+            self.load_persons
+        )
+
+        self.participant_filter_checkbox.toggled.connect(
+            self.load_persons
+        )
+
+        self.instructor_filter_checkbox.toggled.connect(
+            self.load_persons
+        )
+
         self.person_list = QListWidget()
 
         self.person_list.currentItemChanged.connect(
@@ -187,6 +211,34 @@ class PersonenWidget(QWidget):
 
         layout.addWidget(
             self.search_edit
+        )
+
+        filter_label = QLabel(
+            self.tr("Filter:")
+        )
+
+        layout.addWidget(
+            filter_label
+        )
+
+        filter_layout = QHBoxLayout()
+
+        filter_layout.addWidget(
+            self.member_filter_checkbox
+        )
+
+        filter_layout.addWidget(
+            self.participant_filter_checkbox
+        )
+
+        filter_layout.addWidget(
+            self.instructor_filter_checkbox
+        )
+
+        filter_layout.addStretch()
+
+        layout.addLayout(
+            filter_layout
         )
 
         layout.addWidget(
@@ -520,6 +572,27 @@ class PersonenWidget(QWidget):
                     include_inactive=include_inactive,
                 )
             )
+
+        if self.member_filter_checkbox.isChecked():
+            persons = [
+                person
+                for person in persons
+                if person.mitglied
+            ]
+
+        if self.participant_filter_checkbox.isChecked():
+            persons = [
+                person
+                for person in persons
+                if person.ist_teilnehmer
+            ]
+
+        if self.instructor_filter_checkbox.isChecked():
+            persons = [
+                person
+                for person in persons
+                if person.ist_instruktor
+            ]
 
         selected_id = self.current_person_id
 
