@@ -29,6 +29,9 @@ from dfg_kursverwaltung.gui.kurszuordnungen_widget import (
 from dfg_kursverwaltung.gui.lehrgaenge_widget import (
     LehrgaengeWidget,
 )
+from dfg_kursverwaltung.gui.lehrgangstypen_widget import (
+    LehrgangstypenWidget,
+)
 from dfg_kursverwaltung.gui.personen_widget import (
     PersonenWidget,
 )
@@ -62,6 +65,9 @@ from dfg_kursverwaltung.services.kurszuordnungen_service import (
 from dfg_kursverwaltung.services.lehrgaenge_service import (
     CourseService,
 )
+from dfg_kursverwaltung.services.lehrgangstypen_service import (
+    CourseTypeService,
+)
 from dfg_kursverwaltung.services.personen_service import (
     PersonService,
 )
@@ -84,6 +90,7 @@ class MainWindow(QMainWindow):
         phone_number_service: PhoneNumberService,
         drone_service: DroneService,
         course_service: CourseService,
+        course_type_service: CourseTypeService,
         course_day_service: CourseDayService,
         location_service: LocationService,
         assignment_service: CourseAssignmentService,
@@ -99,6 +106,7 @@ class MainWindow(QMainWindow):
         self.phone_number_service = phone_number_service
         self.drone_service = drone_service
         self.course_service = course_service
+        self.course_type_service = course_type_service
         self.course_day_service = course_day_service
         self.location_service = location_service
         self.assignment_service = assignment_service
@@ -159,13 +167,19 @@ class MainWindow(QMainWindow):
 
         self.courses_tab = LehrgaengeWidget(
             self.course_service,
+            self.course_type_service,
             self.course_day_service,
             self.location_service,
+        )
+
+        self.course_types_tab = LehrgangstypenWidget(
+            self.course_type_service
         )
 
         self.course_days_tab = KurstageWidget(
             self.course_day_service,
             self.course_service,
+            self.course_type_service,
             self.location_service,
         )
 
@@ -223,6 +237,11 @@ class MainWindow(QMainWindow):
             self.tr(
                 "Lehrgänge / Kurstage"
             ),
+        )
+
+        self.tabs.addTab(
+            self.course_types_tab,
+            self.tr("Lehrgangstypen"),
         )
 
         self.tabs.addTab(

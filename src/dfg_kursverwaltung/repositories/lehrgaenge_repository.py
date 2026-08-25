@@ -2,10 +2,7 @@ from datetime import datetime
 import sqlite3
 
 from dfg_kursverwaltung.core.database import DatabaseManager
-from dfg_kursverwaltung.core.models import (
-    Course,
-    CourseType,
-)
+from dfg_kursverwaltung.core.models import Course
 
 
 class CourseRepository:
@@ -24,7 +21,7 @@ class CourseRepository:
                 """
                 INSERT INTO lehrgaenge (
                     id,
-                    typ,
+                    lehrgangstyp_id,
                     bezeichnung,
                     beschreibung,
                     bemerkungen,
@@ -35,21 +32,15 @@ class CourseRepository:
                 """,
                 (
                     course.id,
-                    course.typ.value,
+                    course.lehrgangstyp_id,
                     course.bezeichnung,
                     course.beschreibung,
                     course.bemerkungen,
-                    self._datetime_to_db(
-                        course.created_at
-                    ),
-                    self._datetime_to_db(
-                        course.updated_at
-                    ),
+                    self._datetime_to_db(course.created_at),
+                    self._datetime_to_db(course.updated_at),
                 ),
             )
-
             connection.commit()
-
         return course
 
     def get_by_id(
@@ -71,55 +62,55 @@ class CourseRepository:
 
         return self._row_to_course(row)
 
-    def list_all(self) -> list[Course]:
+    def list_all(
+        self,
+    ) -> list[Course]:
         with self.database_manager.connect() as connection:
             rows = connection.execute(
                 """
-                SELECT *
-                FROM lehrgaenge
+                SELECT l.*
+                FROM lehrgaenge AS l
+                JOIN lehrgangstypen AS t
+                    ON t.id = l.lehrgangstyp_id
                 ORDER BY
-                    bezeichnung COLLATE NOCASE,
-                    typ;
+                    t.bezeichnung COLLATE NOCASE,
+                    l.bezeichnung COLLATE NOCASE;
                 """
             ).fetchall()
 
-        return [
-            self._row_to_course(row)
-            for row in rows
-        ]
+        return [self._row_to_course(row) for row in rows]
 
     def search(
         self,
         search_text: str,
     ) -> list[Course]:
-        search_value = (
-            f"%{search_text.strip()}%"
-        )
+        search_value = f"%{search_text.strip()}%"
 
         with self.database_manager.connect() as connection:
             rows = connection.execute(
                 """
-                SELECT *
-                FROM lehrgaenge
+                SELECT l.*
+                FROM lehrgaenge AS l
+                JOIN lehrgangstypen AS t
+                    ON t.id = l.lehrgangstyp_id
                 WHERE
-                    bezeichnung LIKE ?
-                    OR beschreibung LIKE ?
-                    OR bemerkungen LIKE ?
+                    l.bezeichnung LIKE ?
+                    OR l.beschreibung LIKE ?
+                    OR l.bemerkungen LIKE ?
+                    OR t.bezeichnung LIKE ?
                 ORDER BY
-                    bezeichnung COLLATE NOCASE,
-                    typ;
+                    t.bezeichnung COLLATE NOCASE,
+                    l.bezeichnung COLLATE NOCASE;
                 """,
                 (
+                    search_value,
                     search_value,
                     search_value,
                     search_value,
                 ),
             ).fetchall()
 
-        return [
-            self._row_to_course(row)
-            for row in rows
-        ]
+        return [self._row_to_course(row) for row in rows]
 
     def update(
         self,
@@ -130,7 +121,7 @@ class CourseRepository:
                 """
                 UPDATE lehrgaenge
                 SET
-                    typ = ?,
+                    lehrgangstyp_id = ?,
                     bezeichnung = ?,
                     beschreibung = ?,
                     bemerkungen = ?,
@@ -138,13 +129,11 @@ class CourseRepository:
                 WHERE id = ?;
                 """,
                 (
-                    course.typ.value,
+                    course.lehrgangstyp_id,
                     course.bezeichnung,
                     course.beschreibung,
                     course.bemerkungen,
-                    self._datetime_to_db(
-                        course.updated_at
-                    ),
+                    self._datetime_to_db(course.updated_at),
                     course.id,
                 ),
             )
@@ -165,23 +154,17 @@ class CourseRepository:
     ) -> Course:
         return Course(
             id=row["id"],
-            typ=CourseType(
-                row["typ"]
-            ),
+            lehrgangstyp_id=row["lehrgangstyp_id"],
             bezeichnung=row["bezeichnung"],
             beschreibung=row["beschreibung"],
             bemerkungen=row["bemerkungen"],
             created_at=(
-                datetime.fromisoformat(
-                    row["created_at"]
-                )
+                datetime.fromisoformat(row["created_at"])
                 if row["created_at"]
                 else None
             ),
             updated_at=(
-                datetime.fromisoformat(
-                    row["updated_at"]
-                )
+                datetime.fromisoformat(row["updated_at"])
                 if row["updated_at"]
                 else None
             ),

@@ -14,6 +14,7 @@ class BackupService:
         "kurstage",
         "kurszuordnungen",
         "lehrgaenge",
+        "lehrgangstypen",
         "personen",
         "pruefungsergebnisse",
         "schema_info",
@@ -328,6 +329,28 @@ class BackupService:
             self._validate_required_tables(
                 connection
             )
+
+            foreign_key_errors = (
+                connection.execute(
+                    "PRAGMA foreign_key_check;"
+                ).fetchall()
+            )
+
+            if foreign_key_errors:
+                error_text = "; ".join(
+                    " | ".join(
+                        str(value)
+                        for value in row
+                    )
+                    for row in foreign_key_errors
+                )
+
+                raise ValueError(
+                    "Die Fremdschlüsselprüfung "
+                    "der Sicherungsdatei ist "
+                    "fehlgeschlagen: "
+                    f"{error_text}"
+                )
 
             return schema_version
 

@@ -19,7 +19,6 @@ from PySide6.QtWidgets import (
 from dfg_kursverwaltung.core.models import (
     Course,
     CourseDay,
-    CourseType,
 )
 from dfg_kursverwaltung.gui.kurstag_dialog import (
     KurstagDialog,
@@ -33,6 +32,9 @@ from dfg_kursverwaltung.services.kurstage_service import (
 from dfg_kursverwaltung.services.lehrgaenge_service import (
     CourseService,
 )
+from dfg_kursverwaltung.services.lehrgangstypen_service import (
+    CourseTypeService,
+)
 from dfg_kursverwaltung.services.standorte_service import (
     LocationService,
 )
@@ -42,6 +44,7 @@ class LehrgaengeWidget(QWidget):
     def __init__(
         self,
         course_service: CourseService,
+        course_type_service: CourseTypeService,
         course_day_service: CourseDayService,
         location_service: LocationService,
         parent: QWidget | None = None,
@@ -49,6 +52,7 @@ class LehrgaengeWidget(QWidget):
         super().__init__(parent)
 
         self.course_service = course_service
+        self.course_type_service = course_type_service
         self.course_day_service = course_day_service
         self.location_service = location_service
 
@@ -409,7 +413,7 @@ class LehrgaengeWidget(QWidget):
     ):
         self.type_value.setText(
             self._course_type_text(
-                course.typ
+                course.lehrgangstyp_id
             )
         )
 
@@ -539,7 +543,10 @@ class LehrgaengeWidget(QWidget):
 
     def _new_course(self):
         dialog = LehrgangDialog(
-            parent=self
+            course_type_service=(
+                self.course_type_service
+            ),
+            parent=self,
         )
 
         if (
@@ -589,6 +596,9 @@ class LehrgaengeWidget(QWidget):
             return
 
         dialog = LehrgangDialog(
+            course_type_service=(
+                self.course_type_service
+            ),
             course=course,
             parent=self,
         )
@@ -601,7 +611,9 @@ class LehrgaengeWidget(QWidget):
 
         data = dialog.get_data()
 
-        course.typ = data["typ"]
+        course.lehrgangstyp_id = data[
+            "lehrgangstyp_id"
+        ]
         course.bezeichnung = data[
             "bezeichnung"
         ]
@@ -806,23 +818,20 @@ class LehrgaengeWidget(QWidget):
 
     def _course_type_text(
         self,
-        course_type: CourseType,
+        course_type_id: str,
     ) -> str:
-        if (
-            course_type
-            == CourseType.INTRODUCTORY_DAY
-        ):
+        course_type = (
+            self.course_type_service.get_course_type(
+                course_type_id
+            )
+        )
+
+        if course_type is None:
             return self.tr(
-                "Einführungstag"
+                "Unbekannter Lehrgangstyp"
             )
 
-        if course_type == CourseType.COURSE:
-            return self.tr("Kurs")
-
-        if course_type == CourseType.EXAM:
-            return self.tr("Prüfung")
-
-        return course_type.value
+        return course_type.bezeichnung
 
     def _course_list_text(
         self,
@@ -830,7 +839,7 @@ class LehrgaengeWidget(QWidget):
     ) -> str:
         return (
             f"{course.bezeichnung} "
-            f"({self._course_type_text(course.typ)})"
+            f"({self._course_type_text(course.lehrgangstyp_id)})"
         )
 
     def _course_day_list_text(

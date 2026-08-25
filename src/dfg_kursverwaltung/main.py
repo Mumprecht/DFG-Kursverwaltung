@@ -25,6 +25,9 @@ from dfg_kursverwaltung.repositories.kurszuordnungen_repository import (
 from dfg_kursverwaltung.repositories.lehrgaenge_repository import (
     CourseRepository,
 )
+from dfg_kursverwaltung.repositories.lehrgangstypen_repository import (
+    CourseTypeRepository,
+)
 from dfg_kursverwaltung.repositories.personen_repository import (
     PersonRepository,
 )
@@ -57,6 +60,9 @@ from dfg_kursverwaltung.services.kurszuordnungen_service import (
 )
 from dfg_kursverwaltung.services.lehrgaenge_service import (
     CourseService,
+)
+from dfg_kursverwaltung.services.lehrgangstypen_service import (
+    CourseTypeService,
 )
 from dfg_kursverwaltung.services.personen_service import (
     PersonService,
@@ -119,6 +125,10 @@ def main():
         database_manager
     )
 
+    course_type_repository = CourseTypeRepository(
+        database_manager
+    )
+
     course_repository = CourseRepository(
         database_manager
     )
@@ -155,8 +165,13 @@ def main():
         drone_repository
     )
 
+    course_type_service = CourseTypeService(
+        course_type_repository
+    )
+
     course_service = CourseService(
-        course_repository
+        course_repository,
+        course_type_repository,
     )
 
     course_day_service = CourseDayService(
@@ -180,6 +195,7 @@ def main():
         phone_number_service,
         location_service,
         course_service,
+        course_type_service,
         course_day_service,
     )
 
@@ -188,6 +204,7 @@ def main():
         phone_number_service,
         location_service,
         course_service,
+        course_type_service,
         course_day_service,
     )
 
@@ -222,6 +239,7 @@ def main():
         phone_number_service,
         drone_service,
         course_service,
+        course_type_service,
         course_day_service,
         location_service,
         assignment_service,

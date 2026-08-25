@@ -10,12 +10,6 @@ class PhoneNumberType(StrEnum):
     OTHER = "other"
 
 
-class CourseType(StrEnum):
-    INTRODUCTORY_DAY = "introductory_day"
-    COURSE = "course"
-    EXAM = "exam"
-
-
 class CourseAssignmentRole(StrEnum):
     PARTICIPANT = "participant"
     INSTRUCTOR = "instructor"
@@ -103,10 +97,23 @@ class Drone:
 
 
 @dataclass(slots=True)
+class CourseType:
+    id: str
+
+    bezeichnung: str
+
+    aktiv: bool = True
+    bemerkungen: str | None = None
+
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+@dataclass(slots=True)
 class Course:
     id: str
 
-    typ: CourseType
+    lehrgangstyp_id: str
     bezeichnung: str
 
     beschreibung: str | None = None

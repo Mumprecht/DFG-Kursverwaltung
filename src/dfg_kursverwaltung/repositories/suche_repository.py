@@ -267,18 +267,22 @@ class SearchRepository:
             rows = connection.execute(
                 """
                 SELECT
-                    id,
-                    typ,
-                    bezeichnung
-                FROM lehrgaenge
+                    l.id,
+                    l.bezeichnung,
+                    t.bezeichnung AS lehrgangstyp
+                FROM lehrgaenge AS l
+                JOIN lehrgangstypen AS t
+                    ON t.id = l.lehrgangstyp_id
                 WHERE
-                    bezeichnung LIKE ?
-                    OR beschreibung LIKE ?
-                    OR bemerkungen LIKE ?
+                    l.bezeichnung LIKE ?
+                    OR l.beschreibung LIKE ?
+                    OR l.bemerkungen LIKE ?
+                    OR t.bezeichnung LIKE ?
                 ORDER BY
-                    bezeichnung COLLATE NOCASE;
+                    l.bezeichnung COLLATE NOCASE;
                 """,
                 (
+                    search_value,
                     search_value,
                     search_value,
                     search_value,
@@ -290,7 +294,7 @@ class SearchRepository:
                 typ="lehrgang",
                 id=row["id"],
                 titel=row["bezeichnung"],
-                details=row["typ"],
+                details=row["lehrgangstyp"],
             )
             for row in rows
         ]

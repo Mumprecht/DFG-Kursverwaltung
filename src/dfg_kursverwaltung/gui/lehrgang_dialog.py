@@ -11,20 +11,22 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from dfg_kursverwaltung.core.models import (
-    Course,
-    CourseType,
+from dfg_kursverwaltung.core.models import Course
+from dfg_kursverwaltung.services.lehrgangstypen_service import (
+    CourseTypeService,
 )
 
 
 class LehrgangDialog(QDialog):
     def __init__(
         self,
+        course_type_service: CourseTypeService,
         course: Course | None = None,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
 
+        self.course_type_service = course_type_service
         self.course = course
 
         self.setModal(True)
@@ -64,20 +66,7 @@ class LehrgangDialog(QDialog):
 
         self.type_combo = QComboBox()
 
-        self.type_combo.addItem(
-            self.tr("Einführungstag"),
-            CourseType.INTRODUCTORY_DAY.value,
-        )
-
-        self.type_combo.addItem(
-            self.tr("Kurs"),
-            CourseType.COURSE.value,
-        )
-
-        self.type_combo.addItem(
-            self.tr("Prüfung"),
-            CourseType.EXAM.value,
-        )
+        self._load_course_types()
 
         self.name_edit = QLineEdit()
 
@@ -152,12 +141,47 @@ class LehrgangDialog(QDialog):
 
         self.name_edit.setFocus()
 
+    def _load_course_types(self):
+        self.type_combo.clear()
+
+        course_types = (
+            self.course_type_service.list_course_types(
+                include_inactive=False
+            )
+        )
+
+        for course_type in course_types:
+            self.type_combo.addItem(
+                course_type.bezeichnung,
+                course_type.id,
+            )
+
+        # Beim Bearbeiten kann ein inzwischen deaktivierter
+        # Lehrgangstyp weiterhin am bestehenden Lehrgang hängen.
+        if self.course is not None:
+            current_type = (
+                self.course_type_service.get_course_type(
+                    self.course.lehrgangstyp_id
+                )
+            )
+
+            if (
+                current_type is not None
+                and self.type_combo.findData(
+                    current_type.id
+                ) < 0
+            ):
+                self.type_combo.addItem(
+                    current_type.bezeichnung,
+                    current_type.id,
+                )
+
     def _load_course(self):
         if self.course is None:
             return
 
         type_index = self.type_combo.findData(
-            self.course.typ.value
+            self.course.lehrgangstyp_id
         )
 
         if type_index >= 0:
@@ -178,6 +202,22 @@ class LehrgangDialog(QDialog):
         )
 
     def _validate_and_accept(self):
+        course_type_id = (
+            self.type_combo.currentData()
+        )
+
+        if not course_type_id:
+            QMessageBox.warning(
+                self,
+                self.tr("Eingabe fehlt"),
+                self.tr(
+                    "Bitte wählen Sie einen Lehrgangstyp aus."
+                ),
+            )
+
+            self.type_combo.setFocus()
+            return
+
         name = self.name_edit.text().strip()
 
         if not name:
@@ -195,11 +235,9 @@ class LehrgangDialog(QDialog):
         self.accept()
 
     def get_data(self) -> dict:
-        type_value = self.type_combo.currentData()
-
         return {
-            "typ": CourseType(
-                type_value
+            "lehrgangstyp_id": (
+                self.type_combo.currentData()
             ),
             "bezeichnung": (
                 self.name_edit.text().strip()

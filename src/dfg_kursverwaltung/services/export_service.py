@@ -10,6 +10,9 @@ from dfg_kursverwaltung.services.kurstage_service import (
 from dfg_kursverwaltung.services.lehrgaenge_service import (
     CourseService,
 )
+from dfg_kursverwaltung.services.lehrgangstypen_service import (
+    CourseTypeService,
+)
 from dfg_kursverwaltung.services.personen_service import (
     PersonService,
 )
@@ -28,12 +31,14 @@ class ExportService:
         phone_number_service: PhoneNumberService,
         location_service: LocationService,
         course_service: CourseService,
+        course_type_service: CourseTypeService,
         course_day_service: CourseDayService,
     ):
         self.person_service = person_service
         self.phone_number_service = phone_number_service
         self.location_service = location_service
         self.course_service = course_service
+        self.course_type_service = course_type_service
         self.course_day_service = course_day_service
 
     # =========================================================
@@ -265,7 +270,11 @@ class ExportService:
                 writer.writerow(
                     {
                         "ID": course.id,
-                        "Typ": course.typ.value,
+                        "Typ": (
+                            self._course_type_name(
+                                course.lehrgangstyp_id
+                            )
+                        ),
                         "Bezeichnung": (
                             course.bezeichnung
                         ),
@@ -279,6 +288,21 @@ class ExportService:
                 )
 
         return len(courses)
+
+    def _course_type_name(
+        self,
+        course_type_id: str,
+    ) -> str:
+        course_type = (
+            self.course_type_service.get_course_type(
+                course_type_id
+            )
+        )
+
+        if course_type is None:
+            return ""
+
+        return course_type.bezeichnung
 
     # =========================================================
     # Kurstage

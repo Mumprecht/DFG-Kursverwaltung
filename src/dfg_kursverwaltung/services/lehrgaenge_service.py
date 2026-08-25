@@ -1,12 +1,12 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from dfg_kursverwaltung.core.models import (
-    Course,
-    CourseType,
-)
+from dfg_kursverwaltung.core.models import Course
 from dfg_kursverwaltung.repositories.lehrgaenge_repository import (
     CourseRepository,
+)
+from dfg_kursverwaltung.repositories.lehrgangstypen_repository import (
+    CourseTypeRepository,
 )
 
 
@@ -14,23 +14,30 @@ class CourseService:
     def __init__(
         self,
         repository: CourseRepository,
+        course_type_repository: CourseTypeRepository,
     ):
         self.repository = repository
+        self.course_type_repository = course_type_repository
 
     def create_course(
         self,
         *,
-        typ: CourseType,
+        lehrgangstyp_id: str,
         bezeichnung: str,
         beschreibung: str | None = None,
         bemerkungen: str | None = None,
     ) -> Course:
         bezeichnung = bezeichnung.strip()
+        lehrgangstyp_id = lehrgangstyp_id.strip()
 
         if not bezeichnung:
             raise ValueError(
                 "Die Bezeichnung darf nicht leer sein."
             )
+
+        self._validate_course_type(
+            lehrgangstyp_id
+        )
 
         timestamp = datetime.now(
             timezone.utc
@@ -38,7 +45,7 @@ class CourseService:
 
         course = Course(
             id=str(uuid4()),
-            typ=typ,
+            lehrgangstyp_id=lehrgangstyp_id,
             bezeichnung=bezeichnung,
             beschreibung=self._clean_optional(
                 beschreibung
@@ -84,25 +91,24 @@ class CourseService:
         self,
         course: Course,
     ) -> Course:
-        course.bezeichnung = (
-            course.bezeichnung.strip()
-        )
+        course.bezeichnung = course.bezeichnung.strip()
+        course.lehrgangstyp_id = course.lehrgangstyp_id.strip()
 
         if not course.bezeichnung:
             raise ValueError(
                 "Die Bezeichnung darf nicht leer sein."
             )
 
-        course.beschreibung = (
-            self._clean_optional(
-                course.beschreibung
-            )
+        self._validate_course_type(
+            course.lehrgangstyp_id
         )
 
-        course.bemerkungen = (
-            self._clean_optional(
-                course.bemerkungen
-            )
+        course.beschreibung = self._clean_optional(
+            course.beschreibung
+        )
+
+        course.bemerkungen = self._clean_optional(
+            course.bemerkungen
         )
 
         course.updated_at = datetime.now(
@@ -112,6 +118,29 @@ class CourseService:
         return self.repository.update(
             course
         )
+
+    def _validate_course_type(
+        self,
+        course_type_id: str,
+    ) -> None:
+        if not course_type_id:
+            raise ValueError(
+                "Es muss ein Lehrgangstyp ausgewählt werden."
+            )
+
+        course_type = self.course_type_repository.get_by_id(
+            course_type_id
+        )
+
+        if course_type is None:
+            raise ValueError(
+                "Der ausgewählte Lehrgangstyp existiert nicht."
+            )
+
+        if not course_type.aktiv:
+            raise ValueError(
+                "Der ausgewählte Lehrgangstyp ist nicht aktiv."
+            )
 
     @staticmethod
     def _clean_optional(

@@ -641,7 +641,7 @@ class ImportWidget(QWidget):
                         row.row_number
                     ),
                     action_text,
-                    row.typ.value,
+                    row.lehrgangstyp_bezeichnung,
                     row.bezeichnung,
                     row.course_id or "",
                 ]

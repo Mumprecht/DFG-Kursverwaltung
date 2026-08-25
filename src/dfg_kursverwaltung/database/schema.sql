@@ -4,7 +4,7 @@ PRAGMA foreign_keys = ON;
 -- ============================================================
 -- DFG-Kursverwaltung
 -- SQLite-Datenbankschema
--- Schema-Version: 4
+-- Schema-Version: 5
 -- ============================================================
 
 
@@ -123,13 +123,34 @@ CREATE TABLE IF NOT EXISTS drohnen (
 
 
 -- ------------------------------------------------------------
+-- Lehrgangstypen
+-- ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS lehrgangstypen (
+    id TEXT PRIMARY KEY,
+
+    bezeichnung TEXT NOT NULL
+        COLLATE NOCASE UNIQUE,
+
+    aktiv INTEGER NOT NULL DEFAULT 1,
+
+    bemerkungen TEXT,
+
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+
+    CHECK (aktiv IN (0, 1))
+);
+
+
+-- ------------------------------------------------------------
 -- Lehrgänge
 -- ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS lehrgaenge (
     id TEXT PRIMARY KEY,
 
-    typ TEXT NOT NULL,
+    lehrgangstyp_id TEXT NOT NULL,
 
     bezeichnung TEXT NOT NULL,
     beschreibung TEXT,
@@ -139,13 +160,9 @@ CREATE TABLE IF NOT EXISTS lehrgaenge (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
 
-    CHECK (
-        typ IN (
-            'introductory_day',
-            'course',
-            'exam'
-        )
-    )
+    FOREIGN KEY (lehrgangstyp_id)
+        REFERENCES lehrgangstypen(id)
+        ON DELETE RESTRICT
 );
 
 
@@ -341,6 +358,16 @@ ON telefonnummern(person_id);
 CREATE INDEX IF NOT EXISTS
     idx_drohnen_person
 ON drohnen(person_id);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_lehrgangstypen_aktiv
+ON lehrgangstypen(aktiv);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_lehrgaenge_lehrgangstyp
+ON lehrgaenge(lehrgangstyp_id);
 
 
 CREATE INDEX IF NOT EXISTS

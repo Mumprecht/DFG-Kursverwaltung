@@ -4,7 +4,6 @@ from datetime import date
 from pathlib import Path
 
 from dfg_kursverwaltung.core.models import (
-    CourseType,
     PhoneNumberType,
 )
 from dfg_kursverwaltung.services.kurstage_service import (
@@ -12,6 +11,9 @@ from dfg_kursverwaltung.services.kurstage_service import (
 )
 from dfg_kursverwaltung.services.lehrgaenge_service import (
     CourseService,
+)
+from dfg_kursverwaltung.services.lehrgangstypen_service import (
+    CourseTypeService,
 )
 from dfg_kursverwaltung.services.personen_service import (
     PersonService,
@@ -166,7 +168,8 @@ class CourseImportRow:
     course_id: str | None
     action: str
 
-    typ: CourseType
+    lehrgangstyp_id: str
+    lehrgangstyp_bezeichnung: str
     bezeichnung: str
     beschreibung: str | None
     bemerkungen: str | None
@@ -316,12 +319,14 @@ class ImportService:
         phone_number_service: PhoneNumberService,
         location_service: LocationService,
         course_service: CourseService,
+        course_type_service: CourseTypeService,
         course_day_service: CourseDayService,
     ):
         self.person_service = person_service
         self.phone_number_service = phone_number_service
         self.location_service = location_service
         self.course_service = course_service
+        self.course_type_service = course_type_service
         self.course_day_service = course_day_service
 
     # ========================================================
@@ -784,7 +789,9 @@ class ImportService:
         for row in preview.rows:
             if row.action == "create":
                 self.course_service.create_course(
-                    typ=row.typ,
+                    lehrgangstyp_id=(
+                        row.lehrgangstyp_id
+                    ),
                     bezeichnung=row.bezeichnung,
                     beschreibung=row.beschreibung,
                     bemerkungen=row.bemerkungen,
@@ -812,7 +819,9 @@ class ImportService:
                         f"{row.course_id}"
                     )
 
-                course.typ = row.typ
+                course.lehrgangstyp_id = (
+                    row.lehrgangstyp_id
+                )
                 course.bezeichnung = (
                     row.bezeichnung
                 )
@@ -1290,23 +1299,24 @@ class ImportService:
             "Typ",
         )
 
-        try:
-            course_type = CourseType(
+        course_type = (
+            self.course_type_service
+            .get_course_type_by_name(
                 type_text
             )
+        )
 
-        except ValueError as exc:
-            allowed_values = ", ".join(
-                course_type.value
-                for course_type in CourseType
+        if course_type is None:
+            raise ValueError(
+                "Unbekannter Lehrgangstyp: "
+                f"{type_text}."
             )
 
+        if not course_type.aktiv:
             raise ValueError(
-                "Ungültiger Lehrgangstyp: "
-                f"{type_text}. "
-                "Erlaubt sind: "
-                f"{allowed_values}."
-            ) from exc
+                "Der Lehrgangstyp ist nicht aktiv: "
+                f"{type_text}."
+            )
 
         bezeichnung = self._required_text(
             csv_row.get(
@@ -1336,7 +1346,10 @@ class ImportService:
             row_number=row_number,
             course_id=course_id,
             action=action,
-            typ=course_type,
+            lehrgangstyp_id=course_type.id,
+            lehrgangstyp_bezeichnung=(
+                course_type.bezeichnung
+            ),
             bezeichnung=bezeichnung,
             beschreibung=self._clean_optional(
                 csv_row.get(
