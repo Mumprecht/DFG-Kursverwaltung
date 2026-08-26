@@ -95,6 +95,66 @@ class PersonRepository:
             row
         )
 
+    def get_by_email(
+        self,
+        email: str,
+    ) -> Person | None:
+        email = email.strip()
+
+        if not email:
+            return None
+
+        with self.database_manager.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT *
+                FROM personen
+                WHERE email = ? COLLATE NOCASE
+                LIMIT 1;
+                """,
+                (email,),
+            ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._row_to_person(
+            row
+        )
+
+    def get_by_name_and_birthdate(
+        self,
+        nachname: str,
+        vorname: str,
+        geburtsdatum: date,
+    ) -> Person | None:
+        with self.database_manager.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT *
+                FROM personen
+                WHERE
+                    nachname = ? COLLATE NOCASE
+                    AND vorname = ? COLLATE NOCASE
+                    AND geburtsdatum = ?
+                LIMIT 1;
+                """,
+                (
+                    nachname.strip(),
+                    vorname.strip(),
+                    self._date_to_db(
+                        geburtsdatum
+                    ),
+                ),
+            ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._row_to_person(
+            row
+        )
+
     def list_all(
         self,
         include_inactive: bool = False,

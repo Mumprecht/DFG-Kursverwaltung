@@ -69,6 +69,28 @@ class CourseService:
             course_id
         )
 
+    def get_course_by_type_and_name(
+        self,
+        course_type_id: str,
+        bezeichnung: str,
+    ) -> Course | None:
+        course_type_id = course_type_id.strip()
+        bezeichnung = bezeichnung.strip()
+
+        if (
+            not course_type_id
+            or not bezeichnung
+        ):
+            return None
+
+        return (
+            self.repository
+            .get_by_type_and_name(
+                course_type_id,
+                bezeichnung,
+            )
+        )
+
     def list_courses(
         self,
     ) -> list[Course]:

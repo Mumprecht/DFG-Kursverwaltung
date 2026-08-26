@@ -71,6 +71,9 @@ from dfg_kursverwaltung.services.lehrgangstypen_service import (
 from dfg_kursverwaltung.services.personen_service import (
     PersonService,
 )
+from dfg_kursverwaltung.services.pruefungsergebnisse_service import (
+    ExamResultService,
+)
 from dfg_kursverwaltung.services.standorte_service import (
     LocationService,
 )
@@ -94,6 +97,7 @@ class MainWindow(QMainWindow):
         course_day_service: CourseDayService,
         location_service: LocationService,
         assignment_service: CourseAssignmentService,
+        exam_result_service: ExamResultService,
         search_service: SearchService,
         import_service: ImportService,
         export_service: ExportService,
@@ -110,6 +114,7 @@ class MainWindow(QMainWindow):
         self.course_day_service = course_day_service
         self.location_service = location_service
         self.assignment_service = assignment_service
+        self.exam_result_service = exam_result_service
         self.search_service = search_service
         self.import_service = import_service
         self.export_service = export_service
@@ -161,8 +166,10 @@ class MainWindow(QMainWindow):
             self.phone_number_service,
             self.drone_service,
             self.course_service,
+            self.course_type_service,
             self.course_day_service,
             self.assignment_service,
+            self.exam_result_service,
         )
 
         self.courses_tab = LehrgaengeWidget(
@@ -196,6 +203,7 @@ class MainWindow(QMainWindow):
             self.course_service,
             self.course_day_service,
             self.assignment_service,
+            self.exam_result_service,
             self.location_service,
         )
 

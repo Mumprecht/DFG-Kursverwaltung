@@ -215,6 +215,70 @@ class ExportWidget(QWidget):
             course_day_group
         )
 
+        # -----------------------------------------------------
+        # Kurszuordnungen
+        # -----------------------------------------------------
+
+        assignment_group = QGroupBox(
+            self.tr(
+                "Kurszuordnungen-Export"
+            )
+        )
+
+        assignment_group_layout = QVBoxLayout(
+            assignment_group
+        )
+
+        self.export_assignments_button = QPushButton(
+            self.tr(
+                "Kurszuordnungen als CSV exportieren"
+            )
+        )
+
+        self.export_assignments_button.clicked.connect(
+            self._export_course_assignments
+        )
+
+        assignment_group_layout.addWidget(
+            self.export_assignments_button
+        )
+
+        main_layout.addWidget(
+            assignment_group
+        )
+
+        # -----------------------------------------------------
+        # Prüfungsergebnisse
+        # -----------------------------------------------------
+
+        exam_result_group = QGroupBox(
+            self.tr(
+                "Prüfungsergebnisse-Export"
+            )
+        )
+
+        exam_result_group_layout = QVBoxLayout(
+            exam_result_group
+        )
+
+        self.export_exam_results_button = QPushButton(
+            self.tr(
+                "Prüfungsergebnisse als CSV exportieren"
+            )
+        )
+
+        self.export_exam_results_button.clicked.connect(
+            self._export_exam_results
+        )
+
+        exam_result_group_layout.addWidget(
+            self.export_exam_results_button
+        )
+
+        main_layout.addWidget(
+            exam_result_group
+        )
+
         main_layout.addStretch()
 
     def _export_persons(self):
@@ -438,6 +502,150 @@ class ExportWidget(QWidget):
             ),
             self.tr(
                 "%1 Lehrgänge wurden "
+                "erfolgreich exportiert."
+            ).replace(
+                "%1",
+                str(count),
+            )
+            + "\n\n"
+            + file_path,
+        )
+
+    def _export_course_assignments(self):
+        timestamp = datetime.now().strftime(
+            "%Y-%m-%d_%H%M"
+        )
+
+        default_name = (
+            f"DFG-Kurszuordnungen_{timestamp}.csv"
+        )
+
+        file_path, _selected_filter = (
+            QFileDialog.getSaveFileName(
+                self,
+                self.tr(
+                    "Kurszuordnungen exportieren"
+                ),
+                str(
+                    Path.home()
+                    / "Downloads"
+                    / default_name
+                ),
+                self.tr(
+                    "CSV-Dateien (*.csv)"
+                ),
+            )
+        )
+
+        if not file_path:
+            return
+
+        if not file_path.lower().endswith(
+            ".csv"
+        ):
+            file_path += ".csv"
+
+        try:
+            count = (
+                self.export_service
+                .export_course_assignments_csv(
+                    file_path
+                )
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                self.tr(
+                    "Der Export der "
+                    "Kurszuordnungen konnte "
+                    "nicht erstellt werden."
+                )
+                + "\n\n"
+                + str(exc),
+            )
+            return
+
+        QMessageBox.information(
+            self,
+            self.tr(
+                "Export abgeschlossen"
+            ),
+            self.tr(
+                "%1 Kurszuordnungen wurden "
+                "erfolgreich exportiert."
+            ).replace(
+                "%1",
+                str(count),
+            )
+            + "\n\n"
+            + file_path,
+        )
+
+    def _export_exam_results(self):
+        timestamp = datetime.now().strftime(
+            "%Y-%m-%d_%H%M"
+        )
+
+        default_name = (
+            f"DFG-Pruefungsergebnisse_{timestamp}.csv"
+        )
+
+        file_path, _selected_filter = (
+            QFileDialog.getSaveFileName(
+                self,
+                self.tr(
+                    "Prüfungsergebnisse exportieren"
+                ),
+                str(
+                    Path.home()
+                    / "Downloads"
+                    / default_name
+                ),
+                self.tr(
+                    "CSV-Dateien (*.csv)"
+                ),
+            )
+        )
+
+        if not file_path:
+            return
+
+        if not file_path.lower().endswith(
+            ".csv"
+        ):
+            file_path += ".csv"
+
+        try:
+            count = (
+                self.export_service
+                .export_exam_results_csv(
+                    file_path
+                )
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler"),
+                self.tr(
+                    "Der Export der "
+                    "Prüfungsergebnisse konnte "
+                    "nicht erstellt werden."
+                )
+                + "\n\n"
+                + str(exc),
+            )
+            return
+
+        QMessageBox.information(
+            self,
+            self.tr(
+                "Export abgeschlossen"
+            ),
+            self.tr(
+                "%1 Prüfungsergebnisse wurden "
                 "erfolgreich exportiert."
             ).replace(
                 "%1",

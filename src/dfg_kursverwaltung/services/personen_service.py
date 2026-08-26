@@ -103,6 +103,34 @@ class PersonService:
             person_id
         )
 
+    def get_person_by_email(
+        self,
+        email: str,
+    ) -> Person | None:
+        email = email.strip()
+
+        if not email:
+            return None
+
+        return self.repository.get_by_email(
+            email
+        )
+
+    def get_person_by_name_and_birthdate(
+        self,
+        nachname: str,
+        vorname: str,
+        geburtsdatum: date,
+    ) -> Person | None:
+        return (
+            self.repository
+            .get_by_name_and_birthdate(
+                nachname,
+                vorname,
+                geburtsdatum,
+            )
+        )
+
     def list_persons(
         self,
         include_inactive: bool = False,

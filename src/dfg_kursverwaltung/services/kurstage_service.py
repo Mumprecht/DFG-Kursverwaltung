@@ -70,6 +70,35 @@ class CourseDayService:
             course_day_id
         )
 
+    def get_course_day_by_identity(
+        self,
+        *,
+        lehrgang_id: str,
+        datum: date,
+        beginn: str | None = None,
+        ende: str | None = None,
+        bezeichnung: str | None = None,
+    ) -> CourseDay | None:
+        beginn = self._clean_optional(
+            beginn
+        )
+
+        ende = self._clean_optional(
+            ende
+        )
+
+        bezeichnung = self._clean_optional(
+            bezeichnung
+        )
+
+        return self.repository.get_by_identity(
+            lehrgang_id,
+            datum,
+            beginn,
+            ende,
+            bezeichnung,
+        )
+
     def list_all_course_days(
         self,
     ) -> list[CourseDay]:

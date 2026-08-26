@@ -1,5 +1,7 @@
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox,
+    QCompleter,
     QDialog,
     QDialogButtonBox,
     QFormLayout,
@@ -65,15 +67,33 @@ class KurszuordnungDialog(QDialog):
 
         self.person_combo = QComboBox()
 
+        self.person_combo.setEditable(
+            True
+        )
+
+        self.person_combo.setInsertPolicy(
+            QComboBox.InsertPolicy.NoInsert
+        )
+
+        completer = self.person_combo.completer()
+
+        completer.setCompletionMode(
+            QCompleter.CompletionMode.PopupCompletion
+        )
+
+        completer.setFilterMode(
+            Qt.MatchFlag.MatchContains
+        )
+
+        completer.setCaseSensitivity(
+            Qt.CaseSensitivity.CaseInsensitive
+        )
+
+        self.person_combo.currentIndexChanged.connect(
+            self._person_changed
+        )
+
         self.role_combo = QComboBox()
-        self.role_combo.addItem(
-            self.tr("Teilnehmer"),
-            CourseAssignmentRole.PARTICIPANT,
-        )
-        self.role_combo.addItem(
-            self.tr("Instruktor"),
-            CourseAssignmentRole.INSTRUCTOR,
-        )
 
         self.status_combo = QComboBox()
         self.status_combo.addItem(
@@ -147,11 +167,77 @@ class KurszuordnungDialog(QDialog):
     def _load_persons(self):
         self.person_combo.clear()
 
-        for person in self.persons:
+        sorted_persons = sorted(
+            self.persons,
+            key=lambda person: (
+                person.nachname.casefold(),
+                person.vorname.casefold(),
+            ),
+        )
+
+        for person in sorted_persons:
             self.person_combo.addItem(
-                person.voller_name,
+                f"{person.nachname} {person.vorname}",
                 person.id,
             )
+
+        self._update_roles()
+
+    def _person_changed(
+        self,
+        _index: int,
+    ):
+        self._update_roles()
+
+    def _update_roles(self):
+        current_person_id = (
+            self.person_combo.currentData()
+        )
+
+        previous_role = (
+            self.role_combo.currentData()
+        )
+
+        self.role_combo.clear()
+
+        if current_person_id is None:
+            return
+
+        person = next(
+            (
+                person
+                for person in self.persons
+                if person.id == current_person_id
+            ),
+            None,
+        )
+
+        if person is None:
+            return
+
+        if person.ist_teilnehmer:
+            self.role_combo.addItem(
+                self.tr("Teilnehmer"),
+                CourseAssignmentRole.PARTICIPANT,
+            )
+
+        if person.ist_instruktor:
+            self.role_combo.addItem(
+                self.tr("Instruktor"),
+                CourseAssignmentRole.INSTRUCTOR,
+            )
+
+        if previous_role is not None:
+            role_index = (
+                self.role_combo.findData(
+                    previous_role
+                )
+            )
+
+            if role_index >= 0:
+                self.role_combo.setCurrentIndex(
+                    role_index
+                )
 
     def _load_assignment(self):
         if self.assignment is None:
@@ -167,6 +253,8 @@ class KurszuordnungDialog(QDialog):
             self.person_combo.setCurrentIndex(
                 person_index
             )
+
+        self._update_roles()
 
         # Beim Bearbeiten wird die Person nicht
         # gewechselt. Damit verhindern wir
@@ -206,6 +294,18 @@ class KurszuordnungDialog(QDialog):
                 self.tr("Keine Person"),
                 self.tr(
                     "Bitte wählen Sie eine Person aus."
+                ),
+            )
+            return
+
+        if self.role_combo.currentData() is None:
+            QMessageBox.warning(
+                self,
+                self.tr("Keine Rolle"),
+                self.tr(
+                    "Der ausgewählten Person ist "
+                    "keine für Kurszuordnungen "
+                    "zulässige Rolle zugeordnet."
                 ),
             )
             return

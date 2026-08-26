@@ -1,8 +1,10 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QDialog,
     QFormLayout,
     QGroupBox,
+    QHeaderView,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -11,6 +13,8 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
     QTextEdit,
     QVBoxLayout,
     QWidget,
@@ -91,7 +95,10 @@ class LehrgaengeWidget(QWidget):
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 3)
 
-        main_layout.addWidget(splitter)
+        main_layout.addWidget(
+            splitter,
+            1,
+        )
 
     def _create_list_area(
         self,
@@ -237,9 +244,85 @@ class LehrgaengeWidget(QWidget):
             course_days_group
         )
 
-        self.course_days_list = QListWidget()
+        self.course_days_list = QTableWidget()
 
-        self.course_days_list.currentItemChanged.connect(
+        self.course_days_list.setColumnCount(
+            4
+        )
+
+        self.course_days_list.setHorizontalHeaderLabels(
+            [
+                self.tr("Datum"),
+                self.tr("Zeit"),
+                self.tr("Bezeichnung"),
+                self.tr("Ausführungsort"),
+            ]
+        )
+
+        self.course_days_list.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )
+
+        self.course_days_list.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )
+
+        self.course_days_list.setEditTriggers(
+            QAbstractItemView.EditTrigger.NoEditTriggers
+        )
+
+        self.course_days_list.setAlternatingRowColors(
+            True
+        )
+
+        self.course_days_list.verticalHeader().setVisible(
+            False
+        )
+
+        self.course_days_list.setStyleSheet(
+            """
+            QTableWidget::item:selected {
+                background-color: #B8DDF5;
+                color: black;
+            }
+            """
+        )
+
+        header = (
+            self.course_days_list.horizontalHeader()
+        )
+
+        for column in range(4):
+            header.setSectionResizeMode(
+                column,
+                QHeaderView.ResizeMode.Interactive,
+            )
+
+        self.course_days_list.setColumnWidth(
+            0,
+            150,
+        )
+
+        self.course_days_list.setColumnWidth(
+            1,
+            170,
+        )
+
+        self.course_days_list.setColumnWidth(
+            2,
+            320,
+        )
+
+        self.course_days_list.setColumnWidth(
+            3,
+            260,
+        )
+
+        header.setStretchLastSection(
+            True
+        )
+
+        self.course_days_list.itemSelectionChanged.connect(
             self._course_day_selected
         )
 
@@ -284,10 +367,9 @@ class LehrgaengeWidget(QWidget):
         )
 
         layout.addWidget(
-            course_days_group
+            course_days_group,
+            1,
         )
-
-        layout.addStretch()
 
         self._clear_details()
 
@@ -438,7 +520,9 @@ class LehrgaengeWidget(QWidget):
         self._load_course_days()
 
     def _load_course_days(self):
-        self.course_days_list.clear()
+        self.course_days_list.setRowCount(
+            0
+        )
 
         self.current_course_day_id = None
 
@@ -455,46 +539,84 @@ class LehrgaengeWidget(QWidget):
             )
         )
 
-        if not course_days:
-            item = QListWidgetItem(
-                self.tr(
-                    "Noch keine Kurstage vorhanden."
+        self.course_days_list.setRowCount(
+            len(course_days)
+        )
+
+        for table_row, course_day in enumerate(
+            course_days
+        ):
+            date_text = (
+                course_day.datum.strftime(
+                    "%d.%m.%Y"
                 )
             )
 
-            item.setFlags(
-                item.flags()
-                & ~Qt.ItemFlag.ItemIsSelectable
-            )
-
-            self.course_days_list.addItem(
-                item
-            )
-
-            return
-
-        for course_day in course_days:
-            item = QListWidgetItem(
-                self._course_day_list_text(
-                    course_day
+            if (
+                course_day.beginn
+                and course_day.ende
+            ):
+                time_text = (
+                    f"{course_day.beginn}"
+                    f"–{course_day.ende}"
                 )
+            elif course_day.beginn:
+                time_text = str(
+                    course_day.beginn
+                )
+            else:
+                time_text = ""
+
+            name_text = (
+                course_day.bezeichnung or ""
             )
 
-            item.setData(
-                Qt.ItemDataRole.UserRole,
-                course_day.id,
-            )
+            location_text = ""
 
-            self.course_days_list.addItem(
-                item
-            )
+            if course_day.standort_id:
+                location = (
+                    self.location_service.get_location(
+                        course_day.standort_id
+                    )
+                )
 
-    def _course_day_selected(
-        self,
-        current: QListWidgetItem | None,
-        _previous: QListWidgetItem | None,
-    ):
-        if current is None:
+                if location is not None:
+                    location_text = (
+                        location.bezeichnung
+                    )
+
+            values = [
+                date_text,
+                time_text,
+                name_text,
+                location_text,
+            ]
+
+            for column, value in enumerate(
+                values
+            ):
+                item = QTableWidgetItem(
+                    value
+                )
+
+                if column == 0:
+                    item.setData(
+                        Qt.ItemDataRole.UserRole,
+                        course_day.id,
+                    )
+
+                self.course_days_list.setItem(
+                    table_row,
+                    column,
+                    item,
+                )
+
+    def _course_day_selected(self):
+        row = (
+            self.course_days_list.currentRow()
+        )
+
+        if row < 0:
             self.current_course_day_id = None
 
             self.edit_course_day_button.setEnabled(
@@ -503,7 +625,21 @@ class LehrgaengeWidget(QWidget):
 
             return
 
-        course_day_id = current.data(
+        item = self.course_days_list.item(
+            row,
+            0,
+        )
+
+        if item is None:
+            self.current_course_day_id = None
+
+            self.edit_course_day_button.setEnabled(
+                False
+            )
+
+            return
+
+        course_day_id = item.data(
             Qt.ItemDataRole.UserRole
         )
 
@@ -526,9 +662,19 @@ class LehrgaengeWidget(QWidget):
 
     def _course_day_double_clicked(
         self,
-        item: QListWidgetItem,
+        item: QTableWidgetItem,
     ):
-        course_day_id = item.data(
+        row = item.row()
+
+        id_item = self.course_days_list.item(
+            row,
+            0,
+        )
+
+        if id_item is None:
+            return
+
+        course_day_id = id_item.data(
             Qt.ItemDataRole.UserRole
         )
 
@@ -778,13 +924,15 @@ class LehrgaengeWidget(QWidget):
         course_day_id: str,
     ):
         for row in range(
-            self.course_days_list.count()
+            self.course_days_list.rowCount()
         ):
-            item = (
-                self.course_days_list.item(
-                    row
-                )
+            item = self.course_days_list.item(
+                row,
+                0,
             )
+
+            if item is None:
+                continue
 
             if (
                 item.data(
@@ -792,9 +940,15 @@ class LehrgaengeWidget(QWidget):
                 )
                 == course_day_id
             ):
-                self.course_days_list.setCurrentItem(
-                    item
+                self.course_days_list.selectRow(
+                    row
                 )
+
+                self.course_days_list.setCurrentCell(
+                    row,
+                    0,
+                )
+
                 return
 
     def _clear_details(self):
@@ -804,7 +958,9 @@ class LehrgaengeWidget(QWidget):
         self.description_value.clear()
         self.notes_value.clear()
 
-        self.course_days_list.clear()
+        self.course_days_list.setRowCount(
+            0
+        )
 
         self.edit_button.setEnabled(False)
 

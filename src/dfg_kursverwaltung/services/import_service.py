@@ -4,10 +4,15 @@ from datetime import date
 from pathlib import Path
 
 from dfg_kursverwaltung.core.models import (
+    CourseAssignmentRole,
+    CourseAssignmentStatus,
     PhoneNumberType,
 )
 from dfg_kursverwaltung.services.kurstage_service import (
     CourseDayService,
+)
+from dfg_kursverwaltung.services.kurszuordnungen_service import (
+    CourseAssignmentService,
 )
 from dfg_kursverwaltung.services.lehrgaenge_service import (
     CourseService,
@@ -17,6 +22,9 @@ from dfg_kursverwaltung.services.lehrgangstypen_service import (
 )
 from dfg_kursverwaltung.services.personen_service import (
     PersonService,
+)
+from dfg_kursverwaltung.services.pruefungsergebnisse_service import (
+    ExamResultService,
 )
 from dfg_kursverwaltung.services.standorte_service import (
     LocationService,
@@ -252,6 +260,98 @@ class CourseDayImportPreview:
         )
 
 
+# ============================================================
+# Kurszuordnungen
+# ============================================================
+
+@dataclass(slots=True)
+class CourseAssignmentImportRow:
+    row_number: int
+    assignment_id: str | None
+    action: str
+
+    person_id: str
+    kurstag_id: str
+
+    rolle: CourseAssignmentRole
+    status: CourseAssignmentStatus
+
+    bemerkungen: str | None
+
+
+@dataclass(slots=True)
+class CourseAssignmentImportPreview:
+    rows: list[CourseAssignmentImportRow]
+    issues: list[ImportIssue]
+
+    @property
+    def new_count(self) -> int:
+        return sum(
+            1
+            for row in self.rows
+            if row.action == "create"
+        )
+
+    @property
+    def update_count(self) -> int:
+        return sum(
+            1
+            for row in self.rows
+            if row.action == "update"
+        )
+
+    @property
+    def error_count(self) -> int:
+        return len(
+            self.issues
+        )
+
+
+# ============================================================
+# Prüfungsergebnisse
+# ============================================================
+
+@dataclass(slots=True)
+class ExamResultImportRow:
+    row_number: int
+    exam_result_id: str | None
+    action: str
+
+    assignment_id: str
+
+    bestanden: bool
+    note: str | None
+    bemerkungen: str | None
+
+
+@dataclass(slots=True)
+class ExamResultImportPreview:
+    rows: list[ExamResultImportRow]
+    issues: list[ImportIssue]
+
+    @property
+    def new_count(self) -> int:
+        return sum(
+            1
+            for row in self.rows
+            if row.action == "create"
+        )
+
+    @property
+    def update_count(self) -> int:
+        return sum(
+            1
+            for row in self.rows
+            if row.action == "update"
+        )
+
+    @property
+    def error_count(self) -> int:
+        return len(
+            self.issues
+        )
+
+
 class ImportService:
     PERSON_REQUIRED_COLUMNS = {
         "ID",
@@ -304,12 +404,53 @@ class ImportService:
         "ID",
         "Lehrgang ID",
         "Lehrgang",
+        "Lehrgangstyp",
         "Datum",
         "Beginn",
         "Ende",
         "Standort ID",
         "Standort",
         "Bezeichnung",
+        "Bemerkungen",
+    }
+
+    COURSE_ASSIGNMENT_REQUIRED_COLUMNS = {
+        "ID",
+        "Person ID",
+        "Nachname",
+        "Vorname",
+        "Geburtsdatum",
+        "E-Mail",
+        "Kurstag ID",
+        "Lehrgang",
+        "Lehrgangstyp",
+        "Datum",
+        "Beginn",
+        "Ende",
+        "Kurstag Bezeichnung",
+        "Rolle",
+        "Status",
+        "Bemerkungen",
+    }
+
+    EXAM_RESULT_REQUIRED_COLUMNS = {
+        "ID",
+        "Kurszuordnung ID",
+        "Person ID",
+        "Nachname",
+        "Vorname",
+        "Geburtsdatum",
+        "E-Mail",
+        "Kurstag ID",
+        "Lehrgang",
+        "Lehrgangstyp",
+        "Datum",
+        "Beginn",
+        "Ende",
+        "Kurstag Bezeichnung",
+        "Rolle",
+        "Bestanden",
+        "Note",
         "Bemerkungen",
     }
 
@@ -321,6 +462,8 @@ class ImportService:
         course_service: CourseService,
         course_type_service: CourseTypeService,
         course_day_service: CourseDayService,
+        assignment_service: CourseAssignmentService,
+        exam_result_service: ExamResultService,
     ):
         self.person_service = person_service
         self.phone_number_service = phone_number_service
@@ -328,6 +471,8 @@ class ImportService:
         self.course_service = course_service
         self.course_type_service = course_type_service
         self.course_day_service = course_day_service
+        self.assignment_service = assignment_service
+        self.exam_result_service = exam_result_service
 
     # ========================================================
     # Personen – Vorschau
@@ -978,6 +1123,281 @@ class ImportService:
         )
 
     # ========================================================
+    # Kurszuordnungen – Vorschau
+    # ========================================================
+
+    # ========================================================
+    # Prüfungsergebnisse – Vorschau
+    # ========================================================
+
+    def import_exam_results(
+        self,
+        preview: ExamResultImportPreview,
+    ) -> tuple[int, int]:
+        created_count = 0
+        updated_count = 0
+
+        for row in preview.rows:
+            if row.action == "create":
+                self.exam_result_service.create_exam_result(
+                    kurszuordnung_id=row.assignment_id,
+                    bestanden=row.bestanden,
+                    note=row.note,
+                    bemerkungen=row.bemerkungen,
+                )
+
+                created_count += 1
+
+            elif row.action == "update":
+                if row.exam_result_id is None:
+                    raise RuntimeError(
+                        "Für ein Update fehlt die "
+                        "Prüfungsergebnis-ID."
+                    )
+
+                existing = (
+                    self.exam_result_service
+                    .get_exam_result(
+                        row.exam_result_id
+                    )
+                )
+
+                if existing is None:
+                    raise RuntimeError(
+                        "Das zu aktualisierende "
+                        "Prüfungsergebnis wurde "
+                        "nicht gefunden."
+                    )
+
+                # Die historische Kurszuordnung
+                # bleibt bei einem Update bewusst
+                # unverändert.
+                existing.bestanden = row.bestanden
+                existing.note = row.note
+                existing.bemerkungen = (
+                    row.bemerkungen
+                )
+
+                self.exam_result_service.update_exam_result(
+                    existing
+                )
+
+                updated_count += 1
+
+            else:
+                raise RuntimeError(
+                    "Unbekannte Importaktion: "
+                    f"{row.action}"
+                )
+
+        return (
+            created_count,
+            updated_count,
+        )
+
+
+    def preview_exam_result_import(
+        self,
+        file_path: str | Path,
+    ) -> ExamResultImportPreview:
+        path = Path(
+            file_path
+        )
+
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Datei nicht gefunden: {path}"
+            )
+
+        rows: list[ExamResultImportRow] = []
+        issues: list[ImportIssue] = []
+
+        with path.open(
+            "r",
+            encoding="utf-8-sig",
+            newline="",
+        ) as csv_file:
+            reader = csv.DictReader(
+                csv_file,
+                delimiter=";",
+            )
+
+            fieldnames = set(
+                reader.fieldnames or []
+            )
+
+            missing_columns = (
+                self.EXAM_RESULT_REQUIRED_COLUMNS
+                - fieldnames
+            )
+
+            if missing_columns:
+                missing_text = ", ".join(
+                    sorted(missing_columns)
+                )
+
+                raise ValueError(
+                    "Folgende Pflichtspalten fehlen: "
+                    f"{missing_text}"
+                )
+
+            for row_number, csv_row in enumerate(
+                reader,
+                start=2,
+            ):
+                try:
+                    parsed_row = (
+                        self._parse_exam_result_row(
+                            csv_row,
+                            row_number,
+                        )
+                    )
+
+                except ValueError as exc:
+                    issues.append(
+                        ImportIssue(
+                            row_number=row_number,
+                            message=str(exc),
+                        )
+                    )
+                    continue
+
+                rows.append(
+                    parsed_row
+                )
+
+        return ExamResultImportPreview(
+            rows=rows,
+            issues=issues,
+        )
+
+
+    def preview_course_assignment_import(
+        self,
+        file_path: str | Path,
+    ) -> CourseAssignmentImportPreview:
+        path = Path(
+            file_path
+        )
+
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Datei nicht gefunden: {path}"
+            )
+
+        rows: list[CourseAssignmentImportRow] = []
+        issues: list[ImportIssue] = []
+
+        with path.open(
+            "r",
+            encoding="utf-8-sig",
+            newline="",
+        ) as csv_file:
+            reader = csv.DictReader(
+                csv_file,
+                delimiter=";",
+            )
+
+            self._validate_columns(
+                reader.fieldnames,
+                self.COURSE_ASSIGNMENT_REQUIRED_COLUMNS,
+            )
+
+            for row_number, csv_row in enumerate(
+                reader,
+                start=2,
+            ):
+                try:
+                    parsed_row = (
+                        self._parse_course_assignment_row(
+                            csv_row,
+                            row_number,
+                        )
+                    )
+
+                except ValueError as exc:
+                    issues.append(
+                        ImportIssue(
+                            row_number=row_number,
+                            message=str(exc),
+                        )
+                    )
+                    continue
+
+                rows.append(
+                    parsed_row
+                )
+
+        return CourseAssignmentImportPreview(
+            rows=rows,
+            issues=issues,
+        )
+
+    # ========================================================
+    # Kurszuordnungen – Import
+    # ========================================================
+
+    def import_course_assignments(
+        self,
+        preview: CourseAssignmentImportPreview,
+    ) -> tuple[int, int]:
+        created_count = 0
+        updated_count = 0
+
+        for row in preview.rows:
+            if row.action == "create":
+                self.assignment_service.create_historical_assignment(
+                    person_id=row.person_id,
+                    kurstag_id=row.kurstag_id,
+                    rolle=row.rolle,
+                    status=row.status,
+                    bemerkungen=row.bemerkungen,
+                )
+
+                created_count += 1
+
+            elif row.action == "update":
+                if row.assignment_id is None:
+                    raise ValueError(
+                        "Bei einer Aktualisierung fehlt "
+                        "die Kurszuordnungs-ID."
+                    )
+
+                assignment = (
+                    self.assignment_service
+                    .get_assignment(
+                        row.assignment_id
+                    )
+                )
+
+                if assignment is None:
+                    raise ValueError(
+                        "Kurszuordnung für "
+                        "Aktualisierung nicht gefunden: "
+                        f"{row.assignment_id}"
+                    )
+
+                # Die Person und der Kurstag bilden
+                # die historische Identität der
+                # Zuordnung und werden nicht ersetzt.
+                assignment.rolle = row.rolle
+                assignment.status = row.status
+                assignment.bemerkungen = (
+                    row.bemerkungen
+                )
+
+                self.assignment_service.update_assignment(
+                    assignment
+                )
+
+                updated_count += 1
+
+        return (
+            created_count,
+            updated_count,
+        )
+
+    # ========================================================
     # Personen – CSV-Zeile
     # ========================================================
 
@@ -1325,6 +1745,8 @@ class ImportService:
             "Bezeichnung",
         )
 
+        existing = None
+
         if course_id:
             existing = (
                 self.course_service
@@ -1333,18 +1755,26 @@ class ImportService:
                 )
             )
 
-            action = (
-                "update"
-                if existing is not None
-                else "create"
+        if existing is None:
+            existing = (
+                self.course_service
+                .get_course_by_type_and_name(
+                    course_type.id,
+                    bezeichnung,
+                )
             )
+
+        if existing is not None:
+            action = "update"
+            resolved_course_id = existing.id
 
         else:
             action = "create"
+            resolved_course_id = None
 
         return CourseImportRow(
             row_number=row_number,
-            course_id=course_id,
+            course_id=resolved_course_id,
             action=action,
             lehrgangstyp_id=course_type.id,
             lehrgangstyp_bezeichnung=(
@@ -1378,24 +1808,66 @@ class ImportService:
             )
         )
 
-        course_id = self._required_text(
+        course_id = self._clean_optional(
             csv_row.get(
                 "Lehrgang ID"
-            ),
-            "Lehrgang ID",
-        )
-
-        course = (
-            self.course_service.get_course(
-                course_id
             )
         )
+
+        course_name = self._required_text(
+            csv_row.get(
+                "Lehrgang"
+            ),
+            "Lehrgang",
+        )
+
+        course_type_name = self._required_text(
+            csv_row.get(
+                "Lehrgangstyp"
+            ),
+            "Lehrgangstyp",
+        )
+
+        course = None
+
+        if course_id:
+            course = (
+                self.course_service.get_course(
+                    course_id
+                )
+            )
+
+        if course is None:
+            course_type = (
+                self.course_type_service
+                .get_course_type_by_name(
+                    course_type_name
+                )
+            )
+
+            if course_type is None:
+                raise ValueError(
+                    "Unbekannter Lehrgangstyp: "
+                    f"{course_type_name}."
+                )
+
+            course = (
+                self.course_service
+                .get_course_by_type_and_name(
+                    course_type.id,
+                    course_name,
+                )
+            )
 
         if course is None:
             raise ValueError(
-                "Die Lehrgang ID ist unbekannt: "
-                f"{course_id}"
+                "Der Lehrgang konnte nicht "
+                "aufgelöst werden: "
+                f"{course_type_name} / "
+                f"{course_name}"
             )
+
+        course_id = course.id
 
         date_text = self._required_text(
             csv_row.get(
@@ -1444,6 +1916,8 @@ class ImportService:
                     f"{location_id}"
                 )
 
+        existing = None
+
         if course_day_id:
             existing = (
                 self.course_day_service
@@ -1452,18 +1926,37 @@ class ImportService:
                 )
             )
 
-            action = (
-                "update"
-                if existing is not None
-                else "create"
+        if existing is None:
+            existing = (
+                self.course_day_service
+                .get_course_day_by_identity(
+                    lehrgang_id=course_id,
+                    datum=course_date,
+                    beginn=beginn,
+                    ende=ende,
+                    bezeichnung=self._clean_optional(
+                        csv_row.get(
+                            "Bezeichnung"
+                        )
+                    ),
+                )
+            )
+
+        if existing is not None:
+            action = "update"
+            resolved_course_day_id = (
+                existing.id
             )
 
         else:
             action = "create"
+            resolved_course_day_id = None
 
         return CourseDayImportRow(
             row_number=row_number,
-            course_day_id=course_day_id,
+            course_day_id=(
+                resolved_course_day_id
+            ),
             action=action,
             course_id=course_id,
             course_name=self._clean_optional(
@@ -1489,6 +1982,439 @@ class ImportService:
                 csv_row.get(
                     "Bemerkungen"
                 )
+            ),
+        )
+
+    # ========================================================
+    # Kurszuordnungen – CSV-Zeile
+    # ========================================================
+
+    # ========================================================
+    # Prüfungsergebnisse – CSV-Zeile
+    # ========================================================
+
+    def _parse_exam_result_row(
+        self,
+        csv_row: dict[str, str],
+        row_number: int,
+    ) -> ExamResultImportRow:
+        exam_result_id = self._clean_optional(
+            csv_row.get("ID")
+        )
+
+        # ----------------------------------------------------
+        # Kurszuordnung auflösen
+        # ----------------------------------------------------
+
+        assignment_id = self._clean_optional(
+            csv_row.get("Kurszuordnung ID")
+        )
+
+        assignment = None
+
+        if assignment_id:
+            assignment = (
+                self.assignment_service
+                .get_assignment(
+                    assignment_id
+                )
+            )
+
+        # Bei einer fremden oder fehlenden
+        # Kurszuordnungs-ID verwenden wir dieselbe
+        # fachliche Auflösung wie beim bereits getesteten
+        # Kurszuordnungs-Import.
+        if assignment is None:
+            # Die Prüfungsergebnis-CSV enthält keinen
+            # Zuordnungsstatus. Für die fachliche Auflösung
+            # einer bereits bestehenden Kurszuordnung wird
+            # dieser jedoch nicht benötigt.
+            #
+            # _parse_course_assignment_row() erwartet das
+            # Feld aus Validierungsgründen trotzdem. Deshalb
+            # arbeiten wir mit einer Kopie und ergänzen nur
+            # für die Auflösung einen neutralen Status.
+            assignment_csv_row = dict(
+                csv_row
+            )
+
+            assignment_csv_row.setdefault(
+                "Status",
+                "registered",
+            )
+
+            assignment_row = (
+                self._parse_course_assignment_row(
+                    assignment_csv_row,
+                    row_number,
+                )
+            )
+
+            if assignment_row.assignment_id:
+                assignment = (
+                    self.assignment_service
+                    .get_assignment(
+                        assignment_row.assignment_id
+                    )
+                )
+
+            if assignment is None:
+                assignment = (
+                    self.assignment_service
+                    .get_assignment_for_person_and_course_day(
+                        assignment_row.person_id,
+                        assignment_row.kurstag_id,
+                    )
+                )
+
+        if assignment is None:
+            raise ValueError(
+                "Die Kurszuordnung für das "
+                "Prüfungsergebnis konnte nicht "
+                "aufgelöst werden."
+            )
+
+        assignment_id = assignment.id
+
+        # ----------------------------------------------------
+        # Prüfungsergebnis auflösen
+        # ----------------------------------------------------
+
+        existing = None
+
+        if exam_result_id:
+            existing = (
+                self.exam_result_service
+                .get_exam_result(
+                    exam_result_id
+                )
+            )
+
+        # Fremde Prüfungsergebnis-ID:
+        # Ein Prüfungsergebnis ist fachlich eindeutig
+        # über die Kurszuordnung identifizierbar.
+        if existing is None:
+            existing = (
+                self.exam_result_service
+                .get_exam_result_for_assignment(
+                    assignment_id
+                )
+            )
+
+        if existing is not None:
+            action = "update"
+            resolved_exam_result_id = (
+                existing.id
+            )
+
+        else:
+            action = "create"
+            resolved_exam_result_id = None
+
+        # ----------------------------------------------------
+        # Ergebnisdaten
+        # ----------------------------------------------------
+
+        bestanden = self._parse_bool(
+            csv_row.get("Bestanden"),
+            "Bestanden",
+        )
+
+        note = self._clean_optional(
+            csv_row.get("Note")
+        )
+
+        bemerkungen = self._clean_optional(
+            csv_row.get("Bemerkungen")
+        )
+
+        return ExamResultImportRow(
+            row_number=row_number,
+            exam_result_id=(
+                resolved_exam_result_id
+            ),
+            action=action,
+            assignment_id=assignment_id,
+            bestanden=bestanden,
+            note=note,
+            bemerkungen=bemerkungen,
+        )
+
+
+    def _parse_course_assignment_row(
+        self,
+        csv_row: dict[str, str],
+        row_number: int,
+    ) -> CourseAssignmentImportRow:
+        assignment_id = self._clean_optional(
+            csv_row.get("ID")
+        )
+
+        # ----------------------------------------------------
+        # Person auflösen
+        # ----------------------------------------------------
+
+        person_id = self._clean_optional(
+            csv_row.get("Person ID")
+        )
+
+        nachname = self._required_text(
+            csv_row.get("Nachname"),
+            "Nachname",
+        )
+
+        vorname = self._required_text(
+            csv_row.get("Vorname"),
+            "Vorname",
+        )
+
+        email = self._clean_optional(
+            csv_row.get("E-Mail")
+        )
+
+        birthdate_text = self._clean_optional(
+            csv_row.get("Geburtsdatum")
+        )
+
+        birthdate = None
+
+        if birthdate_text:
+            birthdate = self._parse_date(
+                birthdate_text
+            )
+
+        person = None
+
+        if person_id:
+            person = self.person_service.get_person(
+                person_id
+            )
+
+        if person is None and email:
+            person = (
+                self.person_service
+                .get_person_by_email(
+                    email
+                )
+            )
+
+            if (
+                person is not None
+                and birthdate is not None
+                and person.geburtsdatum != birthdate
+            ):
+                raise ValueError(
+                    "E-Mail-Adresse und Geburtsdatum "
+                    "verweisen nicht auf dieselbe Person."
+                )
+
+        if (
+            person is None
+            and birthdate is not None
+        ):
+            person = (
+                self.person_service
+                .get_person_by_name_and_birthdate(
+                    nachname,
+                    vorname,
+                    birthdate,
+                )
+            )
+
+        if person is None:
+            if not email and birthdate is None:
+                raise ValueError(
+                    "Die Person kann nicht eindeutig "
+                    "identifiziert werden. Es wird "
+                    "zusätzlich zur Person-ID entweder "
+                    "eine E-Mail-Adresse oder ein "
+                    "Geburtsdatum benötigt."
+                )
+
+            raise ValueError(
+                "Die Person konnte nicht aufgelöst "
+                "werden: "
+                f"{nachname} {vorname}."
+            )
+
+        person_id = person.id
+
+        # ----------------------------------------------------
+        # Lehrgang auflösen
+        # ----------------------------------------------------
+
+        course_name = self._required_text(
+            csv_row.get("Lehrgang"),
+            "Lehrgang",
+        )
+
+        course_type_name = self._required_text(
+            csv_row.get("Lehrgangstyp"),
+            "Lehrgangstyp",
+        )
+
+        course_type = (
+            self.course_type_service
+            .get_course_type_by_name(
+                course_type_name
+            )
+        )
+
+        if course_type is None:
+            raise ValueError(
+                "Unbekannter Lehrgangstyp: "
+                f"{course_type_name}."
+            )
+
+        course = (
+            self.course_service
+            .get_course_by_type_and_name(
+                course_type.id,
+                course_name,
+            )
+        )
+
+        if course is None:
+            raise ValueError(
+                "Der Lehrgang konnte nicht "
+                "aufgelöst werden: "
+                f"{course_type_name} / "
+                f"{course_name}"
+            )
+
+        # ----------------------------------------------------
+        # Kurstag auflösen
+        # ----------------------------------------------------
+
+        course_day_id = self._clean_optional(
+            csv_row.get("Kurstag ID")
+        )
+
+        course_day = None
+
+        if course_day_id:
+            course_day = (
+                self.course_day_service
+                .get_course_day(
+                    course_day_id
+                )
+            )
+
+        date_text = self._required_text(
+            csv_row.get("Datum"),
+            "Datum",
+        )
+
+        course_date = (
+            self._parse_course_day_date(
+                date_text
+            )
+        )
+
+        beginn = self._clean_optional(
+            csv_row.get("Beginn")
+        )
+
+        ende = self._clean_optional(
+            csv_row.get("Ende")
+        )
+
+        day_name = self._clean_optional(
+            csv_row.get(
+                "Kurstag Bezeichnung"
+            )
+        )
+
+        if course_day is None:
+            course_day = (
+                self.course_day_service
+                .get_course_day_by_identity(
+                    lehrgang_id=course.id,
+                    datum=course_date,
+                    beginn=beginn,
+                    ende=ende,
+                    bezeichnung=day_name,
+                )
+            )
+
+        if course_day is None:
+            raise ValueError(
+                "Der Kurstag konnte nicht "
+                "aufgelöst werden: "
+                f"{course_name}, "
+                f"{course_date.isoformat()}."
+            )
+
+        course_day_id = course_day.id
+
+        # ----------------------------------------------------
+        # Rolle und Status
+        # ----------------------------------------------------
+
+        role_text = self._required_text(
+            csv_row.get("Rolle"),
+            "Rolle",
+        )
+
+        status_text = self._required_text(
+            csv_row.get("Status"),
+            "Status",
+        )
+
+        try:
+            role = CourseAssignmentRole(
+                role_text
+            )
+        except ValueError as exc:
+            raise ValueError(
+                "Unbekannte Rolle: "
+                f"{role_text}."
+            ) from exc
+
+        try:
+            status = CourseAssignmentStatus(
+                status_text
+            )
+        except ValueError as exc:
+            raise ValueError(
+                "Unbekannter Status: "
+                f"{status_text}."
+            ) from exc
+
+        # ----------------------------------------------------
+        # Bestehende Zuordnung finden
+        # ----------------------------------------------------
+
+        existing = (
+            self.assignment_service
+            .get_assignment_for_person_and_course_day(
+                person_id,
+                course_day_id,
+            )
+        )
+
+        if existing is not None:
+            action = "update"
+            resolved_assignment_id = (
+                existing.id
+            )
+
+        else:
+            action = "create"
+            resolved_assignment_id = None
+
+        return CourseAssignmentImportRow(
+            row_number=row_number,
+            assignment_id=(
+                resolved_assignment_id
+            ),
+            action=action,
+            person_id=person_id,
+            kurstag_id=course_day_id,
+            rolle=role,
+            status=status,
+            bemerkungen=self._clean_optional(
+                csv_row.get("Bemerkungen")
             ),
         )
 

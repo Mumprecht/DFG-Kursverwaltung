@@ -2,9 +2,11 @@ from datetime import date
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QCheckBox,
     QDialog,
     QFormLayout,
+    QHeaderView,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -14,6 +16,8 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
     QTextEdit,
     QVBoxLayout,
     QWidget,
@@ -46,8 +50,14 @@ from dfg_kursverwaltung.services.kurszuordnungen_service import (
 from dfg_kursverwaltung.services.lehrgaenge_service import (
     CourseService,
 )
+from dfg_kursverwaltung.services.lehrgangstypen_service import (
+    CourseTypeService,
+)
 from dfg_kursverwaltung.services.personen_service import (
     PersonService,
+)
+from dfg_kursverwaltung.services.pruefungsergebnisse_service import (
+    ExamResultService,
 )
 from dfg_kursverwaltung.services.telefonnummern_service import (
     PhoneNumberService,
@@ -61,8 +71,10 @@ class PersonenWidget(QWidget):
         phone_number_service: PhoneNumberService,
         drone_service: DroneService,
         course_service: CourseService,
+        course_type_service: CourseTypeService,
         course_day_service: CourseDayService,
         assignment_service: CourseAssignmentService,
+        exam_result_service: ExamResultService,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
@@ -71,8 +83,10 @@ class PersonenWidget(QWidget):
         self.phone_number_service = phone_number_service
         self.drone_service = drone_service
         self.course_service = course_service
+        self.course_type_service = course_type_service
         self.course_day_service = course_day_service
         self.assignment_service = assignment_service
+        self.exam_result_service = exam_result_service
 
         self.current_person_id: str | None = None
         self.current_phone_number_id: str | None = None
@@ -378,11 +392,103 @@ class PersonenWidget(QWidget):
         )
 
         self.course_participation_list = (
-            QListWidget()
+            QTableWidget()
+        )
+
+        self.course_participation_list.setColumnCount(
+            7
+        )
+
+        self.course_participation_list.setHorizontalHeaderLabels(
+            [
+                self.tr("Datum"),
+                self.tr("Lehrgang"),
+                self.tr("Typ"),
+                self.tr("Rolle"),
+                self.tr("Status"),
+                self.tr("Ergebnis"),
+                self.tr("Note"),
+            ]
+        )
+
+        self.course_participation_list.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )
+
+        self.course_participation_list.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )
+
+        self.course_participation_list.setEditTriggers(
+            QAbstractItemView.EditTrigger.NoEditTriggers
+        )
+
+        self.course_participation_list.setAlternatingRowColors(
+            True
+        )
+
+        self.course_participation_list.verticalHeader().setVisible(
+            False
+        )
+
+        self.course_participation_list.setStyleSheet(
+            """
+            QTableWidget::item:selected {
+                background-color: #B8DDF5;
+                color: black;
+            }
+            """
+        )
+
+        header = (
+            self.course_participation_list.horizontalHeader()
+        )
+
+        for column in range(7):
+            header.setSectionResizeMode(
+                column,
+                QHeaderView.ResizeMode.Interactive,
+            )
+
+        self.course_participation_list.setColumnWidth(
+            0,
+            110,
+        )
+        self.course_participation_list.setColumnWidth(
+            1,
+            220,
+        )
+        self.course_participation_list.setColumnWidth(
+            2,
+            150,
+        )
+        self.course_participation_list.setColumnWidth(
+            3,
+            120,
+        )
+        self.course_participation_list.setColumnWidth(
+            4,
+            140,
+        )
+        self.course_participation_list.setColumnWidth(
+            5,
+            150,
+        )
+        self.course_participation_list.setColumnWidth(
+            6,
+            70,
+        )
+
+        header.setStretchLastSection(
+            True
+        )
+
+        self.course_participation_list.setMinimumHeight(
+            180
         )
 
         self.course_participation_list.setMaximumHeight(
-            160
+            240
         )
 
         course_layout.addWidget(
@@ -814,7 +920,9 @@ class PersonenWidget(QWidget):
         self._load_drones()
 
     def _load_course_participations(self):
-        self.course_participation_list.clear()
+        self.course_participation_list.setRowCount(
+            0
+        )
 
         if self.current_person_id is None:
             return
@@ -825,14 +933,6 @@ class PersonenWidget(QWidget):
                 self.current_person_id
             )
         )
-
-        if not assignments:
-            self.course_participation_list.addItem(
-                self.tr(
-                    "Noch keine Kursteilnahmen vorhanden."
-                )
-            )
-            return
 
         entries = []
 
@@ -853,19 +953,60 @@ class PersonenWidget(QWidget):
                 )
             )
 
-            course_name = (
-                course.bezeichnung
-                if course is not None
-                else self.tr(
+            if course is None:
+                course_name = self.tr(
                     "Unbekannter Lehrgang"
                 )
+                course_type_name = ""
+            else:
+                course_name = course.bezeichnung
+
+                course_type = (
+                    self.course_type_service
+                    .get_course_type(
+                        course.lehrgangstyp_id
+                    )
+                )
+
+                if course_type is None:
+                    course_type_name = ""
+                else:
+                    course_type_name = (
+                        course_type.bezeichnung
+                    )
+
+            exam_result = (
+                self.exam_result_service
+                .get_exam_result_for_assignment(
+                    assignment.id
+                )
             )
+
+            result_text = ""
+            note_text = ""
+
+            if exam_result is not None:
+                if exam_result.bestanden:
+                    result_text = self.tr(
+                        "Bestanden"
+                    )
+                else:
+                    result_text = self.tr(
+                        "Nicht bestanden"
+                    )
+
+                note_text = (
+                    exam_result.note or ""
+                )
 
             entries.append(
                 (
                     course_day.datum,
                     course_name,
+                    course_type_name,
                     assignment,
+                    result_text,
+                    note_text,
                 )
             )
 
@@ -874,19 +1015,22 @@ class PersonenWidget(QWidget):
             reverse=True,
         )
 
-        if not entries:
-            self.course_participation_list.addItem(
-                self.tr(
-                    "Noch keine Kursteilnahmen vorhanden."
-                )
-            )
-            return
+        self.course_participation_list.setRowCount(
+            len(entries)
+        )
 
-        for (
-            course_date,
-            course_name,
-            assignment,
-        ) in entries:
+        for table_row, entry in enumerate(
+            entries
+        ):
+            (
+                course_date,
+                course_name,
+                course_type_name,
+                assignment,
+                result_text,
+                note_text,
+            ) = entry
+
             role_text = (
                 self._assignment_role_text(
                     assignment.rolle.value
@@ -899,25 +1043,36 @@ class PersonenWidget(QWidget):
                 )
             )
 
-            text = (
-                f"{course_date.strftime('%d.%m.%Y')}"
-                f" | {course_name}"
-                f" | {role_text}"
-                f" | {status_text}"
-            )
+            values = [
+                course_date.strftime(
+                    "%d.%m.%Y"
+                ),
+                course_name,
+                course_type_name,
+                role_text,
+                status_text,
+                result_text,
+                note_text,
+            ]
 
-            item = QListWidgetItem(
-                text
-            )
+            for column, value in enumerate(
+                values
+            ):
+                item = QTableWidgetItem(
+                    value
+                )
 
-            item.setData(
-                Qt.ItemDataRole.UserRole,
-                assignment.id,
-            )
+                if column == 0:
+                    item.setData(
+                        Qt.ItemDataRole.UserRole,
+                        assignment.id,
+                    )
 
-            self.course_participation_list.addItem(
-                item
-            )
+                self.course_participation_list.setItem(
+                    table_row,
+                    column,
+                    item,
+                )
 
     def _load_phone_numbers(self):
         self.phone_list.clear()
@@ -1504,7 +1659,9 @@ class PersonenWidget(QWidget):
 
         self.notes_value.clear()
 
-        self.course_participation_list.clear()
+        self.course_participation_list.setRowCount(
+            0
+        )
         self.phone_list.clear()
         self.drone_list.clear()
 

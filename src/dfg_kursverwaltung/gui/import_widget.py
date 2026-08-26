@@ -15,8 +15,10 @@ from PySide6.QtWidgets import (
 )
 
 from dfg_kursverwaltung.services.import_service import (
+    CourseAssignmentImportPreview,
     CourseDayImportPreview,
     CourseImportPreview,
+    ExamResultImportPreview,
     ImportPreview,
     ImportService,
     LocationImportPreview,
@@ -28,6 +30,8 @@ class ImportWidget(QWidget):
     IMPORT_LOCATIONS = "locations"
     IMPORT_COURSES = "courses"
     IMPORT_COURSE_DAYS = "course_days"
+    IMPORT_COURSE_ASSIGNMENTS = "course_assignments"
+    IMPORT_EXAM_RESULTS = "exam_results"
 
     def __init__(
         self,
@@ -44,6 +48,8 @@ class ImportWidget(QWidget):
             | LocationImportPreview
             | CourseImportPreview
             | CourseDayImportPreview
+            | CourseAssignmentImportPreview
+            | ExamResultImportPreview
             | None
         ) = None
 
@@ -112,6 +118,16 @@ class ImportWidget(QWidget):
         self.import_type_combo.addItem(
             self.tr("Kurstage"),
             self.IMPORT_COURSE_DAYS,
+        )
+
+        self.import_type_combo.addItem(
+            self.tr("Kurszuordnungen"),
+            self.IMPORT_COURSE_ASSIGNMENTS,
+        )
+
+        self.import_type_combo.addItem(
+            self.tr("Prüfungsergebnisse"),
+            self.IMPORT_EXAM_RESULTS,
         )
 
         self.import_type_combo.currentIndexChanged.connect(
@@ -401,7 +417,7 @@ class ImportWidget(QWidget):
                 self.tr("ID"),
             ]
 
-        else:
+        elif import_type == self.IMPORT_COURSE_DAYS:
             self.description_label.setText(
                 self.tr(
                     "Importieren Sie Kurstage "
@@ -418,6 +434,47 @@ class ImportWidget(QWidget):
                 self.tr("Lehrgang"),
                 self.tr("ID"),
             ]
+
+        elif import_type == self.IMPORT_COURSE_ASSIGNMENTS:
+            self.description_label.setText(
+                self.tr(
+                    "Importieren Sie Kurszuordnungen "
+                    "aus einer DFG-CSV-Datei. "
+                    "Vor dem Import werden die Daten "
+                    "zuerst geprüft."
+                )
+            )
+
+            headers = [
+                self.tr("Zeile"),
+                self.tr("Aktion"),
+                self.tr("Rolle"),
+                self.tr("Status"),
+                self.tr("ID"),
+            ]
+
+        elif import_type == self.IMPORT_EXAM_RESULTS:
+            self.description_label.setText(
+                self.tr(
+                    "Importieren Sie Prüfungsergebnisse "
+                    "aus einer DFG-CSV-Datei. "
+                    "Vor dem Import werden die Daten "
+                    "zuerst geprüft."
+                )
+            )
+
+            headers = [
+                self.tr("Zeile"),
+                self.tr("Aktion"),
+                self.tr("Bestanden"),
+                self.tr("Note"),
+                self.tr("ID"),
+            ]
+
+        else:
+            raise RuntimeError(
+                "Unbekannte Importart."
+            )
 
         self.preview_table.setHorizontalHeaderLabels(
             headers
@@ -452,9 +509,24 @@ class ImportWidget(QWidget):
                 "Lehrgänge importieren"
             )
 
-        else:
+        elif import_type == self.IMPORT_COURSE_DAYS:
             dialog_title = self.tr(
                 "Kurstage importieren"
+            )
+
+        elif import_type == self.IMPORT_COURSE_ASSIGNMENTS:
+            dialog_title = self.tr(
+                "Kurszuordnungen importieren"
+            )
+
+        elif import_type == self.IMPORT_EXAM_RESULTS:
+            dialog_title = self.tr(
+                "Prüfungsergebnisse importieren"
+            )
+
+        else:
+            raise RuntimeError(
+                "Unbekannte Importart."
             )
 
         file_path, _selected_filter = (
@@ -510,12 +582,33 @@ class ImportWidget(QWidget):
                     )
                 )
 
-            else:
+            elif import_type == self.IMPORT_COURSE_DAYS:
                 preview = (
                     self.import_service
                     .preview_course_day_import(
                         file_path
                     )
+                )
+
+            elif import_type == self.IMPORT_COURSE_ASSIGNMENTS:
+                preview = (
+                    self.import_service
+                    .preview_course_assignment_import(
+                        file_path
+                    )
+                )
+
+            elif import_type == self.IMPORT_EXAM_RESULTS:
+                preview = (
+                    self.import_service
+                    .preview_exam_result_import(
+                        file_path
+                    )
+                )
+
+            else:
+                raise RuntimeError(
+                    "Unbekannte Importart."
                 )
 
         except Exception as exc:
@@ -558,6 +651,8 @@ class ImportWidget(QWidget):
             | LocationImportPreview
             | CourseImportPreview
             | CourseDayImportPreview
+            | CourseAssignmentImportPreview
+            | ExamResultImportPreview
         ),
     ):
         self.new_label.setText(
@@ -646,7 +741,7 @@ class ImportWidget(QWidget):
                     row.course_id or "",
                 ]
 
-            else:
+            elif import_type == self.IMPORT_COURSE_DAYS:
                 values = [
                     str(
                         row.row_number
@@ -656,6 +751,37 @@ class ImportWidget(QWidget):
                     row.course_name or row.course_id,
                     row.course_day_id or "",
                 ]
+
+            elif import_type == self.IMPORT_COURSE_ASSIGNMENTS:
+                values = [
+                    str(
+                        row.row_number
+                    ),
+                    action_text,
+                    row.rolle.value,
+                    row.status.value,
+                    row.assignment_id or "",
+                ]
+
+            elif import_type == self.IMPORT_EXAM_RESULTS:
+                values = [
+                    str(
+                        row.row_number
+                    ),
+                    action_text,
+                    (
+                        self.tr("Ja")
+                        if row.bestanden
+                        else self.tr("Nein")
+                    ),
+                    row.note or "",
+                    row.exam_result_id or "",
+                ]
+
+            else:
+                raise RuntimeError(
+                    "Unbekannte Importart."
+                )
 
             for column, value in enumerate(
                 values
@@ -746,9 +872,24 @@ class ImportWidget(QWidget):
                 "Lehrgänge"
             )
 
-        else:
+        elif import_type == self.IMPORT_COURSE_DAYS:
             object_name = self.tr(
                 "Kurstage"
+            )
+
+        elif import_type == self.IMPORT_COURSE_ASSIGNMENTS:
+            object_name = self.tr(
+                "Kurszuordnungen"
+            )
+
+        elif import_type == self.IMPORT_EXAM_RESULTS:
+            object_name = self.tr(
+                "Prüfungsergebnisse"
+            )
+
+        else:
+            raise RuntimeError(
+                "Unbekannte Importart."
             )
 
         message = (
@@ -855,7 +996,7 @@ class ImportWidget(QWidget):
                     )
                 )
 
-            else:
+            elif import_type == self.IMPORT_COURSE_DAYS:
                 (
                     created_count,
                     updated_count,
@@ -864,6 +1005,33 @@ class ImportWidget(QWidget):
                     .import_course_days(
                         preview
                     )
+                )
+
+            elif import_type == self.IMPORT_COURSE_ASSIGNMENTS:
+                (
+                    created_count,
+                    updated_count,
+                ) = (
+                    self.import_service
+                    .import_course_assignments(
+                        preview
+                    )
+                )
+
+            elif import_type == self.IMPORT_EXAM_RESULTS:
+                (
+                    created_count,
+                    updated_count,
+                ) = (
+                    self.import_service
+                    .import_exam_results(
+                        preview
+                    )
+                )
+
+            else:
+                raise RuntimeError(
+                    "Unbekannte Importart."
                 )
 
         except Exception as exc:

@@ -31,6 +31,9 @@ from dfg_kursverwaltung.repositories.lehrgangstypen_repository import (
 from dfg_kursverwaltung.repositories.personen_repository import (
     PersonRepository,
 )
+from dfg_kursverwaltung.repositories.pruefungsergebnisse_repository import (
+    ExamResultRepository,
+)
 from dfg_kursverwaltung.repositories.standorte_repository import (
     LocationRepository,
 )
@@ -66,6 +69,9 @@ from dfg_kursverwaltung.services.lehrgangstypen_service import (
 )
 from dfg_kursverwaltung.services.personen_service import (
     PersonService,
+)
+from dfg_kursverwaltung.services.pruefungsergebnisse_service import (
+    ExamResultService,
 )
 from dfg_kursverwaltung.services.standorte_service import (
     LocationService,
@@ -145,6 +151,10 @@ def main():
         database_manager
     )
 
+    exam_result_repository = ExamResultRepository(
+        database_manager
+    )
+
     search_repository = SearchRepository(
         database_manager
     )
@@ -183,7 +193,12 @@ def main():
     )
 
     assignment_service = CourseAssignmentService(
-        assignment_repository
+        assignment_repository,
+        person_repository,
+    )
+
+    exam_result_service = ExamResultService(
+        exam_result_repository
     )
 
     search_service = SearchService(
@@ -197,6 +212,8 @@ def main():
         course_service,
         course_type_service,
         course_day_service,
+        assignment_service,
+        exam_result_service,
     )
 
     import_service = ImportService(
@@ -206,6 +223,8 @@ def main():
         course_service,
         course_type_service,
         course_day_service,
+        assignment_service,
+        exam_result_service,
     )
 
     backup_service = BackupService(
@@ -243,6 +262,7 @@ def main():
         course_day_service,
         location_service,
         assignment_service,
+        exam_result_service,
         search_service,
         import_service,
         export_service,

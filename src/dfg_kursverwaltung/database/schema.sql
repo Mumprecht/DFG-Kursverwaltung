@@ -4,7 +4,7 @@ PRAGMA foreign_keys = ON;
 -- ============================================================
 -- DFG-Kursverwaltung
 -- SQLite-Datenbankschema
--- Schema-Version: 5
+-- Schema-Version: 6
 -- ============================================================
 
 
@@ -292,8 +292,7 @@ CREATE TABLE IF NOT EXISTS kurszuordnungen (
 CREATE TABLE IF NOT EXISTS pruefungsergebnisse (
     id TEXT PRIMARY KEY,
 
-    person_id TEXT NOT NULL,
-    lehrgang_id TEXT NOT NULL,
+    kurszuordnung_id TEXT NOT NULL,
 
     bestanden INTEGER NOT NULL,
 
@@ -304,19 +303,14 @@ CREATE TABLE IF NOT EXISTS pruefungsergebnisse (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
 
-    FOREIGN KEY (person_id)
-        REFERENCES personen(id)
-        ON DELETE RESTRICT,
-
-    FOREIGN KEY (lehrgang_id)
-        REFERENCES lehrgaenge(id)
+    FOREIGN KEY (kurszuordnung_id)
+        REFERENCES kurszuordnungen(id)
         ON DELETE RESTRICT,
 
     CHECK (bestanden IN (0, 1)),
 
     UNIQUE (
-        person_id,
-        lehrgang_id
+        kurszuordnung_id
     )
 );
 
@@ -416,10 +410,5 @@ ON kurszuordnungen(rolle);
 
 
 CREATE INDEX IF NOT EXISTS
-    idx_pruefungsergebnisse_person
-ON pruefungsergebnisse(person_id);
-
-
-CREATE INDEX IF NOT EXISTS
-    idx_pruefungsergebnisse_lehrgang
-ON pruefungsergebnisse(lehrgang_id);
+    idx_pruefungsergebnisse_kurszuordnung
+ON pruefungsergebnisse(kurszuordnung_id);

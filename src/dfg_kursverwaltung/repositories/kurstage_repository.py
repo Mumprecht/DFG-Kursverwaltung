@@ -78,6 +78,46 @@ class CourseDayRepository:
             row
         )
 
+    def get_by_identity(
+        self,
+        course_id: str,
+        datum: date,
+        beginn: str | None,
+        ende: str | None,
+        bezeichnung: str | None,
+    ) -> CourseDay | None:
+        with self.database_manager.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT *
+                FROM kurstage
+                WHERE
+                    lehrgang_id = ?
+                    AND datum = ?
+                    AND COALESCE(beginn, '') =
+                        COALESCE(?, '')
+                    AND COALESCE(ende, '') =
+                        COALESCE(?, '')
+                    AND COALESCE(bezeichnung, '') =
+                        COALESCE(?, '')
+                LIMIT 1;
+                """,
+                (
+                    course_id,
+                    self._date_to_db(datum),
+                    beginn,
+                    ende,
+                    bezeichnung,
+                ),
+            ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._row_to_course_day(
+            row
+        )
+
     def list_all(
         self,
     ) -> list[CourseDay]:

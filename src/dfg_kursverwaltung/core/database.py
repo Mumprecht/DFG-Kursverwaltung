@@ -5,7 +5,7 @@ from pathlib import Path
 import sqlite3
 
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 
 class DatabaseManager:
@@ -146,6 +146,10 @@ class DatabaseManager:
         if current_version == 4:
             self._migrate_4_to_5()
             current_version = 5
+
+        if current_version == 5:
+            self._migrate_5_to_6()
+            current_version = 6
 
         if current_version != SCHEMA_VERSION:
             raise RuntimeError(
@@ -485,6 +489,203 @@ class DatabaseManager:
                     "Migration fehlgeschlagen: "
                     f"{integrity}"
                 )
+
+        except Exception:
+            if connection.in_transaction:
+                connection.rollback()
+
+            raise
+
+        finally:
+            connection.close()
+
+    def _migrate_5_to_6(
+        self,
+    ) -> None:
+        connection = sqlite3.connect(
+            self.database_path
+        )
+
+        connection.row_factory = (
+            sqlite3.Row
+        )
+
+        try:
+            connection.execute(
+                "PRAGMA foreign_keys = OFF;"
+            )
+
+            connection.execute(
+                "BEGIN IMMEDIATE;"
+            )
+
+            old_count = connection.execute(
+                """
+                SELECT COUNT(*)
+                FROM pruefungsergebnisse;
+                """
+            ).fetchone()[0]
+
+            # Schema 5 kann Prüfungsergebnisse nur
+            # über Person + Lehrgang identifizieren.
+            # Eine automatische Zuordnung zu einer
+            # konkreten Kurszuordnung wäre daher
+            # nicht eindeutig und könnte Daten
+            # verfälschen.
+            if old_count != 0:
+                raise RuntimeError(
+                    "Die Migration von Schema 5 "
+                    "auf Schema 6 kann nicht "
+                    "automatisch durchgeführt "
+                    "werden, weil bereits "
+                    "Prüfungsergebnisse vorhanden "
+                    "sind. Anzahl: "
+                    f"{old_count}"
+                )
+
+            connection.execute(
+                """
+                CREATE TABLE
+                    pruefungsergebnisse_neu (
+                    id TEXT PRIMARY KEY,
+
+                    kurszuordnung_id TEXT NOT NULL,
+
+                    bestanden INTEGER NOT NULL,
+
+                    note TEXT,
+                    bemerkungen TEXT,
+
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+
+                    FOREIGN KEY (
+                        kurszuordnung_id
+                    )
+                        REFERENCES
+                            kurszuordnungen(id)
+                        ON DELETE RESTRICT,
+
+                    CHECK (
+                        bestanden IN (0, 1)
+                    ),
+
+                    UNIQUE (
+                        kurszuordnung_id
+                    )
+                );
+                """
+            )
+
+            connection.execute(
+                """
+                DROP TABLE pruefungsergebnisse;
+                """
+            )
+
+            connection.execute(
+                """
+                ALTER TABLE
+                    pruefungsergebnisse_neu
+                RENAME TO pruefungsergebnisse;
+                """
+            )
+
+            connection.execute(
+                """
+                CREATE INDEX
+                    idx_pruefungsergebnisse_kurszuordnung
+                ON pruefungsergebnisse(
+                    kurszuordnung_id
+                );
+                """
+            )
+
+            new_count = connection.execute(
+                """
+                SELECT COUNT(*)
+                FROM pruefungsergebnisse;
+                """
+            ).fetchone()[0]
+
+            if new_count != old_count:
+                raise RuntimeError(
+                    "Bei der Migration der "
+                    "Prüfungsergebnisse ist ein "
+                    "Datenverlust aufgetreten. "
+                    f"Vorher: {old_count}, "
+                    f"nachher: {new_count}."
+                )
+
+            columns = {
+                row["name"]
+                for row in connection.execute(
+                    """
+                    PRAGMA table_info(
+                        pruefungsergebnisse
+                    );
+                    """
+                ).fetchall()
+            }
+
+            expected_columns = {
+                "id",
+                "kurszuordnung_id",
+                "bestanden",
+                "note",
+                "bemerkungen",
+                "created_at",
+                "updated_at",
+            }
+
+            if columns != expected_columns:
+                raise RuntimeError(
+                    "Die Tabelle "
+                    "pruefungsergebnisse besitzt "
+                    "nach der Migration nicht die "
+                    "erwartete Struktur."
+                )
+
+            foreign_key_errors = (
+                connection.execute(
+                    """
+                    PRAGMA foreign_key_check;
+                    """
+                ).fetchall()
+            )
+
+            if foreign_key_errors:
+                raise RuntimeError(
+                    "Nach der Migration wurden "
+                    "Foreign-Key-Fehler gefunden: "
+                    f"{len(foreign_key_errors)}"
+                )
+
+            integrity = connection.execute(
+                """
+                PRAGMA integrity_check;
+                """
+            ).fetchone()[0]
+
+            if integrity != "ok":
+                raise RuntimeError(
+                    "Integritätsprüfung nach "
+                    "Migration fehlgeschlagen: "
+                    f"{integrity}"
+                )
+
+            connection.execute(
+                """
+                UPDATE schema_info
+                SET version = 6;
+                """
+            )
+
+            connection.commit()
+
+            connection.execute(
+                "PRAGMA foreign_keys = ON;"
+            )
 
         except Exception:
             if connection.in_transaction:

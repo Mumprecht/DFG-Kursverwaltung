@@ -7,6 +7,9 @@ from dfg_kursverwaltung.core.models import (
 from dfg_kursverwaltung.services.kurstage_service import (
     CourseDayService,
 )
+from dfg_kursverwaltung.services.kurszuordnungen_service import (
+    CourseAssignmentService,
+)
 from dfg_kursverwaltung.services.lehrgaenge_service import (
     CourseService,
 )
@@ -15,6 +18,9 @@ from dfg_kursverwaltung.services.lehrgangstypen_service import (
 )
 from dfg_kursverwaltung.services.personen_service import (
     PersonService,
+)
+from dfg_kursverwaltung.services.pruefungsergebnisse_service import (
+    ExamResultService,
 )
 from dfg_kursverwaltung.services.standorte_service import (
     LocationService,
@@ -33,6 +39,8 @@ class ExportService:
         course_service: CourseService,
         course_type_service: CourseTypeService,
         course_day_service: CourseDayService,
+        assignment_service: CourseAssignmentService,
+        exam_result_service: ExamResultService,
     ):
         self.person_service = person_service
         self.phone_number_service = phone_number_service
@@ -40,6 +48,8 @@ class ExportService:
         self.course_service = course_service
         self.course_type_service = course_type_service
         self.course_day_service = course_day_service
+        self.assignment_service = assignment_service
+        self.exam_result_service = exam_result_service
 
     # =========================================================
     # Personen
@@ -353,6 +363,11 @@ class ExportService:
                         "Lehrgang": (
                             course.bezeichnung
                         ),
+                        "Lehrgangstyp": (
+                            self._course_type_name(
+                                course.lehrgangstyp_id
+                            )
+                        ),
                         "Datum": (
                             course_day.datum.isoformat()
                         ),
@@ -394,6 +409,238 @@ class ExportService:
             writer.writerows(
                 rows
             )
+
+        return len(rows)
+
+    # =========================================================
+    # Kurszuordnungen
+    # =========================================================
+
+    def export_course_assignments_csv(
+        self,
+        file_path: str | Path,
+    ) -> int:
+        path = Path(file_path)
+
+        rows: list[dict[str, str]] = []
+
+        course_days = (
+            self.course_day_service
+            .list_all_course_days()
+        )
+
+        for course_day in course_days:
+            course = (
+                self.course_service.get_course(
+                    course_day.lehrgang_id
+                )
+            )
+
+            if course is None:
+                continue
+
+            assignments = (
+                self.assignment_service
+                .list_assignments_for_course_day(
+                    course_day.id
+                )
+            )
+
+            for assignment in assignments:
+                person = (
+                    self.person_service.get_person(
+                        assignment.person_id
+                    )
+                )
+
+                if person is None:
+                    continue
+
+                rows.append(
+                    {
+                        "ID": assignment.id,
+                        "Person ID": person.id,
+                        "Nachname": person.nachname,
+                        "Vorname": person.vorname,
+                        "Geburtsdatum": (
+                            person.geburtsdatum.isoformat()
+                            if person.geburtsdatum
+                            else ""
+                        ),
+                        "E-Mail": person.email or "",
+                        "Kurstag ID": course_day.id,
+                        "Lehrgang": course.bezeichnung,
+                        "Lehrgangstyp": (
+                            self._course_type_name(
+                                course.lehrgangstyp_id
+                            )
+                        ),
+                        "Datum": (
+                            course_day.datum.isoformat()
+                        ),
+                        "Beginn": (
+                            course_day.beginn or ""
+                        ),
+                        "Ende": (
+                            course_day.ende or ""
+                        ),
+                        "Kurstag Bezeichnung": (
+                            course_day.bezeichnung or ""
+                        ),
+                        "Rolle": (
+                            assignment.rolle.value
+                        ),
+                        "Status": (
+                            assignment.status.value
+                        ),
+                        "Bemerkungen": (
+                            assignment.bemerkungen or ""
+                        ),
+                    }
+                )
+
+        with path.open(
+            "w",
+            encoding="utf-8-sig",
+            newline="",
+        ) as csv_file:
+            writer = csv.DictWriter(
+                csv_file,
+                fieldnames=(
+                    self._course_assignment_fieldnames()
+                ),
+                delimiter=";",
+                quoting=csv.QUOTE_MINIMAL,
+            )
+
+            writer.writeheader()
+            writer.writerows(rows)
+
+        return len(rows)
+
+    # =========================================================
+    # Prüfungsergebnisse
+    # =========================================================
+
+    def export_exam_results_csv(
+        self,
+        file_path: str | Path,
+    ) -> int:
+        path = Path(file_path)
+
+        rows: list[dict[str, str]] = []
+
+        exam_results = (
+            self.exam_result_service
+            .list_exam_results()
+        )
+
+        for exam_result in exam_results:
+            assignment = (
+                self.assignment_service
+                .get_assignment(
+                    exam_result.kurszuordnung_id
+                )
+            )
+
+            if assignment is None:
+                continue
+
+            person = (
+                self.person_service.get_person(
+                    assignment.person_id
+                )
+            )
+
+            if person is None:
+                continue
+
+            course_day = (
+                self.course_day_service
+                .get_course_day(
+                    assignment.kurstag_id
+                )
+            )
+
+            if course_day is None:
+                continue
+
+            course = (
+                self.course_service.get_course(
+                    course_day.lehrgang_id
+                )
+            )
+
+            if course is None:
+                continue
+
+            rows.append(
+                {
+                    "ID": exam_result.id,
+                    "Kurszuordnung ID": (
+                        assignment.id
+                    ),
+                    "Person ID": person.id,
+                    "Nachname": person.nachname,
+                    "Vorname": person.vorname,
+                    "Geburtsdatum": (
+                        person.geburtsdatum.isoformat()
+                        if person.geburtsdatum
+                        else ""
+                    ),
+                    "E-Mail": person.email or "",
+                    "Kurstag ID": course_day.id,
+                    "Lehrgang": course.bezeichnung,
+                    "Lehrgangstyp": (
+                        self._course_type_name(
+                            course.lehrgangstyp_id
+                        )
+                    ),
+                    "Datum": (
+                        course_day.datum.isoformat()
+                    ),
+                    "Beginn": (
+                        course_day.beginn or ""
+                    ),
+                    "Ende": (
+                        course_day.ende or ""
+                    ),
+                    "Kurstag Bezeichnung": (
+                        course_day.bezeichnung or ""
+                    ),
+                    "Rolle": (
+                        assignment.rolle.value
+                    ),
+                    "Bestanden": (
+                        "Ja"
+                        if exam_result.bestanden
+                        else "Nein"
+                    ),
+                    "Note": (
+                        exam_result.note or ""
+                    ),
+                    "Bemerkungen": (
+                        exam_result.bemerkungen or ""
+                    ),
+                }
+            )
+
+        with path.open(
+            "w",
+            encoding="utf-8-sig",
+            newline="",
+        ) as csv_file:
+            writer = csv.DictWriter(
+                csv_file,
+                fieldnames=(
+                    self._exam_result_fieldnames()
+                ),
+                delimiter=";",
+                quoting=csv.QUOTE_MINIMAL,
+            )
+
+            writer.writeheader()
+            writer.writerows(rows)
 
         return len(rows)
 
@@ -531,11 +778,56 @@ class ExportService:
         ]
 
     @staticmethod
+    def _exam_result_fieldnames() -> list[str]:
+        return [
+            "ID",
+            "Kurszuordnung ID",
+            "Person ID",
+            "Nachname",
+            "Vorname",
+            "Geburtsdatum",
+            "E-Mail",
+            "Kurstag ID",
+            "Lehrgang",
+            "Lehrgangstyp",
+            "Datum",
+            "Beginn",
+            "Ende",
+            "Kurstag Bezeichnung",
+            "Rolle",
+            "Bestanden",
+            "Note",
+            "Bemerkungen",
+        ]
+
+    @staticmethod
+    def _course_assignment_fieldnames() -> list[str]:
+        return [
+            "ID",
+            "Person ID",
+            "Nachname",
+            "Vorname",
+            "Geburtsdatum",
+            "E-Mail",
+            "Kurstag ID",
+            "Lehrgang",
+            "Lehrgangstyp",
+            "Datum",
+            "Beginn",
+            "Ende",
+            "Kurstag Bezeichnung",
+            "Rolle",
+            "Status",
+            "Bemerkungen",
+        ]
+
+    @staticmethod
     def _course_day_fieldnames() -> list[str]:
         return [
             "ID",
             "Lehrgang ID",
             "Lehrgang",
+            "Lehrgangstyp",
             "Datum",
             "Beginn",
             "Ende",

@@ -62,6 +62,33 @@ class CourseRepository:
 
         return self._row_to_course(row)
 
+    def get_by_type_and_name(
+        self,
+        course_type_id: str,
+        bezeichnung: str,
+    ) -> Course | None:
+        with self.database_manager.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT *
+                FROM lehrgaenge
+                WHERE
+                    lehrgangstyp_id = ?
+                    AND bezeichnung = ? COLLATE NOCASE;
+                """,
+                (
+                    course_type_id,
+                    bezeichnung.strip(),
+                ),
+            ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._row_to_course(
+            row
+        )
+
     def list_all(
         self,
     ) -> list[Course]:

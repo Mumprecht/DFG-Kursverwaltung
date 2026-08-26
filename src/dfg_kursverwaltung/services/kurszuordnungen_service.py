@@ -9,26 +9,44 @@ from dfg_kursverwaltung.core.models import (
 from dfg_kursverwaltung.repositories.kurszuordnungen_repository import (
     CourseAssignmentRepository,
 )
+from dfg_kursverwaltung.repositories.personen_repository import (
+    PersonRepository,
+)
 
 
 class CourseAssignmentService:
     def __init__(
         self,
         repository: CourseAssignmentRepository,
+        person_repository: PersonRepository,
     ):
         self.repository = repository
+        self.person_repository = person_repository
 
     def create_assignment(
         self,
         *,
         person_id: str,
         kurstag_id: str,
-        rolle: CourseAssignmentRole,
-        status: CourseAssignmentStatus = (
+        rolle: CourseAssignmentRole | str,
+        status: CourseAssignmentStatus | str = (
             CourseAssignmentStatus.REGISTERED
         ),
         bemerkungen: str | None = None,
     ) -> CourseAssignment:
+        rolle = CourseAssignmentRole(
+            rolle
+        )
+
+        status = CourseAssignmentStatus(
+            status
+        )
+
+        self._validate_role_for_person(
+            person_id,
+            rolle,
+        )
+
         existing = (
             self.repository
             .get_for_person_and_course_day(
@@ -41,6 +59,74 @@ class CourseAssignmentService:
             raise ValueError(
                 "Diese Person ist diesem Kurstag "
                 "bereits zugeordnet."
+            )
+
+        timestamp = datetime.now(
+            timezone.utc
+        )
+
+        assignment = CourseAssignment(
+            id=str(uuid4()),
+            person_id=person_id,
+            kurstag_id=kurstag_id,
+            rolle=rolle,
+            status=status,
+            bemerkungen=self._clean_optional(
+                bemerkungen
+            ),
+            created_at=timestamp,
+            updated_at=timestamp,
+        )
+
+        return self.repository.create(
+            assignment
+        )
+
+    def create_historical_assignment(
+        self,
+        *,
+        person_id: str,
+        kurstag_id: str,
+        rolle: CourseAssignmentRole | str,
+        status: CourseAssignmentStatus | str = (
+            CourseAssignmentStatus.REGISTERED
+        ),
+        bemerkungen: str | None = None,
+    ) -> CourseAssignment:
+        rolle = CourseAssignmentRole(
+            rolle
+        )
+
+        status = CourseAssignmentStatus(
+            status
+        )
+
+        existing = (
+            self.repository
+            .get_for_person_and_course_day(
+                person_id,
+                kurstag_id,
+            )
+        )
+
+        if existing is not None:
+            raise ValueError(
+                "Diese Person ist diesem Kurstag "
+                "bereits zugeordnet."
+            )
+
+        # Bei historischen Importen wird bewusst
+        # nicht gegen die heutigen Personenrollen
+        # validiert. Die Rolle gehört zur jeweiligen
+        # historischen Kurszuordnung.
+        person = self.person_repository.get_by_id(
+            person_id
+        )
+
+        if person is None:
+            raise ValueError(
+                "Die ausgewählte Person "
+                "existiert nicht."
             )
 
         timestamp = datetime.now(
@@ -105,6 +191,34 @@ class CourseAssignmentService:
         self,
         assignment: CourseAssignment,
     ) -> CourseAssignment:
+        assignment.rolle = CourseAssignmentRole(
+            assignment.rolle
+        )
+
+        assignment.status = CourseAssignmentStatus(
+            assignment.status
+        )
+
+        original = self.repository.get_by_id(
+            assignment.id
+        )
+
+        if original is None:
+            raise KeyError(
+                "Kurszuordnung nicht gefunden: "
+                f"{assignment.id}"
+            )
+
+        # Die historische Rolle bleibt gültig.
+        # Nur wenn die Rolle tatsächlich geändert
+        # wird, muss die neue Rolle bei der Person
+        # aktuell freigegeben sein.
+        if assignment.rolle != original.rolle:
+            self._validate_role_for_person(
+                assignment.person_id,
+                assignment.rolle,
+            )
+
         existing = (
             self.repository
             .get_for_person_and_course_day(
@@ -143,6 +257,48 @@ class CourseAssignmentService:
         self.repository.delete(
             assignment_id
         )
+
+    def _validate_role_for_person(
+        self,
+        person_id: str,
+        role: CourseAssignmentRole,
+    ) -> None:
+        person = self.person_repository.get_by_id(
+            person_id
+        )
+
+        if person is None:
+            raise ValueError(
+                "Die ausgewählte Person "
+                "existiert nicht."
+            )
+
+        if not person.aktiv:
+            raise ValueError(
+                "Eine inaktive Person kann "
+                "keinem neuen Kurstag "
+                "zugeordnet werden."
+            )
+
+        if (
+            role
+            == CourseAssignmentRole.PARTICIPANT
+            and not person.ist_teilnehmer
+        ):
+            raise ValueError(
+                "Der Person ist die Rolle "
+                "Teilnehmer nicht zugeordnet."
+            )
+
+        if (
+            role
+            == CourseAssignmentRole.INSTRUCTOR
+            and not person.ist_instruktor
+        ):
+            raise ValueError(
+                "Der Person ist die Rolle "
+                "Instruktor nicht zugeordnet."
+            )
 
     @staticmethod
     def _clean_optional(

@@ -70,7 +70,10 @@ class StandorteWidget(QWidget):
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 3)
 
-        main_layout.addWidget(splitter)
+        main_layout.addWidget(
+            splitter,
+            1,
+        )
 
     def _create_list_area(
         self,
@@ -105,6 +108,15 @@ class StandorteWidget(QWidget):
         )
 
         self.location_list = QListWidget()
+
+        self.location_list.setStyleSheet(
+            """
+            QListWidget::item:selected {
+                background-color: #B8DDF5;
+                color: black;
+            }
+            """
+        )
 
         self.location_list.currentItemChanged.connect(
             self._location_selected
@@ -286,8 +298,6 @@ class StandorteWidget(QWidget):
         layout.addLayout(
             action_layout
         )
-
-        layout.addStretch()
 
         self._clear_details()
 

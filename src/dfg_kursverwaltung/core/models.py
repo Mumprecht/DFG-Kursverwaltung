@@ -222,3 +222,17 @@ class CourseAssignment:
 
     created_at: datetime | None = None
     updated_at: datetime | None = None
+
+@dataclass(slots=True)
+class ExamResult:
+    id: str
+
+    kurszuordnung_id: str
+
+    bestanden: bool
+
+    note: str | None = None
+    bemerkungen: str | None = None
+
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
