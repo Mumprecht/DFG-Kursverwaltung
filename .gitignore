@@ -44,3 +44,6 @@ Thumbs.db
 
 # Automatisch erzeugte CSV-Exporte
 DFG-*.csv
+
+# Lokale Migrationstests
+Migration-Test/
