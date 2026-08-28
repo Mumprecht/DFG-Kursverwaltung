@@ -1261,6 +1261,8 @@ class KurszuordnungenWidget(QWidget):
                 assignment is not None
                 and assignment.rolle
                 == CourseAssignmentRole.PARTICIPANT
+                and assignment.status
+                == CourseAssignmentStatus.ATTENDED
                 and course is not None
                 and course.lehrgangstyp_id
                 == self.EXAM_COURSE_TYPE_ID

@@ -195,10 +195,12 @@ def main():
     assignment_service = CourseAssignmentService(
         assignment_repository,
         person_repository,
+        exam_result_repository,
     )
 
     exam_result_service = ExamResultService(
-        exam_result_repository
+        exam_result_repository,
+        assignment_repository,
     )
 
     search_service = SearchService(

@@ -1,7 +1,13 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from dfg_kursverwaltung.core.models import ExamResult
+from dfg_kursverwaltung.core.models import (
+    CourseAssignmentStatus,
+    ExamResult,
+)
+from dfg_kursverwaltung.repositories.kurszuordnungen_repository import (
+    CourseAssignmentRepository,
+)
 from dfg_kursverwaltung.repositories.pruefungsergebnisse_repository import (
     ExamResultRepository,
 )
@@ -11,8 +17,10 @@ class ExamResultService:
     def __init__(
         self,
         repository: ExamResultRepository,
+        assignment_repository: CourseAssignmentRepository,
     ):
         self.repository = repository
+        self.assignment_repository = assignment_repository
 
     def create_exam_result(
         self,
@@ -31,6 +39,10 @@ class ExamResultService:
                 "Die Kurszuordnung darf "
                 "nicht leer sein."
             )
+
+        self._validate_assignment_status(
+            kurszuordnung_id
+        )
 
         existing = (
             self.repository
@@ -106,6 +118,10 @@ class ExamResultService:
                 "nicht leer sein."
             )
 
+        self._validate_assignment_status(
+            exam_result.kurszuordnung_id
+        )
+
         existing = (
             self.repository
             .get_by_assignment_id(
@@ -150,6 +166,34 @@ class ExamResultService:
         self.repository.delete(
             exam_result_id
         )
+
+    def _validate_assignment_status(
+        self,
+        kurszuordnung_id: str,
+    ) -> None:
+        assignment = (
+            self.assignment_repository
+            .get_by_id(
+                kurszuordnung_id
+            )
+        )
+
+        if assignment is None:
+            raise ValueError(
+                "Die zugehörige Kurszuordnung "
+                "existiert nicht."
+            )
+
+        if (
+            assignment.status
+            != CourseAssignmentStatus.ATTENDED
+        ):
+            raise ValueError(
+                "Ein Prüfungsergebnis kann nur "
+                "für eine Kurszuordnung mit dem "
+                "Status 'Teilgenommen' erfasst "
+                "oder geändert werden."
+            )
 
     @staticmethod
     def _clean_optional(

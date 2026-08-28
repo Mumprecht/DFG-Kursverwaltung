@@ -12,6 +12,9 @@ from dfg_kursverwaltung.repositories.kurszuordnungen_repository import (
 from dfg_kursverwaltung.repositories.personen_repository import (
     PersonRepository,
 )
+from dfg_kursverwaltung.repositories.pruefungsergebnisse_repository import (
+    ExamResultRepository,
+)
 
 
 class CourseAssignmentService:
@@ -19,9 +22,11 @@ class CourseAssignmentService:
         self,
         repository: CourseAssignmentRepository,
         person_repository: PersonRepository,
+        exam_result_repository: ExamResultRepository,
     ):
         self.repository = repository
         self.person_repository = person_repository
+        self.exam_result_repository = exam_result_repository
 
     def create_assignment(
         self,
@@ -208,6 +213,29 @@ class CourseAssignmentService:
                 "Kurszuordnung nicht gefunden: "
                 f"{assignment.id}"
             )
+
+        # Wenn bereits ein Prüfungsergebnis existiert,
+        # muss der Status "Teilgenommen" erhalten bleiben.
+        # Das Ergebnis wird niemals stillschweigend gelöscht.
+        if (
+            assignment.status
+            != CourseAssignmentStatus.ATTENDED
+        ):
+            exam_result = (
+                self.exam_result_repository
+                .get_by_assignment_id(
+                    assignment.id
+                )
+            )
+
+            if exam_result is not None:
+                raise ValueError(
+                    "Für diese Kurszuordnung existiert "
+                    "ein Prüfungsergebnis. "
+                    "Löschen Sie zuerst das "
+                    "Prüfungsergebnis, bevor Sie den "
+                    "Status ändern."
+                )
 
         # Die historische Rolle bleibt gültig.
         # Nur wenn die Rolle tatsächlich geändert
