@@ -1,9 +1,8 @@
-from PySide6.QtCore import QPoint
-from PySide6.QtGui import QAction, QActionGroup
 from PySide6.QtWidgets import (
+    QComboBox,
+    QGroupBox,
     QLabel,
     QMainWindow,
-    QMenu,
     QMessageBox,
     QTabWidget,
     QVBoxLayout,
@@ -137,18 +136,10 @@ class MainWindow(QMainWindow):
             self.tabs
         )
 
-        self.settings_tab_index = -1
-        self.last_content_tab_index = 0
-
         self._create_tabs()
-        self._create_settings_menu()
 
         self.tabs.currentChanged.connect(
             self._on_current_tab_changed
-        )
-
-        self.tabs.tabBar().tabBarClicked.connect(
-            self._on_tab_clicked
         )
 
     def _create_tabs(self):
@@ -243,7 +234,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(
             self.courses_tab,
             self.tr(
-                "Lehrgänge / Kurstage"
+                "Lehrgänge"
             ),
         )
 
@@ -291,13 +282,13 @@ class MainWindow(QMainWindow):
             self.tr("Sicherung"),
         )
 
-        self.settings_tab = QWidget()
+        self.settings_tab = (
+            self._create_settings_tab()
+        )
 
-        self.settings_tab_index = (
-            self.tabs.addTab(
-                self.settings_tab,
-                self.tr("Einstellungen"),
-            )
+        self.tabs.addTab(
+            self.settings_tab,
+            self.tr("Einstellungen"),
         )
 
         self.info_tab = QWidget()
@@ -345,24 +336,28 @@ class MainWindow(QMainWindow):
 
         return widget
 
-    def _create_settings_menu(self):
-        self.settings_menu = QMenu(
-            self
+    def _create_settings_tab(self):
+        widget = QWidget()
+
+        layout = QVBoxLayout(
+            widget
         )
 
-        self.language_menu = (
-            self.settings_menu.addMenu(
-                self.tr("Sprache")
+        language_group = QGroupBox(
+            self.tr("Sprache")
+        )
+
+        language_layout = QVBoxLayout(
+            language_group
+        )
+
+        language_label = QLabel(
+            self.tr(
+                "Anzeigesprache der Anwendung:"
             )
         )
 
-        self.language_group = QActionGroup(
-            self
-        )
-
-        self.language_group.setExclusive(
-            True
-        )
+        self.language_combo = QComboBox()
 
         language_names = {
             "de": self.tr("Deutsch"),
@@ -374,51 +369,84 @@ class MainWindow(QMainWindow):
             ),
         }
 
-        self.language_actions = {}
-
         for language_code in SUPPORTED_LANGUAGES:
-            action = QAction(
+            self.language_combo.addItem(
                 language_names[
                     language_code
                 ],
-                self,
+                language_code,
             )
 
-            action.setCheckable(
-                True
+        current_language = (
+            self.translation_manager
+            .get_saved_language()
+        )
+
+        current_index = (
+            self.language_combo
+            .findData(
+                current_language
+            )
+        )
+
+        if current_index >= 0:
+            self.language_combo.setCurrentIndex(
+                current_index
             )
 
-            action.setData(
-                language_code
+        self.language_combo.currentIndexChanged.connect(
+            self._on_language_selection_changed
+        )
+
+        language_hint = QLabel(
+            self.tr(
+                "Die neue Sprache wird beim "
+                "nächsten Programmstart "
+                "verwendet."
             )
+        )
 
-            if (
-                language_code
-                == self.translation_manager.current_language
-            ):
-                action.setChecked(
-                    True
-                )
+        language_hint.setWordWrap(
+            True
+        )
 
-            action.triggered.connect(
-                lambda checked,
-                code=language_code:
-                self._change_language(
-                    code
-                )
+        language_layout.addWidget(
+            language_label
+        )
+
+        language_layout.addWidget(
+            self.language_combo
+        )
+
+        language_layout.addWidget(
+            language_hint
+        )
+
+        layout.addWidget(
+            language_group
+        )
+
+        layout.addStretch()
+
+        return widget
+
+    def _on_language_selection_changed(
+        self,
+        index: int,
+    ):
+        language_code = (
+            self.language_combo
+            .itemData(
+                index
             )
+        )
 
-            self.language_group.addAction(
-                action
-            )
+        if language_code is None:
+            return
 
-            self.language_menu.addAction(
-                action
-            )
-
-            self.language_actions[
-                language_code
-            ] = action
+        self._change_language(
+            str(language_code)
+        )
 
     def _open_person_from_search(
         self,
@@ -460,14 +488,6 @@ class MainWindow(QMainWindow):
         self,
         index: int,
     ):
-        if (
-            index
-            == self.settings_tab_index
-        ):
-            return
-
-        self.last_content_tab_index = index
-
         current_widget = self.tabs.widget(
             index
         )
@@ -489,50 +509,6 @@ class MainWindow(QMainWindow):
 
         elif current_widget is self.search_tab:
             self.search_tab.refresh()
-
-    def _on_tab_clicked(
-        self,
-        index: int,
-    ):
-        if (
-            index
-            != self.settings_tab_index
-        ):
-            return
-
-        self.tabs.blockSignals(
-            True
-        )
-
-        self.tabs.setCurrentIndex(
-            self.last_content_tab_index
-        )
-
-        self.tabs.blockSignals(
-            False
-        )
-
-        self._show_settings_menu()
-
-    def _show_settings_menu(self):
-        tab_bar = self.tabs.tabBar()
-
-        tab_rect = tab_bar.tabRect(
-            self.settings_tab_index
-        )
-
-        menu_position = (
-            tab_bar.mapToGlobal(
-                QPoint(
-                    tab_rect.left(),
-                    tab_rect.bottom(),
-                )
-            )
-        )
-
-        self.settings_menu.popup(
-            menu_position
-        )
 
     def _change_language(
         self,

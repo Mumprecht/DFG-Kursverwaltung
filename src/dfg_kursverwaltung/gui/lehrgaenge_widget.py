@@ -70,7 +70,7 @@ class LehrgaengeWidget(QWidget):
         main_layout = QVBoxLayout(self)
 
         title = QLabel(
-            self.tr("Lehrgänge / Kurstage")
+            self.tr("Lehrgänge")
         )
 
         title.setStyleSheet(
