@@ -1,6 +1,77 @@
 <?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="rm_CH">
     <context>
+        <name>ChangePasswordDialog</name>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="21" />
+            <location filename="../../gui/change_password_dialog.py" line="29" />
+            <source>Passwort ändern</source>
+            <translation>Midar il pled-clav</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="38" />
+            <source>Geben Sie Ihr aktuelles Passwort und anschliessend das neue Passwort ein.</source>
+            <translation>Endatai Voss pled-clav actual e suenter il nov pled-clav.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="63" />
+            <source>Aktuelles Passwort:</source>
+            <translation>Pled-clav actual:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="67" />
+            <source>Neues Passwort:</source>
+            <translation>Nov pled-clav:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="71" />
+            <source>Neues Passwort wiederholen:</source>
+            <translation>Repeter il nov pled-clav:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="91" />
+            <source>Speichern</source>
+            <translation>Memorisar</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="96" />
+            <source>Abbrechen</source>
+            <translation>Interrumper</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="130" />
+            <location filename="../../gui/change_password_dialog.py" line="142" />
+            <location filename="../../gui/change_password_dialog.py" line="154" />
+            <source>Eingabe fehlt</source>
+            <translation>Indicaziun manca</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="132" />
+            <source>Bitte geben Sie Ihr aktuelles Passwort ein.</source>
+            <translation>Endatai Voss pled-clav actual.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="144" />
+            <source>Bitte geben Sie ein neues Passwort ein.</source>
+            <translation>Endatai in nov pled-clav.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="156" />
+            <source>Bitte wiederholen Sie das neue Passwort.</source>
+            <translation>Repeta il nov pled-clav.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="166" />
+            <source>Passwörter stimmen nicht überein</source>
+            <translation>Ils pleds-clav na correspundan betg</translation>
+        </message>
+        <message>
+            <location filename="../../gui/change_password_dialog.py" line="168" />
+            <source>Das neue Passwort und die Wiederholung stimmen nicht überein.</source>
+            <translation>Il nov pled-clav e sia repetiziun na correspundan betg.</translation>
+        </message>
+    </context>
+    <context>
         <name>DroneDialog</name>
         <message>
             <location filename="../../gui/drohne_dialog.py" line="28" />
@@ -1460,6 +1531,70 @@
         </message>
     </context>
     <context>
+        <name>LoginDialog</name>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="21" />
+            <source>Anmeldung</source>
+            <translation>Annunzia</translation>
+        </message>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="29" />
+            <source>DFG-Kursverwaltung</source>
+            <translation>Administraziun dals curs DFG</translation>
+        </message>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="38" />
+            <source>Bitte melden Sie sich mit Ihrem Benutzerkonto an.</source>
+            <translation>S'annunziai cun Voss conto d'utilisader.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="49" />
+            <source>Benutzername</source>
+            <translation>Num d’utilisader</translation>
+        </message>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="57" />
+            <source>Passwort</source>
+            <translation>Pled-clav</translation>
+        </message>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="61" />
+            <source>Benutzername:</source>
+            <translation>Num d’utilisader:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="65" />
+            <source>Passwort:</source>
+            <translation>Pled-clav:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="85" />
+            <source>Anmelden</source>
+            <translation>S'annunziar</translation>
+        </message>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="90" />
+            <source>Abbrechen</source>
+            <translation>Interrumper</translation>
+        </message>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="122" />
+            <location filename="../../gui/login_dialog.py" line="134" />
+            <source>Eingabe fehlt</source>
+            <translation>Indicaziun manca</translation>
+        </message>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="124" />
+            <source>Bitte geben Sie einen Benutzernamen ein.</source>
+            <translation>Endatai in num d’utilisader.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/login_dialog.py" line="136" />
+            <source>Bitte geben Sie ein Passwort ein.</source>
+            <translation>Endatai in pled-clav.</translation>
+        </message>
+    </context>
+    <context>
         <name>MainWindow</name>
         <message>
             <location filename="../../gui/main_window.py" line="124" />
@@ -2793,6 +2928,172 @@ Vulais Vus propi cuntinuar?</translation>
             <location filename="../../gui/suche_widget.py" line="312" />
             <source>%1 Treffer gefunden.</source>
             <translation>%1 resultats chattads.</translation>
+        </message>
+    </context>
+    <context>
+        <name>SystemAdminSetupDialog</name>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="39" />
+            <source>Ersteinrichtung</source>
+            <translation>Configuraziun iniziala</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="47" />
+            <source>Systemadministrator einrichten</source>
+            <translation>Configurar l’administratur dal sistem</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="62" />
+            <source>Für die DFG-Kursverwaltung muss zuerst ein geschützter Systemadministrator eingerichtet werden.</source>
+            <translation>Per l’administraziun dals curs DFG sto l’emprim vegnir configurà in administratur dal sistem protegì.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="107" />
+            <source>Sprache:</source>
+            <translation>Lingua:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="128" />
+            <source>Benutzername</source>
+            <translation>Num d’utilisader</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="132" />
+            <source>Nachname</source>
+            <translation>Num</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="136" />
+            <source>Vorname</source>
+            <translation>Prenum</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="140" />
+            <source>name@beispiel.ch</source>
+            <translation>num@exempel.ch</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="144" />
+            <source>Benutzername:</source>
+            <translation>Num d’utilisader:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="149" />
+            <source>Nachname:</source>
+            <translation>Num:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="154" />
+            <source>Vorname:</source>
+            <translation>Prenum:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="159" />
+            <source>E-Mail:</source>
+            <translation>E-mail:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="164" />
+            <source>Passwort:</source>
+            <translation>Pled-clav:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="169" />
+            <source>Passwort wiederholen:</source>
+            <translation>Repeter il pled-clav:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="191" />
+            <source>Speichern</source>
+            <translation>Memorisar</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="195" />
+            <source>Abbrechen</source>
+            <translation>Interrumper</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="232" />
+            <source>Sprachwechsel nicht möglich</source>
+            <translation>Midada da lingua betg pussaivla</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="234" />
+            <source>Die ausgewählte Sprache konnte nicht geladen werden.</source>
+            <translation>La lingua tschernida n’ha betg pudì vegnir chargiada.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="286" />
+            <source>Bitte geben Sie einen Benutzernamen ein.</source>
+            <translation>Endatai in num d’utilisader.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="296" />
+            <source>Bitte geben Sie einen Nachnamen ein.</source>
+            <translation>Endatai in num.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="306" />
+            <source>Bitte geben Sie einen Vornamen ein.</source>
+            <translation>Endatai in prenum.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="316" />
+            <source>Bitte geben Sie eine E-Mail-Adresse ein.</source>
+            <translation>Endatai ina adressa dad e-mail.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="330" />
+            <source>Ungültige E-Mail-Adresse</source>
+            <translation>Adressa dad e-mail nunvalida</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="333" />
+            <source>Bitte geben Sie eine gültige E-Mail-Adresse ein.</source>
+            <translation>Endatai ina adressa dad e-mail valida.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="344" />
+            <source>Bitte geben Sie ein Passwort ein.</source>
+            <translation>Endatai in pled-clav.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="355" />
+            <source>Passwörter stimmen nicht überein</source>
+            <translation>Ils pleds-clav na correspundan betg</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="358" />
+            <source>Die beiden eingegebenen Passwörter stimmen nicht überein.</source>
+            <translation>Ils dus pleds-clav endatads na correspundan betg.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/systemadmin_setup_dialog.py" line="377" />
+            <source>Eingabe fehlt</source>
+            <translation>Indicaziun manca</translation>
+        </message>
+    </context>
+    <context>
+        <name>main</name>
+        <message>
+            <location filename="../../main.py" line="333" />
+            <source>Systemadministrator</source>
+            <translation>Administratur dal sistem</translation>
+        </message>
+        <message>
+            <location filename="../../main.py" line="378" />
+            <source>Anmeldung fehlgeschlagen</source>
+            <translation>Annunzia betg reussida</translation>
+        </message>
+        <message>
+            <location filename="../../main.py" line="382" />
+            <source>Benutzername oder Passwort ist ungültig.</source>
+            <translation>Il num d’utilisader u il pled-clav n’è betg valid.</translation>
+        </message>
+        <message>
+            <location filename="../../main.py" line="431" />
+            <source>Passwort konnte nicht geändert werden</source>
+            <translation>Il pled-clav n’ha betg pudì vegnir midà</translation>
         </message>
     </context>
 </TS>

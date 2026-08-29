@@ -2,7 +2,11 @@ import sys
 from pathlib import Path
 
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QMessageBox,
+)
 
 from dfg_kursverwaltung.core.database import (
     DatabaseManager,
@@ -10,8 +14,17 @@ from dfg_kursverwaltung.core.database import (
 from dfg_kursverwaltung.core.i18n import (
     TranslationManager,
 )
+from dfg_kursverwaltung.gui.change_password_dialog import (
+    ChangePasswordDialog,
+)
+from dfg_kursverwaltung.gui.login_dialog import (
+    LoginDialog,
+)
 from dfg_kursverwaltung.gui.main_window import (
     MainWindow,
+)
+from dfg_kursverwaltung.gui.systemadmin_setup_dialog import (
+    SystemAdminSetupDialog,
 )
 from dfg_kursverwaltung.repositories.drohnen_repository import (
     DroneRepository,
@@ -43,8 +56,20 @@ from dfg_kursverwaltung.repositories.suche_repository import (
 from dfg_kursverwaltung.repositories.telefonnummern_repository import (
     PhoneNumberRepository,
 )
+from dfg_kursverwaltung.repositories.benutzer_repository import (
+    UserRepository,
+)
+from dfg_kursverwaltung.services.auth_service import (
+    AuthenticationService,
+)
 from dfg_kursverwaltung.services.backup_service import (
     BackupService,
+)
+from dfg_kursverwaltung.services.benutzer_service import (
+    UserService,
+)
+from dfg_kursverwaltung.services.bootstrap_service import (
+    BootstrapService,
 )
 from dfg_kursverwaltung.services.drohnen_service import (
     DroneService,
@@ -159,6 +184,10 @@ def main():
         database_manager
     )
 
+    user_repository = UserRepository(
+        database_manager
+    )
+
     # ---------------------------------------------------------
     # Services
     # ---------------------------------------------------------
@@ -233,6 +262,18 @@ def main():
         database_manager
     )
 
+    user_service = UserService(
+        user_repository
+    )
+
+    bootstrap_service = BootstrapService(
+        user_service
+    )
+
+    authentication_service = AuthenticationService(
+        user_repository
+    )
+
     # ---------------------------------------------------------
     # Übersetzungen
     # ---------------------------------------------------------
@@ -249,6 +290,172 @@ def main():
     translation_manager.load_language(
         language
     )
+
+    # ---------------------------------------------------------
+    # Ersteinrichtung
+    # ---------------------------------------------------------
+
+    while (
+        bootstrap_service
+        .requires_systemadmin_setup()
+    ):
+        dialog = SystemAdminSetupDialog(
+            translation_manager
+        )
+
+        if icon_path.exists():
+            dialog.setWindowIcon(
+                QIcon(
+                    str(icon_path)
+                )
+            )
+
+        result = dialog.exec()
+
+        if (
+            result
+            == SystemAdminSetupDialog.LANGUAGE_CHANGED
+        ):
+            continue
+
+        if result != QDialog.DialogCode.Accepted:
+            return 0
+
+        data = dialog.get_data()
+
+        try:
+            user_service.create_systemadmin(
+                **data
+            )
+        except (ValueError, TypeError) as error:
+            QMessageBox.warning(
+                None,
+                QApplication.translate(
+                    "main",
+                    "Systemadministrator",
+                ),
+                str(error),
+            )
+            continue
+
+    # ---------------------------------------------------------
+    # Anmeldung
+    # ---------------------------------------------------------
+
+    authenticated_user = None
+
+    while authenticated_user is None:
+        dialog = LoginDialog()
+
+        if icon_path.exists():
+            dialog.setWindowIcon(
+                QIcon(
+                    str(icon_path)
+                )
+            )
+
+        result = dialog.exec()
+
+        if result != QDialog.DialogCode.Accepted:
+            return 0
+
+        username, password = (
+            dialog.get_credentials()
+        )
+
+        authenticated_user = (
+            authentication_service.authenticate(
+                username,
+                password,
+            )
+        )
+
+        del password
+
+        if authenticated_user is None:
+            QMessageBox.warning(
+                None,
+                QApplication.translate(
+                    "main",
+                    "Anmeldung fehlgeschlagen",
+                ),
+                QApplication.translate(
+                    "main",
+                    "Benutzername oder Passwort ist ungültig.",
+                ),
+            )
+            continue
+
+        # -----------------------------------------------------
+        # Erzwungener Passwortwechsel
+        # -----------------------------------------------------
+
+        if authenticated_user.passwort_aendern:
+            password_changed = False
+
+            while not password_changed:
+                password_dialog = (
+                    ChangePasswordDialog()
+                )
+
+                if icon_path.exists():
+                    password_dialog.setWindowIcon(
+                        QIcon(
+                            str(icon_path)
+                        )
+                    )
+
+                result = password_dialog.exec()
+
+                if (
+                    result
+                    != QDialog.DialogCode.Accepted
+                ):
+                    authenticated_user = None
+                    break
+
+                (
+                    current_password,
+                    new_password,
+                ) = password_dialog.get_passwords()
+
+                try:
+                    user_service.change_own_password(
+                        authenticated_user.id,
+                        current_password,
+                        new_password,
+                    )
+                except (ValueError, TypeError) as error:
+                    QMessageBox.warning(
+                        None,
+                        QApplication.translate(
+                            "main",
+                            "Passwort konnte nicht geändert werden",
+                        ),
+                        str(error),
+                    )
+                    continue
+                finally:
+                    del current_password
+                    del new_password
+
+                authenticated_user = (
+                    user_service.get_user(
+                        authenticated_user.id
+                    )
+                )
+
+                if authenticated_user is None:
+                    raise RuntimeError(
+                        "Benutzer konnte nach dem "
+                        "Passwortwechsel nicht erneut "
+                        "geladen werden."
+                    )
+
+                password_changed = True
+
+            if authenticated_user is None:
+                continue
 
     # ---------------------------------------------------------
     # Hauptfenster

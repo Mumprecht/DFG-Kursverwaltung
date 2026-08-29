@@ -10,6 +10,14 @@ class PhoneNumberType(StrEnum):
     OTHER = "other"
 
 
+class UserRole(StrEnum):
+    ADMINISTRATOR = "administrator"
+    COURSE_MANAGEMENT = "kursverwaltung"
+    INSTRUCTOR = "instruktor"
+    READER = "leser"
+    INACTIVE = "inaktiv"
+
+
 class CourseAssignmentRole(StrEnum):
     PARTICIPANT = "participant"
     INSTRUCTOR = "instructor"
@@ -20,6 +28,31 @@ class CourseAssignmentStatus(StrEnum):
     ATTENDED = "attended"
     ABSENT = "absent"
     CANCELLED = "cancelled"
+
+
+@dataclass(slots=True)
+class User:
+    id: str
+
+    username: str
+    nachname: str
+    vorname: str
+    email: str
+
+    password_hash: str
+    rolle: UserRole
+
+    ist_systemadmin: bool = False
+    passwort_aendern: bool = False
+
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+    @property
+    def voller_name(self) -> str:
+        return (
+            f"{self.vorname} {self.nachname}"
+        ).strip()
 
 
 @dataclass(slots=True)
