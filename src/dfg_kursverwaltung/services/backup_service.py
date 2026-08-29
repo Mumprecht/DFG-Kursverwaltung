@@ -10,6 +10,7 @@ from dfg_kursverwaltung.core.database import (
 
 class BackupService:
     REQUIRED_TABLES = {
+        "benutzer",
         "drohnen",
         "kurstage",
         "kurszuordnungen",

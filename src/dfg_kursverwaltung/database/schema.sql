@@ -4,7 +4,7 @@ PRAGMA foreign_keys = ON;
 -- ============================================================
 -- DFG-Kursverwaltung
 -- SQLite-Datenbankschema
--- Schema-Version: 6
+-- Schema-Version: 7
 -- ============================================================
 
 
@@ -14,6 +14,58 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS schema_info (
     version INTEGER NOT NULL
+);
+
+
+-- ------------------------------------------------------------
+-- Benutzer
+-- ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS benutzer (
+    id TEXT PRIMARY KEY,
+
+    username TEXT NOT NULL
+        COLLATE NOCASE UNIQUE,
+
+    nachname TEXT NOT NULL,
+    vorname TEXT NOT NULL,
+
+    email TEXT NOT NULL
+        COLLATE NOCASE UNIQUE,
+
+    password_hash TEXT NOT NULL,
+
+    rolle TEXT NOT NULL,
+
+    ist_systemadmin INTEGER NOT NULL DEFAULT 0,
+
+    passwort_aendern INTEGER NOT NULL DEFAULT 0,
+
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+
+    CHECK (
+        rolle IN (
+            'administrator',
+            'kursverwaltung',
+            'instruktor',
+            'leser',
+            'inaktiv'
+        )
+    ),
+
+    CHECK (
+        ist_systemadmin IN (0, 1)
+    ),
+
+    CHECK (
+        passwort_aendern IN (0, 1)
+    ),
+
+    CHECK (
+        ist_systemadmin = 0
+        OR rolle = 'administrator'
+    )
 );
 
 
@@ -318,6 +370,23 @@ CREATE TABLE IF NOT EXISTS pruefungsergebnisse (
 -- ============================================================
 -- Indizes
 -- ============================================================
+
+CREATE INDEX IF NOT EXISTS
+    idx_benutzer_namen
+ON benutzer(nachname, vorname);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_benutzer_rolle
+ON benutzer(rolle);
+
+
+CREATE UNIQUE INDEX IF NOT EXISTS
+    idx_benutzer_systemadmin
+ON benutzer(ist_systemadmin)
+WHERE ist_systemadmin = 1;
+
+
 
 CREATE INDEX IF NOT EXISTS
     idx_personen_name

@@ -5,7 +5,7 @@ from pathlib import Path
 import sqlite3
 
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 
 class DatabaseManager:
@@ -150,6 +150,10 @@ class DatabaseManager:
         if current_version == 5:
             self._migrate_5_to_6()
             current_version = 6
+
+        if current_version == 6:
+            self._migrate_6_to_7()
+            current_version = 7
 
         if current_version != SCHEMA_VERSION:
             raise RuntimeError(
@@ -686,6 +690,259 @@ class DatabaseManager:
             connection.execute(
                 "PRAGMA foreign_keys = ON;"
             )
+
+        except Exception:
+            if connection.in_transaction:
+                connection.rollback()
+
+            raise
+
+        finally:
+            connection.close()
+
+    def _migrate_6_to_7(
+        self,
+    ) -> None:
+        connection = sqlite3.connect(
+            self.database_path
+        )
+
+        connection.row_factory = (
+            sqlite3.Row
+        )
+
+        try:
+            connection.execute(
+                "PRAGMA foreign_keys = ON;"
+            )
+
+            connection.execute(
+                "BEGIN IMMEDIATE;"
+            )
+
+            existing_table = (
+                connection.execute(
+                    """
+                    SELECT name
+                    FROM sqlite_master
+                    WHERE
+                        type = 'table'
+                        AND name = 'benutzer';
+                    """
+                ).fetchone()
+            )
+
+            if existing_table is not None:
+                raise RuntimeError(
+                    "Die Tabelle 'benutzer' "
+                    "existiert bereits, obwohl "
+                    "die Datenbank noch "
+                    "Schema-Version 6 meldet."
+                )
+
+            connection.execute(
+                """
+                CREATE TABLE benutzer (
+                    id TEXT PRIMARY KEY,
+
+                    username TEXT NOT NULL
+                        COLLATE NOCASE UNIQUE,
+
+                    nachname TEXT NOT NULL,
+                    vorname TEXT NOT NULL,
+
+                    email TEXT NOT NULL
+                        COLLATE NOCASE UNIQUE,
+
+                    password_hash TEXT NOT NULL,
+
+                    rolle TEXT NOT NULL,
+
+                    ist_systemadmin INTEGER
+                        NOT NULL DEFAULT 0,
+
+                    passwort_aendern INTEGER
+                        NOT NULL DEFAULT 0,
+
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+
+                    CHECK (
+                        rolle IN (
+                            'administrator',
+                            'kursverwaltung',
+                            'instruktor',
+                            'leser',
+                            'inaktiv'
+                        )
+                    ),
+
+                    CHECK (
+                        ist_systemadmin IN (0, 1)
+                    ),
+
+                    CHECK (
+                        passwort_aendern IN (0, 1)
+                    ),
+
+                    CHECK (
+                        ist_systemadmin = 0
+                        OR rolle = 'administrator'
+                    )
+                );
+                """
+            )
+
+            connection.execute(
+                """
+                CREATE INDEX
+                    idx_benutzer_namen
+                ON benutzer(
+                    nachname,
+                    vorname
+                );
+                """
+            )
+
+            connection.execute(
+                """
+                CREATE INDEX
+                    idx_benutzer_rolle
+                ON benutzer(
+                    rolle
+                );
+                """
+            )
+
+            connection.execute(
+                """
+                CREATE UNIQUE INDEX
+                    idx_benutzer_systemadmin
+                ON benutzer(
+                    ist_systemadmin
+                )
+                WHERE ist_systemadmin = 1;
+                """
+            )
+
+            columns = {
+                row["name"]
+                for row in connection.execute(
+                    """
+                    PRAGMA table_info(
+                        benutzer
+                    );
+                    """
+                ).fetchall()
+            }
+
+            expected_columns = {
+                "id",
+                "username",
+                "nachname",
+                "vorname",
+                "email",
+                "password_hash",
+                "rolle",
+                "ist_systemadmin",
+                "passwort_aendern",
+                "created_at",
+                "updated_at",
+            }
+
+            if columns != expected_columns:
+                raise RuntimeError(
+                    "Die Tabelle 'benutzer' "
+                    "besitzt nach der Migration "
+                    "nicht die erwartete "
+                    "Struktur."
+                )
+
+            indexes = {
+                row["name"]
+                for row in connection.execute(
+                    """
+                    SELECT name
+                    FROM sqlite_master
+                    WHERE
+                        type = 'index'
+                        AND tbl_name = 'benutzer';
+                    """
+                ).fetchall()
+                if row["name"] is not None
+            }
+
+            expected_indexes = {
+                "idx_benutzer_namen",
+                "idx_benutzer_rolle",
+                "idx_benutzer_systemadmin",
+            }
+
+            if not expected_indexes.issubset(
+                indexes
+            ):
+                missing_indexes = (
+                    expected_indexes - indexes
+                )
+
+                raise RuntimeError(
+                    "Nach der Migration fehlen "
+                    "Benutzer-Indizes: "
+                    + ", ".join(
+                        sorted(missing_indexes)
+                    )
+                )
+
+            user_count = connection.execute(
+                """
+                SELECT COUNT(*)
+                FROM benutzer;
+                """
+            ).fetchone()[0]
+
+            if user_count != 0:
+                raise RuntimeError(
+                    "Die neu angelegte Tabelle "
+                    "'benutzer' ist unerwartet "
+                    "nicht leer."
+                )
+
+            foreign_key_errors = (
+                connection.execute(
+                    """
+                    PRAGMA foreign_key_check;
+                    """
+                ).fetchall()
+            )
+
+            if foreign_key_errors:
+                raise RuntimeError(
+                    "Nach der Migration wurden "
+                    "Foreign-Key-Fehler gefunden: "
+                    f"{len(foreign_key_errors)}"
+                )
+
+            integrity = connection.execute(
+                """
+                PRAGMA integrity_check;
+                """
+            ).fetchone()[0]
+
+            if integrity != "ok":
+                raise RuntimeError(
+                    "Integritätsprüfung nach "
+                    "Migration fehlgeschlagen: "
+                    f"{integrity}"
+                )
+
+            connection.execute(
+                """
+                UPDATE schema_info
+                SET version = 7;
+                """
+            )
+
+            connection.commit()
 
         except Exception:
             if connection.in_transaction:
