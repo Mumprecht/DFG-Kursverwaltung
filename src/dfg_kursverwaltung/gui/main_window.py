@@ -13,6 +13,13 @@ from dfg_kursverwaltung.core.i18n import (
     SUPPORTED_LANGUAGES,
     TranslationManager,
 )
+from dfg_kursverwaltung.core.models import (
+    User,
+    UserRole,
+)
+from dfg_kursverwaltung.gui.benutzer_widget import (
+    BenutzerWidget,
+)
 from dfg_kursverwaltung.gui.export_widget import (
     ExportWidget,
 )
@@ -45,6 +52,9 @@ from dfg_kursverwaltung.gui.suche_widget import (
 )
 from dfg_kursverwaltung.services.backup_service import (
     BackupService,
+)
+from dfg_kursverwaltung.services.benutzer_service import (
+    UserService,
 )
 from dfg_kursverwaltung.services.drohnen_service import (
     DroneService,
@@ -101,6 +111,8 @@ class MainWindow(QMainWindow):
         import_service: ImportService,
         export_service: ExportService,
         backup_service: BackupService,
+        user_service: UserService,
+        authenticated_user: User,
     ):
         super().__init__()
 
@@ -118,6 +130,8 @@ class MainWindow(QMainWindow):
         self.import_service = import_service
         self.export_service = export_service
         self.backup_service = backup_service
+        self.user_service = user_service
+        self.authenticated_user = authenticated_user
 
         self.setWindowTitle(
             self.tr(
@@ -226,6 +240,16 @@ class MainWindow(QMainWindow):
             self.backup_service
         )
 
+        self.users_tab = None
+
+        if (
+            self.authenticated_user.rolle
+            == UserRole.ADMINISTRATOR
+        ):
+            self.users_tab = BenutzerWidget(
+                self.user_service
+            )
+
         self.tabs.addTab(
             self.people_tab,
             self.tr("Personen"),
@@ -281,6 +305,12 @@ class MainWindow(QMainWindow):
             self.backup_tab,
             self.tr("Sicherung"),
         )
+
+        if self.users_tab is not None:
+            self.tabs.addTab(
+                self.users_tab,
+                self.tr("Benutzer"),
+            )
 
         self.settings_tab = (
             self._create_settings_tab()
@@ -509,6 +539,12 @@ class MainWindow(QMainWindow):
 
         elif current_widget is self.search_tab:
             self.search_tab.refresh()
+
+        elif (
+            self.users_tab is not None
+            and current_widget is self.users_tab
+        ):
+            self.users_tab.load_users()
 
     def _change_language(
         self,

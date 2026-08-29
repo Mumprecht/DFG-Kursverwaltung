@@ -1,6 +1,394 @@
 <?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="it_CH">
     <context>
+        <name>BenutzerDialog</name>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="42" />
+            <source>Neuer Benutzer</source>
+            <translation>Nuovo utente</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="46" />
+            <source>Benutzer bearbeiten</source>
+            <translation>Modifica utente</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="63" />
+            <source>Benutzerdaten</source>
+            <translation>Dati utente</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="76" />
+            <source>name@example.ch</source>
+            <translation>name@example.ch</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="81" />
+            <source>Benutzername:</source>
+            <translation>Nome utente:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="85" />
+            <source>Nachname:</source>
+            <translation>Cognome:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="89" />
+            <source>Vorname:</source>
+            <translation>Nome:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="93" />
+            <source>E-Mail:</source>
+            <translation>E-mail:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="103" />
+            <source>Berechtigung</source>
+            <translation>Autorizzazione</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="112" />
+            <source>Administrator</source>
+            <translation>Amministratore</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="116" />
+            <source>Kursverwaltung</source>
+            <translation>Gestione corsi</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="120" />
+            <source>Instruktor</source>
+            <translation>Istruttore</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="124" />
+            <source>Leser</source>
+            <translation>Lettore</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="129" />
+            <source>Inaktiv</source>
+            <translation>Inattivo</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="134" />
+            <source>Rolle:</source>
+            <translation>Ruolo:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="144" />
+            <source>Passwort</source>
+            <translation>Password</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="162" />
+            <source>Passwort muss beim nächsten Anmelden geändert werden</source>
+            <translation>La password deve essere modificata al prossimo accesso</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="171" />
+            <source>Passwort:</source>
+            <translation>Password:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="175" />
+            <source>Passwort wiederholen:</source>
+            <translation>Ripeti password:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="194" />
+            <source>Der geschützte Systemadministrator muss Administrator bleiben.</source>
+            <translation>L’amministratore di sistema protetto deve rimanere amministratore.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="217" />
+            <source>Speichern</source>
+            <translation>Salva</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="223" />
+            <source>Abbrechen</source>
+            <translation>Annulla</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="276" />
+            <source>Fehlender Benutzername</source>
+            <translation>Nome utente mancante</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="279" />
+            <source>Bitte geben Sie einen Benutzernamen ein.</source>
+            <translation>Inserire un nome utente.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="290" />
+            <source>Fehlender Nachname</source>
+            <translation>Cognome mancante</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="293" />
+            <source>Bitte geben Sie einen Nachnamen ein.</source>
+            <translation>Inserire un cognome.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="304" />
+            <source>Fehlender Vorname</source>
+            <translation>Nome mancante</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="307" />
+            <source>Bitte geben Sie einen Vornamen ein.</source>
+            <translation>Inserire un nome.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="318" />
+            <source>Fehlende E-Mail-Adresse</source>
+            <translation>Indirizzo e-mail mancante</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="321" />
+            <source>Bitte geben Sie eine E-Mail-Adresse ein.</source>
+            <translation>Inserire un indirizzo e-mail.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="333" />
+            <source>Fehlendes Passwort</source>
+            <translation>Password mancante</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="336" />
+            <source>Bitte geben Sie ein Passwort ein.</source>
+            <translation>Inserire una password.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="347" />
+            <source>Fehlende Passwortbestätigung</source>
+            <translation>Conferma password mancante</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="350" />
+            <source>Bitte wiederholen Sie das Passwort.</source>
+            <translation>Ripetere la password.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="364" />
+            <source>Passwörter stimmen nicht überein</source>
+            <translation>Le password non corrispondono</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_dialog.py" line="367" />
+            <source>Das Passwort und seine Bestätigung stimmen nicht überein.</source>
+            <translation>La password e la relativa conferma non corrispondono.</translation>
+        </message>
+    </context>
+    <context>
+        <name>BenutzerWidget</name>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="52" />
+            <source>Benutzerverwaltung</source>
+            <translation>Gestione utenti</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="89" />
+            <source>Benutzer suchen...</source>
+            <translation>Cerca utente...</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="101" />
+            <source>Inaktive anzeigen</source>
+            <translation>Mostra utenti inattivi</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="129" />
+            <source>Neu</source>
+            <translation>Nuovo</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="132" />
+            <source>Bearbeiten</source>
+            <translation>Modifica</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="135" />
+            <source>Deaktivieren</source>
+            <translation>Disattiva</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="138" />
+            <source>Passwort zurücksetzen</source>
+            <translation>Reimposta password</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="141" />
+            <source>Löschen</source>
+            <translation>Elimina</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="198" />
+            <source>Benutzerdetails</source>
+            <translation>Dettagli utente</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="210" />
+            <source>Benutzerdaten</source>
+            <translation>Dati utente</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="221" />
+            <source>Benutzername:</source>
+            <translation>Nome utente:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="225" />
+            <source>Name:</source>
+            <translation>Nome:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="229" />
+            <source>E-Mail:</source>
+            <translation>E-mail:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="238" />
+            <source>Berechtigung</source>
+            <translation>Autorizzazione</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="250" />
+            <source>Rolle:</source>
+            <translation>Ruolo:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="254" />
+            <source>Status:</source>
+            <translation>Stato:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="258" />
+            <source>Systemadministrator:</source>
+            <translation>Amministratore di sistema:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="263" />
+            <source>Passwortänderung erforderlich:</source>
+            <translation>Modifica password richiesta:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="410" />
+            <location filename="../../gui/benutzer_widget.py" line="842" />
+            <source>Inaktiv</source>
+            <translation>Inattivo</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="414" />
+            <source>Aktiv</source>
+            <translation>Attivo</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="418" />
+            <location filename="../../gui/benutzer_widget.py" line="424" />
+            <source>Ja</source>
+            <translation>Sì</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="420" />
+            <location filename="../../gui/benutzer_widget.py" line="426" />
+            <source>Nein</source>
+            <translation>No</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="469" />
+            <location filename="../../gui/benutzer_widget.py" line="535" />
+            <location filename="../../gui/benutzer_widget.py" line="608" />
+            <location filename="../../gui/benutzer_widget.py" line="662" />
+            <location filename="../../gui/benutzer_widget.py" line="734" />
+            <source>Fehler</source>
+            <translation>Errore</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="471" />
+            <source>Der Benutzer konnte nicht gespeichert werden.</source>
+            <translation>Impossibile salvare l’utente.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="537" />
+            <source>Die Änderungen konnten nicht gespeichert werden.</source>
+            <translation>Impossibile salvare le modifiche.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="575" />
+            <source>Benutzer löschen</source>
+            <translation>Elimina utente</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="577" />
+            <source>Soll der Benutzer wirklich dauerhaft gelöscht werden?</source>
+            <translation>Eliminare definitivamente questo utente?</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="587" />
+            <source>Dieser Vorgang kann nicht rückgängig gemacht werden.</source>
+            <translation>Questa operazione non può essere annullata.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="610" />
+            <source>Der Benutzer konnte nicht gelöscht werden.</source>
+            <translation>Impossibile eliminare l’utente.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="664" />
+            <source>Das Passwort konnte nicht zurückgesetzt werden.</source>
+            <translation>Impossibile reimpostare la password.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="677" />
+            <source>Passwort zurückgesetzt</source>
+            <translation>Password reimpostata</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="679" />
+            <source>Das Passwort wurde erfolgreich zurückgesetzt.</source>
+            <translation>La password è stata reimpostata correttamente.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="703" />
+            <source>Benutzer deaktivieren</source>
+            <translation>Disattiva utente</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="705" />
+            <source>Soll der Benutzer wirklich deaktiviert werden?</source>
+            <translation>Disattivare questo utente?</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="736" />
+            <source>Der Benutzer konnte nicht deaktiviert werden.</source>
+            <translation>Impossibile disattivare l’utente.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="830" />
+            <source>Administrator</source>
+            <translation>Amministratore</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="833" />
+            <source>Kursverwaltung</source>
+            <translation>Gestione corsi</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="836" />
+            <source>Instruktor</source>
+            <translation>Istruttore</translation>
+        </message>
+        <message>
+            <location filename="../../gui/benutzer_widget.py" line="839" />
+            <source>Leser</source>
+            <translation>Lettore</translation>
+        </message>
+    </context>
+    <context>
         <name>ChangePasswordDialog</name>
         <message>
             <location filename="../../gui/change_password_dialog.py" line="21" />
@@ -2380,6 +2768,76 @@ I dati storici dei corsi saranno mantenuti.</translation>
             <location filename="../../gui/pruefungsergebnis_dialog.py" line="163" />
             <source>Abbrechen</source>
             <translation>Annulla</translation>
+        </message>
+    </context>
+    <context>
+        <name>ResetPasswordDialog</name>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="25" />
+            <location filename="../../gui/reset_password_dialog.py" line="33" />
+            <source>Passwort zurücksetzen</source>
+            <translation>Reimposta password</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="42" />
+            <source>Legen Sie ein neues Passwort für den ausgewählten Benutzer fest.</source>
+            <translation>Impostare una nuova password per l’utente selezionato.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="56" />
+            <source>Benutzername:</source>
+            <translation>Nome utente:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="75" />
+            <source>Neues Passwort:</source>
+            <translation>Nuova password:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="79" />
+            <source>Neues Passwort wiederholen:</source>
+            <translation>Ripeti nuova password:</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="87" />
+            <source>Passwort muss beim nächsten Anmelden geändert werden</source>
+            <translation>La password deve essere modificata al prossimo accesso</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="113" />
+            <source>Speichern</source>
+            <translation>Salva</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="118" />
+            <source>Abbrechen</source>
+            <translation>Annulla</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="151" />
+            <location filename="../../gui/reset_password_dialog.py" line="163" />
+            <source>Eingabe fehlt</source>
+            <translation>Dati mancanti</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="153" />
+            <source>Bitte geben Sie ein neues Passwort ein.</source>
+            <translation>Inserire una nuova password.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="165" />
+            <source>Bitte wiederholen Sie das neue Passwort.</source>
+            <translation>Ripetere la nuova password.</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="176" />
+            <source>Passwörter stimmen nicht überein</source>
+            <translation>Le password non corrispondono</translation>
+        </message>
+        <message>
+            <location filename="../../gui/reset_password_dialog.py" line="179" />
+            <source>Das neue Passwort und die Wiederholung stimmen nicht überein.</source>
+            <translation>La nuova password e la ripetizione non corrispondono.</translation>
         </message>
     </context>
     <context>

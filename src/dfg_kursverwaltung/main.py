@@ -476,6 +476,8 @@ def main():
         import_service,
         export_service,
         backup_service,
+        user_service,
+        authenticated_user,
     )
 
     if icon_path.exists():
