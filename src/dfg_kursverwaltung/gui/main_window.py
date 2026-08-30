@@ -13,9 +13,10 @@ from dfg_kursverwaltung.core.i18n import (
     SUPPORTED_LANGUAGES,
     TranslationManager,
 )
-from dfg_kursverwaltung.core.models import (
-    User,
-    UserRole,
+from dfg_kursverwaltung.core.models import User
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    has_permission,
 )
 from dfg_kursverwaltung.gui.benutzer_widget import (
     BenutzerWidget,
@@ -166,160 +167,220 @@ class MainWindow(QMainWindow):
             self.tr("Start"),
         )
 
-        self.people_tab = PersonenWidget(
-            self.person_service,
-            self.phone_number_service,
-            self.drone_service,
-            self.course_service,
-            self.course_type_service,
-            self.course_day_service,
-            self.assignment_service,
-            self.exam_result_service,
-        )
-
-        self.courses_tab = LehrgaengeWidget(
-            self.course_service,
-            self.course_type_service,
-            self.course_day_service,
-            self.location_service,
-        )
-
-        self.course_types_tab = LehrgangstypenWidget(
-            self.course_type_service
-        )
-
-        self.course_days_tab = KurstageWidget(
-            self.course_day_service,
-            self.course_service,
-            self.course_type_service,
-            self.location_service,
-        )
-
-        self.course_days_tab.course_requested.connect(
-            self._open_course_from_search
-        )
-
-        self.locations_tab = StandorteWidget(
-            self.location_service
-        )
-
-        self.assignments_tab = KurszuordnungenWidget(
-            self.person_service,
-            self.course_service,
-            self.course_day_service,
-            self.assignment_service,
-            self.exam_result_service,
-            self.location_service,
-        )
-
-        self.search_tab = SucheWidget(
-            self.search_service
-        )
-
-        self.search_tab.person_requested.connect(
-            self._open_person_from_search
-        )
-
-        self.search_tab.course_requested.connect(
-            self._open_course_from_search
-        )
-
-        self.search_tab.location_requested.connect(
-            self._open_location_from_search
-        )
-
-        self.import_tab = ImportWidget(
-            self.import_service
-        )
-
-        self.export_tab = ExportWidget(
-            self.export_service
-        )
-
-        self.backup_tab = SicherungWidget(
-            self.backup_service
-        )
-
+        self.people_tab = None
+        self.courses_tab = None
+        self.course_types_tab = None
+        self.course_days_tab = None
+        self.locations_tab = None
+        self.assignments_tab = None
+        self.search_tab = None
+        self.import_tab = None
+        self.export_tab = None
+        self.backup_tab = None
         self.users_tab = None
+        self.settings_tab = None
 
-        if (
-            self.authenticated_user.rolle
-            == UserRole.ADMINISTRATOR
+        if has_permission(
+            self.authenticated_user,
+            Permission.PERSON_READ,
+        ):
+            self.people_tab = PersonenWidget(
+                self.person_service,
+                self.phone_number_service,
+                self.drone_service,
+                self.course_service,
+                self.course_type_service,
+                self.course_day_service,
+                self.assignment_service,
+                self.exam_result_service,
+                self.authenticated_user,
+            )
+
+            self.tabs.addTab(
+                self.people_tab,
+                self.tr("Personen"),
+            )
+
+        if has_permission(
+            self.authenticated_user,
+            Permission.COURSE_READ,
+        ):
+            self.courses_tab = LehrgaengeWidget(
+                self.course_service,
+                self.course_type_service,
+                self.course_day_service,
+                self.location_service,
+                self.authenticated_user,
+            )
+
+            self.tabs.addTab(
+                self.courses_tab,
+                self.tr("Lehrgänge"),
+            )
+
+        if has_permission(
+            self.authenticated_user,
+            Permission.COURSE_TYPE_READ,
+        ):
+            self.course_types_tab = (
+                LehrgangstypenWidget(
+                    self.course_type_service,
+                    self.authenticated_user,
+                )
+            )
+
+            self.tabs.addTab(
+                self.course_types_tab,
+                self.tr("Lehrgangstypen"),
+            )
+
+        if has_permission(
+            self.authenticated_user,
+            Permission.COURSE_DAY_READ,
+        ):
+            self.course_days_tab = KurstageWidget(
+                self.course_day_service,
+                self.course_service,
+                self.course_type_service,
+                self.location_service,
+            )
+
+            self.course_days_tab.course_requested.connect(
+                self._open_course_from_search
+            )
+
+            self.tabs.addTab(
+                self.course_days_tab,
+                self.tr("Kurstage"),
+            )
+
+        if has_permission(
+            self.authenticated_user,
+            Permission.LOCATION_READ,
+        ):
+            self.locations_tab = StandorteWidget(
+                self.location_service,
+                self.authenticated_user,
+            )
+
+            self.tabs.addTab(
+                self.locations_tab,
+                self.tr("Ausführungsorte"),
+            )
+
+        if has_permission(
+            self.authenticated_user,
+            Permission.ASSIGNMENT_READ,
+        ):
+            self.assignments_tab = (
+                KurszuordnungenWidget(
+                    self.person_service,
+                    self.course_service,
+                    self.course_day_service,
+                    self.assignment_service,
+                    self.exam_result_service,
+                    self.location_service,
+                    self.authenticated_user,
+                )
+            )
+
+            self.tabs.addTab(
+                self.assignments_tab,
+                self.tr("Kurszuordnung"),
+            )
+
+        if has_permission(
+            self.authenticated_user,
+            Permission.SEARCH,
+        ):
+            self.search_tab = SucheWidget(
+                self.search_service
+            )
+
+            self.search_tab.person_requested.connect(
+                self._open_person_from_search
+            )
+
+            self.search_tab.course_requested.connect(
+                self._open_course_from_search
+            )
+
+            self.search_tab.location_requested.connect(
+                self._open_location_from_search
+            )
+
+            self.tabs.addTab(
+                self.search_tab,
+                self.tr("Suche"),
+            )
+
+        if has_permission(
+            self.authenticated_user,
+            Permission.IMPORT,
+        ):
+            self.import_tab = ImportWidget(
+                self.import_service,
+                self.authenticated_user,
+            )
+
+            self.tabs.addTab(
+                self.import_tab,
+                self.tr("Import"),
+            )
+
+        if has_permission(
+            self.authenticated_user,
+            Permission.EXPORT,
+        ):
+            self.export_tab = ExportWidget(
+                self.export_service,
+                self.authenticated_user,
+            )
+
+            self.tabs.addTab(
+                self.export_tab,
+                self.tr("Export"),
+            )
+
+        if has_permission(
+            self.authenticated_user,
+            Permission.BACKUP,
+        ):
+            self.backup_tab = SicherungWidget(
+                self.backup_service,
+                self.authenticated_user,
+            )
+
+            self.tabs.addTab(
+                self.backup_tab,
+                self.tr("Sicherung"),
+            )
+
+        if has_permission(
+            self.authenticated_user,
+            Permission.USER_ADMIN,
         ):
             self.users_tab = BenutzerWidget(
                 self.user_service
             )
 
-        self.tabs.addTab(
-            self.people_tab,
-            self.tr("Personen"),
-        )
-
-        self.tabs.addTab(
-            self.courses_tab,
-            self.tr(
-                "Lehrgänge"
-            ),
-        )
-
-        self.tabs.addTab(
-            self.course_types_tab,
-            self.tr("Lehrgangstypen"),
-        )
-
-        self.tabs.addTab(
-            self.course_days_tab,
-            self.tr("Kurstage"),
-        )
-
-        self.tabs.addTab(
-            self.locations_tab,
-            self.tr(
-                "Ausführungsorte"
-            ),
-        )
-
-        self.tabs.addTab(
-            self.assignments_tab,
-            self.tr(
-                "Kurszuordnung"
-            ),
-        )
-
-        self.tabs.addTab(
-            self.search_tab,
-            self.tr("Suche"),
-        )
-
-        self.tabs.addTab(
-            self.import_tab,
-            self.tr("Import"),
-        )
-
-        self.tabs.addTab(
-            self.export_tab,
-            self.tr("Export"),
-        )
-
-        self.tabs.addTab(
-            self.backup_tab,
-            self.tr("Sicherung"),
-        )
-
-        if self.users_tab is not None:
             self.tabs.addTab(
                 self.users_tab,
                 self.tr("Benutzer"),
             )
 
-        self.settings_tab = (
-            self._create_settings_tab()
-        )
+        if has_permission(
+            self.authenticated_user,
+            Permission.SETTINGS,
+        ):
+            self.settings_tab = (
+                self._create_settings_tab()
+            )
 
-        self.tabs.addTab(
-            self.settings_tab,
-            self.tr("Einstellungen"),
-        )
+            self.tabs.addTab(
+                self.settings_tab,
+                self.tr("Einstellungen"),
+            )
 
         self.info_tab = QWidget()
 
@@ -482,6 +543,9 @@ class MainWindow(QMainWindow):
         self,
         person_id: str,
     ):
+        if self.people_tab is None:
+            return
+
         self.tabs.setCurrentWidget(
             self.people_tab
         )
@@ -494,6 +558,9 @@ class MainWindow(QMainWindow):
         self,
         course_id: str,
     ):
+        if self.courses_tab is None:
+            return
+
         self.tabs.setCurrentWidget(
             self.courses_tab
         )
@@ -506,6 +573,9 @@ class MainWindow(QMainWindow):
         self,
         location_id: str,
     ):
+        if self.locations_tab is None:
+            return
+
         self.tabs.setCurrentWidget(
             self.locations_tab
         )
@@ -522,22 +592,40 @@ class MainWindow(QMainWindow):
             index
         )
 
-        if current_widget is self.people_tab:
+        if (
+            self.people_tab is not None
+            and current_widget is self.people_tab
+        ):
             self.people_tab.load_persons()
 
-        elif current_widget is self.courses_tab:
+        elif (
+            self.courses_tab is not None
+            and current_widget is self.courses_tab
+        ):
             self.courses_tab.load_courses()
 
-        elif current_widget is self.course_days_tab:
+        elif (
+            self.course_days_tab is not None
+            and current_widget is self.course_days_tab
+        ):
             self.course_days_tab.load_course_days()
 
-        elif current_widget is self.locations_tab:
+        elif (
+            self.locations_tab is not None
+            and current_widget is self.locations_tab
+        ):
             self.locations_tab.load_locations()
 
-        elif current_widget is self.assignments_tab:
+        elif (
+            self.assignments_tab is not None
+            and current_widget is self.assignments_tab
+        ):
             self.assignments_tab.load_data()
 
-        elif current_widget is self.search_tab:
+        elif (
+            self.search_tab is not None
+            and current_widget is self.search_tab
+        ):
             self.search_tab.refresh()
 
         elif (

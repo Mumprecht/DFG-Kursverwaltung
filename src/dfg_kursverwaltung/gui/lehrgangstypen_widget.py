@@ -11,13 +11,21 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QSplitter,
     QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 
-from dfg_kursverwaltung.core.models import CourseType
+from dfg_kursverwaltung.core.models import (
+    CourseType,
+    User,
+)
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    has_permission,
+)
 from dfg_kursverwaltung.gui.lehrgangstyp_dialog import (
     LehrgangstypDialog,
 )
@@ -30,11 +38,18 @@ class LehrgangstypenWidget(QWidget):
     def __init__(
         self,
         course_type_service: CourseTypeService,
+        authenticated_user: User,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
 
         self.course_type_service = course_type_service
+        self.authenticated_user = authenticated_user
+        self.can_write = has_permission(
+            authenticated_user,
+            Permission.COURSE_TYPE_WRITE,
+        )
+
         self.current_course_type_id: str | None = None
 
         self._create_ui()
@@ -128,6 +143,10 @@ class LehrgangstypenWidget(QWidget):
             self.tr("Bearbeiten")
         )
 
+        self.new_button.setEnabled(
+            self.can_write
+        )
+
         self.new_button.clicked.connect(
             self._new_course_type
         )
@@ -208,6 +227,11 @@ class LehrgangstypenWidget(QWidget):
 
         notes_group = QGroupBox(
             self.tr("Bemerkungen")
+        )
+
+        notes_group.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Maximum,
         )
 
         notes_layout = QVBoxLayout(
@@ -412,14 +436,17 @@ class LehrgangstypenWidget(QWidget):
             )
 
         self.edit_button.setEnabled(
-            True
+            self.can_write
         )
 
         self.status_button.setEnabled(
-            True
+            self.can_write
         )
 
     def _new_course_type(self):
+        if not self.can_write:
+            return
+
         dialog = LehrgangstypDialog(
             parent=self
         )
@@ -482,6 +509,9 @@ class LehrgangstypenWidget(QWidget):
         self.load_course_types()
 
     def _edit_course_type(self):
+        if not self.can_write:
+            return
+
         if self.current_course_type_id is None:
             return
 
@@ -562,6 +592,9 @@ class LehrgangstypenWidget(QWidget):
         self.load_course_types()
 
     def _toggle_active_status(self):
+        if not self.can_write:
+            return
+
         if self.current_course_type_id is None:
             return
 

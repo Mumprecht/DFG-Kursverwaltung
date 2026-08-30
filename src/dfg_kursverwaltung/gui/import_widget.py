@@ -14,6 +14,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from dfg_kursverwaltung.core.models import User
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    has_permission,
+)
 from dfg_kursverwaltung.services.import_service import (
     CourseAssignmentImportPreview,
     CourseDayImportPreview,
@@ -36,11 +41,17 @@ class ImportWidget(QWidget):
     def __init__(
         self,
         import_service: ImportService,
+        authenticated_user: User,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
 
         self.import_service = import_service
+        self.authenticated_user = authenticated_user
+        self.can_import = has_permission(
+            authenticated_user,
+            Permission.IMPORT,
+        )
 
         self.current_file_path: str | None = None
         self.current_preview: (
@@ -171,6 +182,10 @@ class ImportWidget(QWidget):
             self.tr(
                 "CSV-Datei auswählen..."
             )
+        )
+
+        self.select_file_button.setEnabled(
+            self.can_import
         )
 
         self.select_file_button.clicked.connect(
@@ -485,6 +500,9 @@ class ImportWidget(QWidget):
     # =========================================================
 
     def _select_file(self):
+        if not self.can_import:
+            return
+
         # Für das aktuelle Projekt liegen die Test-Exporte
         # direkt im Projektverzeichnis. Der Dateidialog selbst
         # bleibt ansonsten vollständig frei navigierbar.
@@ -826,7 +844,8 @@ class ImportWidget(QWidget):
         self.issues_table.resizeColumnsToContents()
 
         self.import_button.setEnabled(
-            bool(
+            self.can_import
+            and bool(
                 preview.rows
             )
         )
@@ -836,6 +855,9 @@ class ImportWidget(QWidget):
     # =========================================================
 
     def _import_data(self):
+        if not self.can_import:
+            return
+
         if self.current_preview is None:
             return
 

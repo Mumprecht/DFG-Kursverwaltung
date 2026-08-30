@@ -20,6 +20,11 @@ from dfg_kursverwaltung.core.models import (
     CourseAssignmentRole,
     CourseAssignmentStatus,
     CourseDay,
+    User,
+)
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    has_permission,
 )
 from dfg_kursverwaltung.gui.kurszuordnung_dialog import (
     KurszuordnungDialog,
@@ -58,6 +63,7 @@ class KurszuordnungenWidget(QWidget):
         assignment_service: CourseAssignmentService,
         exam_result_service: ExamResultService,
         location_service: LocationService,
+        authenticated_user: User,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
@@ -68,6 +74,17 @@ class KurszuordnungenWidget(QWidget):
         self.assignment_service = assignment_service
         self.exam_result_service = exam_result_service
         self.location_service = location_service
+        self.authenticated_user = authenticated_user
+
+        self.can_write_assignment = has_permission(
+            authenticated_user,
+            Permission.ASSIGNMENT_WRITE,
+        )
+
+        self.can_write_exam_result = has_permission(
+            authenticated_user,
+            Permission.EXAM_RESULT_WRITE,
+        )
 
         self.current_assignment_id: str | None = None
 
@@ -810,6 +827,9 @@ class KurszuordnungenWidget(QWidget):
         self._edit_assignment()
 
     def _add_assignment(self):
+        if not self.can_write_assignment:
+            return
+
         course_day_id = (
             self.course_day_combo.currentData()
         )
@@ -889,6 +909,9 @@ class KurszuordnungenWidget(QWidget):
         )
 
     def _edit_assignment(self):
+        if not self.can_write_assignment:
+            return
+
         if self.current_assignment_id is None:
             return
 
@@ -967,6 +990,9 @@ class KurszuordnungenWidget(QWidget):
         )
 
     def _remove_assignment(self):
+        if not self.can_write_assignment:
+            return
+
         if self.current_assignment_id is None:
             return
 
@@ -1087,6 +1113,9 @@ class KurszuordnungenWidget(QWidget):
                 return
 
     def _edit_exam_result(self):
+        if not self.can_write_exam_result:
+            return
+
         if self.current_assignment_id is None:
             return
 
@@ -1224,13 +1253,16 @@ class KurszuordnungenWidget(QWidget):
         )
 
         self.add_button.setEnabled(
-            has_course_day
+            self.can_write_assignment
+            and has_course_day
         )
         self.edit_button.setEnabled(
-            has_assignment
+            self.can_write_assignment
+            and has_assignment
         )
         self.remove_button.setEnabled(
-            has_assignment
+            self.can_write_assignment
+            and has_assignment
         )
 
         can_edit_exam_result = False
@@ -1258,7 +1290,8 @@ class KurszuordnungenWidget(QWidget):
                 )
 
             can_edit_exam_result = (
-                assignment is not None
+                self.can_write_exam_result
+                and assignment is not None
                 and assignment.rolle
                 == CourseAssignmentRole.PARTICIPANT
                 and assignment.status

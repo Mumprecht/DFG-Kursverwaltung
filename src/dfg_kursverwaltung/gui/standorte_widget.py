@@ -11,13 +11,21 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QSplitter,
     QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 
-from dfg_kursverwaltung.core.models import Location
+from dfg_kursverwaltung.core.models import (
+    Location,
+    User,
+)
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    has_permission,
+)
 from dfg_kursverwaltung.gui.standort_dialog import (
     StandortDialog,
 )
@@ -30,11 +38,17 @@ class StandorteWidget(QWidget):
     def __init__(
         self,
         location_service: LocationService,
+        authenticated_user: User,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
 
         self.location_service = location_service
+        self.authenticated_user = authenticated_user
+        self.can_write = has_permission(
+            authenticated_user,
+            Permission.LOCATION_WRITE,
+        )
 
         self.current_location_id: str | None = None
 
@@ -136,6 +150,10 @@ class StandorteWidget(QWidget):
             self.tr("Bearbeiten")
         )
 
+        self.new_button.setEnabled(
+            self.can_write
+        )
+
         self.new_button.clicked.connect(
             self._new_location
         )
@@ -193,6 +211,11 @@ class StandorteWidget(QWidget):
             self.tr("Standort")
         )
 
+        location_group.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Maximum,
+        )
+
         location_form = QFormLayout(
             location_group
         )
@@ -222,6 +245,11 @@ class StandorteWidget(QWidget):
 
         contact_group = QGroupBox(
             self.tr("Kontakt")
+        )
+
+        contact_group.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Maximum,
         )
 
         contact_form = QFormLayout(
@@ -261,6 +289,11 @@ class StandorteWidget(QWidget):
             self.tr("Bemerkungen")
         )
 
+        notes_group.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Maximum,
+        )
+
         notes_layout = QVBoxLayout(
             notes_group
         )
@@ -298,6 +331,8 @@ class StandorteWidget(QWidget):
         layout.addLayout(
             action_layout
         )
+
+        layout.addStretch()
 
         self._clear_details()
 
@@ -532,14 +567,17 @@ class StandorteWidget(QWidget):
             )
 
         self.edit_button.setEnabled(
-            True
+            self.can_write
         )
 
         self.status_button.setEnabled(
-            True
+            self.can_write
         )
 
     def _new_location(self):
+        if not self.can_write:
+            return
+
         dialog = StandortDialog(
             parent=self
         )
@@ -601,6 +639,9 @@ class StandorteWidget(QWidget):
         self.load_locations()
 
     def _edit_location(self):
+        if not self.can_write:
+            return
+
         if self.current_location_id is None:
             return
 
@@ -711,6 +752,9 @@ class StandorteWidget(QWidget):
         self.load_locations()
 
     def _toggle_active_status(self):
+        if not self.can_write:
+            return
+
         if self.current_location_id is None:
             return
 

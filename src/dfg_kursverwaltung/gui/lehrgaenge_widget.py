@@ -23,6 +23,11 @@ from PySide6.QtWidgets import (
 from dfg_kursverwaltung.core.models import (
     Course,
     CourseDay,
+    User,
+)
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    has_permission,
 )
 from dfg_kursverwaltung.gui.kurstag_dialog import (
     KurstagDialog,
@@ -51,6 +56,7 @@ class LehrgaengeWidget(QWidget):
         course_type_service: CourseTypeService,
         course_day_service: CourseDayService,
         location_service: LocationService,
+        authenticated_user: User,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
@@ -59,6 +65,17 @@ class LehrgaengeWidget(QWidget):
         self.course_type_service = course_type_service
         self.course_day_service = course_day_service
         self.location_service = location_service
+        self.authenticated_user = authenticated_user
+
+        self.can_write_course = has_permission(
+            authenticated_user,
+            Permission.COURSE_WRITE,
+        )
+
+        self.can_write_course_day = has_permission(
+            authenticated_user,
+            Permission.COURSE_DAY_WRITE,
+        )
 
         self.current_course_id: str | None = None
         self.current_course_day_id: str | None = None
@@ -134,6 +151,10 @@ class LehrgaengeWidget(QWidget):
 
         self.edit_button = QPushButton(
             self.tr("Bearbeiten")
+        )
+
+        self.new_button.setEnabled(
+            self.can_write_course
         )
 
         self.new_button.clicked.connect(
@@ -511,10 +532,12 @@ class LehrgaengeWidget(QWidget):
             course.bemerkungen or ""
         )
 
-        self.edit_button.setEnabled(True)
+        self.edit_button.setEnabled(
+            self.can_write_course
+        )
 
         self.new_course_day_button.setEnabled(
-            True
+            self.can_write_course_day
         )
 
         self._load_course_days()
@@ -657,7 +680,7 @@ class LehrgaengeWidget(QWidget):
         )
 
         self.edit_course_day_button.setEnabled(
-            True
+            self.can_write_course_day
         )
 
     def _course_day_double_clicked(
@@ -688,6 +711,9 @@ class LehrgaengeWidget(QWidget):
         self._edit_course_day()
 
     def _new_course(self):
+        if not self.can_write_course:
+            return
+
         dialog = LehrgangDialog(
             course_type_service=(
                 self.course_type_service
@@ -729,6 +755,9 @@ class LehrgaengeWidget(QWidget):
         self.load_courses()
 
     def _edit_course(self):
+        if not self.can_write_course:
+            return
+
         if self.current_course_id is None:
             return
 
@@ -797,6 +826,9 @@ class LehrgaengeWidget(QWidget):
         self.load_courses()
 
     def _new_course_day(self):
+        if not self.can_write_course_day:
+            return
+
         if self.current_course_id is None:
             return
 
@@ -848,6 +880,9 @@ class LehrgaengeWidget(QWidget):
         )
 
     def _edit_course_day(self):
+        if not self.can_write_course_day:
+            return
+
         if self.current_course_day_id is None:
             return
 

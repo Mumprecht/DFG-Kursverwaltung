@@ -28,6 +28,11 @@ from dfg_kursverwaltung.core.models import (
     Person,
     PhoneNumber,
     PhoneNumberType,
+    User,
+)
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    has_permission,
 )
 from dfg_kursverwaltung.gui.drohne_dialog import (
     DroneDialog,
@@ -75,6 +80,7 @@ class PersonenWidget(QWidget):
         course_day_service: CourseDayService,
         assignment_service: CourseAssignmentService,
         exam_result_service: ExamResultService,
+        authenticated_user: User,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
@@ -87,6 +93,11 @@ class PersonenWidget(QWidget):
         self.course_day_service = course_day_service
         self.assignment_service = assignment_service
         self.exam_result_service = exam_result_service
+        self.authenticated_user = authenticated_user
+        self.can_write = has_permission(
+            authenticated_user,
+            Permission.PERSON_WRITE,
+        )
 
         self.current_person_id: str | None = None
         self.current_phone_number_id: str | None = None
@@ -197,6 +208,10 @@ class PersonenWidget(QWidget):
 
         self.active_button = QPushButton(
             self.tr("Deaktivieren")
+        )
+
+        self.new_button.setEnabled(
+            self.can_write
         )
 
         self.new_button.clicked.connect(
@@ -901,10 +916,18 @@ class PersonenWidget(QWidget):
             person.bemerkungen or ""
         )
 
-        self.edit_button.setEnabled(True)
-        self.active_button.setEnabled(True)
-        self.phone_add_button.setEnabled(True)
-        self.drone_add_button.setEnabled(True)
+        self.edit_button.setEnabled(
+            self.can_write
+        )
+        self.active_button.setEnabled(
+            self.can_write
+        )
+        self.phone_add_button.setEnabled(
+            self.can_write
+        )
+        self.drone_add_button.setEnabled(
+            self.can_write
+        )
 
         if person.aktiv:
             self.active_button.setText(
@@ -1147,8 +1170,9 @@ class PersonenWidget(QWidget):
             phone_number_id
         )
 
-        enabled = bool(
-            phone_number_id
+        enabled = (
+            self.can_write
+            and bool(phone_number_id)
         )
 
         self.phone_edit_button.setEnabled(
@@ -1177,6 +1201,9 @@ class PersonenWidget(QWidget):
         self._edit_phone_number()
 
     def _add_phone_number(self):
+        if not self.can_write:
+            return
+
         if self.current_person_id is None:
             return
 
@@ -1221,6 +1248,9 @@ class PersonenWidget(QWidget):
         )
 
     def _edit_phone_number(self):
+        if not self.can_write:
+            return
+
         if self.current_phone_number_id is None:
             return
 
@@ -1283,6 +1313,9 @@ class PersonenWidget(QWidget):
         )
 
     def _delete_phone_number(self):
+        if not self.can_write:
+            return
+
         if self.current_phone_number_id is None:
             return
 
@@ -1433,8 +1466,9 @@ class PersonenWidget(QWidget):
 
         self.current_drone_id = drone_id
 
-        enabled = bool(
-            drone_id
+        enabled = (
+            self.can_write
+            and bool(drone_id)
         )
 
         self.drone_edit_button.setEnabled(
@@ -1461,6 +1495,9 @@ class PersonenWidget(QWidget):
         self._edit_drone()
 
     def _add_drone(self):
+        if not self.can_write:
+            return
+
         if self.current_person_id is None:
             return
 
@@ -1504,6 +1541,9 @@ class PersonenWidget(QWidget):
         )
 
     def _edit_drone(self):
+        if not self.can_write:
+            return
+
         if self.current_drone_id is None:
             return
 
@@ -1570,6 +1610,9 @@ class PersonenWidget(QWidget):
         )
 
     def _delete_drone(self):
+        if not self.can_write:
+            return
+
         if self.current_drone_id is None:
             return
 
@@ -1705,6 +1748,9 @@ class PersonenWidget(QWidget):
         )
 
     def _new_person(self):
+        if not self.can_write:
+            return
+
         dialog = PersonDialog(
             parent=self
         )
@@ -1744,6 +1790,9 @@ class PersonenWidget(QWidget):
         self.load_persons()
 
     def _edit_person(self):
+        if not self.can_write:
+            return
+
         if self.current_person_id is None:
             return
 
@@ -1817,6 +1866,9 @@ class PersonenWidget(QWidget):
         self.load_persons()
 
     def _toggle_active_status(self):
+        if not self.can_write:
+            return
+
         if self.current_person_id is None:
             return
 

@@ -12,6 +12,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from dfg_kursverwaltung.core.models import User
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    has_permission,
+)
 from dfg_kursverwaltung.services.backup_service import (
     BackupService,
 )
@@ -21,11 +26,26 @@ class SicherungWidget(QWidget):
     def __init__(
         self,
         backup_service: BackupService,
+        authenticated_user: User,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
 
         self.backup_service = backup_service
+        self.authenticated_user = authenticated_user
+
+        self.can_backup = has_permission(
+            authenticated_user,
+            Permission.BACKUP,
+        )
+        self.can_restore = has_permission(
+            authenticated_user,
+            Permission.RESTORE,
+        )
+        self.can_reset_database = has_permission(
+            authenticated_user,
+            Permission.DATABASE_RESET,
+        )
 
         self._create_ui()
 
@@ -93,6 +113,10 @@ class SicherungWidget(QWidget):
             self.tr("Backup erstellen...")
         )
 
+        self.create_backup_button.setEnabled(
+            self.can_backup
+        )
+
         self.create_backup_button.clicked.connect(
             self._create_backup
         )
@@ -149,6 +173,10 @@ class SicherungWidget(QWidget):
             self.tr("Backup wiederherstellen...")
         )
 
+        self.restore_button.setEnabled(
+            self.can_restore
+        )
+
         self.restore_button.clicked.connect(
             self._restore_backup
         )
@@ -194,6 +222,10 @@ class SicherungWidget(QWidget):
             self.tr("Datenbank vollständig zurücksetzen...")
         )
 
+        self.reset_button.setEnabled(
+            self.can_reset_database
+        )
+
         self.reset_button.clicked.connect(
             self._reset_database
         )
@@ -224,6 +256,9 @@ class SicherungWidget(QWidget):
         return directory
 
     def _create_backup(self):
+        if not self.can_backup:
+            return
+
         timestamp = datetime.now().strftime(
             "%Y-%m-%d_%H%M%S"
         )
@@ -358,6 +393,9 @@ class SicherungWidget(QWidget):
         )
 
     def _restore_backup(self):
+        if not self.can_restore:
+            return
+
         file_path, _selected_filter = (
             QFileDialog.getOpenFileName(
                 self,
@@ -474,6 +512,9 @@ class SicherungWidget(QWidget):
         self._quit_application()
 
     def _reset_database(self):
+        if not self.can_reset_database:
+            return
+
         first_answer = QMessageBox.warning(
             self,
             self.tr(

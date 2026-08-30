@@ -12,6 +12,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from dfg_kursverwaltung.core.models import User
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    has_permission,
+)
 from dfg_kursverwaltung.services.export_service import (
     ExportService,
 )
@@ -21,11 +26,17 @@ class ExportWidget(QWidget):
     def __init__(
         self,
         export_service: ExportService,
+        authenticated_user: User,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
 
         self.export_service = export_service
+        self.authenticated_user = authenticated_user
+        self.can_export = has_permission(
+            authenticated_user,
+            Permission.EXPORT,
+        )
 
         self._create_ui()
 
@@ -279,9 +290,36 @@ class ExportWidget(QWidget):
             exam_result_group
         )
 
+        self.export_persons_button.setEnabled(
+            self.can_export
+        )
+
+        self.export_locations_button.setEnabled(
+            self.can_export
+        )
+
+        self.export_courses_button.setEnabled(
+            self.can_export
+        )
+
+        self.export_course_days_button.setEnabled(
+            self.can_export
+        )
+
+        self.export_assignments_button.setEnabled(
+            self.can_export
+        )
+
+        self.export_exam_results_button.setEnabled(
+            self.can_export
+        )
+
         main_layout.addStretch()
 
     def _export_persons(self):
+        if not self.can_export:
+            return
+
         timestamp = datetime.now().strftime(
             "%Y-%m-%d_%H%M"
         )
@@ -361,6 +399,9 @@ class ExportWidget(QWidget):
         )
 
     def _export_locations(self):
+        if not self.can_export:
+            return
+
         timestamp = datetime.now().strftime(
             "%Y-%m-%d_%H%M"
         )
@@ -441,6 +482,9 @@ class ExportWidget(QWidget):
         )
 
     def _export_courses(self):
+        if not self.can_export:
+            return
+
         timestamp = datetime.now().strftime(
             "%Y-%m-%d_%H%M"
         )
@@ -512,6 +556,9 @@ class ExportWidget(QWidget):
         )
 
     def _export_course_assignments(self):
+        if not self.can_export:
+            return
+
         timestamp = datetime.now().strftime(
             "%Y-%m-%d_%H%M"
         )
@@ -584,6 +631,9 @@ class ExportWidget(QWidget):
         )
 
     def _export_exam_results(self):
+        if not self.can_export:
+            return
+
         timestamp = datetime.now().strftime(
             "%Y-%m-%d_%H%M"
         )
@@ -656,6 +706,9 @@ class ExportWidget(QWidget):
         )
 
     def _export_course_days(self):
+        if not self.can_export:
+            return
+
         timestamp = datetime.now().strftime(
             "%Y-%m-%d_%H%M"
         )
