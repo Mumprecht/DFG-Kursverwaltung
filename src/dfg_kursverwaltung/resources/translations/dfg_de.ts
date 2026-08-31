@@ -2050,6 +2050,11 @@
             <translation>Sicherung</translation>
         </message>
         <message>
+            <location filename="../../gui/main_window.py" line="369" />
+            <source>Benutzer</source>
+            <translation>Benutzer</translation>
+        </message>
+        <message>
             <location filename="../../gui/main_window.py" line="291" />
             <source>Einstellungen</source>
             <translation>Einstellungen</translation>

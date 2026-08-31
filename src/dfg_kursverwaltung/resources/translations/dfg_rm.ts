@@ -2050,6 +2050,11 @@
             <translation>Segirezza</translation>
         </message>
         <message>
+            <location filename="../../gui/main_window.py" line="369" />
+            <source>Benutzer</source>
+            <translation>Utilisaders</translation>
+        </message>
+        <message>
             <location filename="../../gui/main_window.py" line="291" />
             <source>Einstellungen</source>
             <translation>Configuraziuns</translation>

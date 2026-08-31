@@ -2050,6 +2050,11 @@
             <translation>Backup</translation>
         </message>
         <message>
+            <location filename="../../gui/main_window.py" line="369" />
+            <source>Benutzer</source>
+            <translation>Utenti</translation>
+        </message>
+        <message>
             <location filename="../../gui/main_window.py" line="291" />
             <source>Einstellungen</source>
             <translation>Impostazioni</translation>

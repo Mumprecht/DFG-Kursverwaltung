@@ -2055,6 +2055,11 @@
             <translation>Management of participants, instructors, courses and training data.</translation>
         </message>
         <message>
+            <location filename="../../gui/main_window.py" line="369" />
+            <source>Benutzer</source>
+            <translation>Users</translation>
+        </message>
+        <message>
             <location filename="../../gui/main_window.py" line="291" />
             <source>Einstellungen</source>
             <translation>Settings</translation>
