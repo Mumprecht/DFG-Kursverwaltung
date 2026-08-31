@@ -5,6 +5,12 @@ from dfg_kursverwaltung.core.models import (
     CourseAssignment,
     CourseAssignmentRole,
     CourseAssignmentStatus,
+    User,
+    UserRole,
+)
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    require_permission,
 )
 from dfg_kursverwaltung.repositories.kurszuordnungen_repository import (
     CourseAssignmentRepository,
@@ -15,6 +21,9 @@ from dfg_kursverwaltung.repositories.personen_repository import (
 from dfg_kursverwaltung.repositories.pruefungsergebnisse_repository import (
     ExamResultRepository,
 )
+from dfg_kursverwaltung.services.benutzer_kurstage_service import (
+    UserCourseDayService,
+)
 
 
 class CourseAssignmentService:
@@ -23,14 +32,19 @@ class CourseAssignmentService:
         repository: CourseAssignmentRepository,
         person_repository: PersonRepository,
         exam_result_repository: ExamResultRepository,
+        user_course_day_service: UserCourseDayService,
     ):
         self.repository = repository
         self.person_repository = person_repository
         self.exam_result_repository = exam_result_repository
+        self.user_course_day_service = (
+            user_course_day_service
+        )
 
     def create_assignment(
         self,
         *,
+        actor: User,
         person_id: str,
         kurstag_id: str,
         rolle: CourseAssignmentRole | str,
@@ -45,6 +59,12 @@ class CourseAssignmentService:
 
         status = CourseAssignmentStatus(
             status
+        )
+
+        self._ensure_assignment_write_access(
+            actor,
+            kurstag_id,
+            rolle,
         )
 
         self._validate_role_for_person(
@@ -90,6 +110,7 @@ class CourseAssignmentService:
     def create_historical_assignment(
         self,
         *,
+        actor: User,
         person_id: str,
         kurstag_id: str,
         rolle: CourseAssignmentRole | str,
@@ -98,6 +119,11 @@ class CourseAssignmentService:
         ),
         bemerkungen: str | None = None,
     ) -> CourseAssignment:
+        require_permission(
+            actor,
+            Permission.IMPORT,
+        )
+
         rolle = CourseAssignmentRole(
             rolle
         )
@@ -194,6 +220,7 @@ class CourseAssignmentService:
 
     def update_assignment(
         self,
+        actor: User,
         assignment: CourseAssignment,
     ) -> CourseAssignment:
         assignment.rolle = CourseAssignmentRole(
@@ -213,6 +240,12 @@ class CourseAssignmentService:
                 "Kurszuordnung nicht gefunden: "
                 f"{assignment.id}"
             )
+
+        self._ensure_assignment_update_access(
+            actor,
+            original,
+            assignment,
+        )
 
         # Wenn bereits ein Prüfungsergebnis existiert,
         # muss der Status "Teilgenommen" erhalten bleiben.
@@ -280,11 +313,100 @@ class CourseAssignmentService:
 
     def delete_assignment(
         self,
+        actor: User,
         assignment_id: str,
     ) -> None:
+        assignment = self.repository.get_by_id(
+            assignment_id
+        )
+
+        if assignment is None:
+            raise KeyError(
+                "Kurszuordnung nicht gefunden: "
+                f"{assignment_id}"
+            )
+
+        self._ensure_assignment_write_access(
+            actor,
+            assignment.kurstag_id,
+            assignment.rolle,
+        )
+
         self.repository.delete(
             assignment_id
         )
+
+    def _ensure_assignment_write_access(
+        self,
+        actor: User,
+        kurstag_id: str,
+        rolle: CourseAssignmentRole,
+    ) -> None:
+        require_permission(
+            actor,
+            Permission.ASSIGNMENT_WRITE,
+        )
+
+        role = UserRole(
+            actor.rolle
+        )
+
+        if role != UserRole.INSTRUCTOR:
+            return
+
+        if rolle != CourseAssignmentRole.PARTICIPANT:
+            raise PermissionError(
+                "Instruktor-Benutzer dürfen nur "
+                "Teilnehmer-Zuordnungen bearbeiten."
+            )
+
+        if not self.user_course_day_service.has_access(
+            actor.id,
+            kurstag_id,
+        ):
+            raise PermissionError(
+                "Für diesen Kurstag besteht keine "
+                "Instruktor-Berechtigung."
+            )
+
+    def _ensure_assignment_update_access(
+        self,
+        actor: User,
+        original: CourseAssignment,
+        assignment: CourseAssignment,
+    ) -> None:
+        self._ensure_assignment_write_access(
+            actor,
+            original.kurstag_id,
+            original.rolle,
+        )
+
+        if UserRole(actor.rolle) != UserRole.INSTRUCTOR:
+            return
+
+        if (
+            assignment.rolle
+            != CourseAssignmentRole.PARTICIPANT
+        ):
+            raise PermissionError(
+                "Instruktor-Benutzer dürfen die "
+                "Rolle einer Kurszuordnung nicht "
+                "ändern."
+            )
+
+        if assignment.person_id != original.person_id:
+            raise PermissionError(
+                "Instruktor-Benutzer dürfen die "
+                "Person einer Kurszuordnung nicht "
+                "ändern."
+            )
+
+        if assignment.kurstag_id != original.kurstag_id:
+            raise PermissionError(
+                "Instruktor-Benutzer dürfen den "
+                "Kurstag einer Kurszuordnung nicht "
+                "ändern."
+            )
 
     def _validate_role_for_person(
         self,

@@ -2,14 +2,25 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from dfg_kursverwaltung.core.models import (
+    CourseAssignment,
+    CourseAssignmentRole,
     CourseAssignmentStatus,
     ExamResult,
+    User,
+    UserRole,
+)
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    require_permission,
 )
 from dfg_kursverwaltung.repositories.kurszuordnungen_repository import (
     CourseAssignmentRepository,
 )
 from dfg_kursverwaltung.repositories.pruefungsergebnisse_repository import (
     ExamResultRepository,
+)
+from dfg_kursverwaltung.services.benutzer_kurstage_service import (
+    UserCourseDayService,
 )
 
 
@@ -18,13 +29,18 @@ class ExamResultService:
         self,
         repository: ExamResultRepository,
         assignment_repository: CourseAssignmentRepository,
+        user_course_day_service: UserCourseDayService,
     ):
         self.repository = repository
         self.assignment_repository = assignment_repository
+        self.user_course_day_service = (
+            user_course_day_service
+        )
 
     def create_exam_result(
         self,
         *,
+        actor: User,
         kurszuordnung_id: str,
         bestanden: bool,
         note: str | None = None,
@@ -40,8 +56,13 @@ class ExamResultService:
                 "nicht leer sein."
             )
 
-        self._validate_assignment_status(
+        assignment = self._validate_assignment_status(
             kurszuordnung_id
+        )
+
+        self._ensure_exam_result_write_access(
+            actor,
+            assignment,
         )
 
         existing = (
@@ -106,8 +127,19 @@ class ExamResultService:
 
     def update_exam_result(
         self,
+        actor: User,
         exam_result: ExamResult,
     ) -> ExamResult:
+        original = self.repository.get_by_id(
+            exam_result.id
+        )
+
+        if original is None:
+            raise KeyError(
+                "Prüfungsergebnis nicht gefunden: "
+                f"{exam_result.id}"
+            )
+
         exam_result.kurszuordnung_id = (
             exam_result.kurszuordnung_id.strip()
         )
@@ -118,8 +150,42 @@ class ExamResultService:
                 "nicht leer sein."
             )
 
-        self._validate_assignment_status(
+        original_assignment = (
+            self.assignment_repository.get_by_id(
+                original.kurszuordnung_id
+            )
+        )
+
+        if original_assignment is None:
+            raise ValueError(
+                "Die ursprüngliche Kurszuordnung "
+                "existiert nicht."
+            )
+
+        self._ensure_exam_result_write_access(
+            actor,
+            original_assignment,
+        )
+
+        if (
+            UserRole(actor.rolle)
+            == UserRole.INSTRUCTOR
+            and exam_result.kurszuordnung_id
+            != original.kurszuordnung_id
+        ):
+            raise PermissionError(
+                "Instruktor-Benutzer dürfen die "
+                "Kurszuordnung eines "
+                "Prüfungsergebnisses nicht ändern."
+            )
+
+        assignment = self._validate_assignment_status(
             exam_result.kurszuordnung_id
+        )
+
+        self._ensure_exam_result_write_access(
+            actor,
+            assignment,
         )
 
         existing = (
@@ -161,8 +227,36 @@ class ExamResultService:
 
     def delete_exam_result(
         self,
+        actor: User,
         exam_result_id: str,
     ) -> None:
+        exam_result = self.repository.get_by_id(
+            exam_result_id
+        )
+
+        if exam_result is None:
+            raise KeyError(
+                "Prüfungsergebnis nicht gefunden: "
+                f"{exam_result_id}"
+            )
+
+        assignment = (
+            self.assignment_repository.get_by_id(
+                exam_result.kurszuordnung_id
+            )
+        )
+
+        if assignment is None:
+            raise ValueError(
+                "Die zugehörige Kurszuordnung "
+                "existiert nicht."
+            )
+
+        self._ensure_exam_result_write_access(
+            actor,
+            assignment,
+        )
+
         self.repository.delete(
             exam_result_id
         )
@@ -170,7 +264,7 @@ class ExamResultService:
     def _validate_assignment_status(
         self,
         kurszuordnung_id: str,
-    ) -> None:
+    ) -> CourseAssignment:
         assignment = (
             self.assignment_repository
             .get_by_id(
@@ -193,6 +287,40 @@ class ExamResultService:
                 "für eine Kurszuordnung mit dem "
                 "Status 'Teilgenommen' erfasst "
                 "oder geändert werden."
+            )
+
+        return assignment
+
+    def _ensure_exam_result_write_access(
+        self,
+        actor: User,
+        assignment: CourseAssignment,
+    ) -> None:
+        require_permission(
+            actor,
+            Permission.EXAM_RESULT_WRITE,
+        )
+
+        if UserRole(actor.rolle) != UserRole.INSTRUCTOR:
+            return
+
+        if (
+            assignment.rolle
+            != CourseAssignmentRole.PARTICIPANT
+        ):
+            raise PermissionError(
+                "Instruktor-Benutzer dürfen "
+                "Prüfungsergebnisse nur für "
+                "Teilnehmer-Zuordnungen bearbeiten."
+            )
+
+        if not self.user_course_day_service.has_access(
+            actor.id,
+            assignment.kurstag_id,
+        ):
+            raise PermissionError(
+                "Für diesen Kurstag besteht keine "
+                "Instruktor-Berechtigung."
             )
 
     @staticmethod

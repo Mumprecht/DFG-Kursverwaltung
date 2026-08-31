@@ -4,9 +4,14 @@ from datetime import date
 from pathlib import Path
 
 from dfg_kursverwaltung.core.models import (
+    User,
     CourseAssignmentRole,
     CourseAssignmentStatus,
     PhoneNumberType,
+)
+from dfg_kursverwaltung.core.permissions import (
+    Permission,
+    require_permission,
 )
 from dfg_kursverwaltung.services.kurstage_service import (
     CourseDayService,
@@ -1132,14 +1137,21 @@ class ImportService:
 
     def import_exam_results(
         self,
+        actor: User,
         preview: ExamResultImportPreview,
     ) -> tuple[int, int]:
+        require_permission(
+            actor,
+            Permission.IMPORT,
+        )
+
         created_count = 0
         updated_count = 0
 
         for row in preview.rows:
             if row.action == "create":
                 self.exam_result_service.create_exam_result(
+                    actor=actor,
                     kurszuordnung_id=row.assignment_id,
                     bestanden=row.bestanden,
                     note=row.note,
@@ -1179,7 +1191,8 @@ class ImportService:
                 )
 
                 self.exam_result_service.update_exam_result(
-                    existing
+                    actor,
+                    existing,
                 )
 
                 updated_count += 1
@@ -1339,14 +1352,21 @@ class ImportService:
 
     def import_course_assignments(
         self,
+        actor: User,
         preview: CourseAssignmentImportPreview,
     ) -> tuple[int, int]:
+        require_permission(
+            actor,
+            Permission.IMPORT,
+        )
+
         created_count = 0
         updated_count = 0
 
         for row in preview.rows:
             if row.action == "create":
                 self.assignment_service.create_historical_assignment(
+                    actor=actor,
                     person_id=row.person_id,
                     kurstag_id=row.kurstag_id,
                     rolle=row.rolle,
@@ -1387,7 +1407,8 @@ class ImportService:
                 )
 
                 self.assignment_service.update_assignment(
-                    assignment
+                    actor,
+                    assignment,
                 )
 
                 updated_count += 1

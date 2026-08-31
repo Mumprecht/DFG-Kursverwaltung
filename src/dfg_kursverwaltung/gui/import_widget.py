@@ -1036,7 +1036,8 @@ class ImportWidget(QWidget):
                 ) = (
                     self.import_service
                     .import_course_assignments(
-                        preview
+                        self.authenticated_user,
+                        preview,
                     )
                 )
 
@@ -1047,7 +1048,8 @@ class ImportWidget(QWidget):
                 ) = (
                     self.import_service
                     .import_exam_results(
-                        preview
+                        self.authenticated_user,
+                        preview,
                     )
                 )
 

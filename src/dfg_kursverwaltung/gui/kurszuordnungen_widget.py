@@ -874,6 +874,7 @@ class KurszuordnungenWidget(QWidget):
             assignment = (
                 self.assignment_service
                 .create_assignment(
+                    actor=self.authenticated_user,
                     person_id=data[
                         "person_id"
                     ],
@@ -963,7 +964,8 @@ class KurszuordnungenWidget(QWidget):
             updated_assignment = (
                 self.assignment_service
                 .update_assignment(
-                    assignment
+                    self.authenticated_user,
+                    assignment,
                 )
             )
 
@@ -1035,7 +1037,8 @@ class KurszuordnungenWidget(QWidget):
 
         try:
             self.assignment_service.delete_assignment(
-                assignment.id
+                self.authenticated_user,
+                assignment.id,
             )
 
         except Exception as exc:
@@ -1200,11 +1203,13 @@ class KurszuordnungenWidget(QWidget):
             if data["bestanden"] is None:
                 if exam_result is not None:
                     self.exam_result_service.delete_exam_result(
-                        exam_result.id
+                        self.authenticated_user,
+                        exam_result.id,
                     )
 
             elif exam_result is None:
                 self.exam_result_service.create_exam_result(
+                    actor=self.authenticated_user,
                     kurszuordnung_id=assignment.id,
                     bestanden=data["bestanden"],
                     note=data["note"],
@@ -1223,7 +1228,8 @@ class KurszuordnungenWidget(QWidget):
                 ]
 
                 self.exam_result_service.update_exam_result(
-                    exam_result
+                    self.authenticated_user,
+                    exam_result,
                 )
 
         except Exception as exc:
