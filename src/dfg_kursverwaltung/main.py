@@ -71,9 +71,6 @@ from dfg_kursverwaltung.services.backup_service import (
 from dfg_kursverwaltung.services.benutzer_service import (
     UserService,
 )
-from dfg_kursverwaltung.services.benutzer_kurstage_service import (
-    UserCourseDayService,
-)
 from dfg_kursverwaltung.services.bootstrap_service import (
     BootstrapService,
 )
@@ -233,25 +230,15 @@ def main():
         )
     )
 
-    user_course_day_service = (
-        UserCourseDayService(
-            user_course_day_repository,
-            user_repository,
-            course_day_repository,
-        )
-    )
-
     assignment_service = CourseAssignmentService(
         assignment_repository,
         person_repository,
         exam_result_repository,
-        user_course_day_service,
     )
 
     exam_result_service = ExamResultService(
         exam_result_repository,
         assignment_repository,
-        user_course_day_service,
     )
 
     search_service = SearchService(

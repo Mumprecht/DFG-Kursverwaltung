@@ -19,23 +19,15 @@ from dfg_kursverwaltung.repositories.kurszuordnungen_repository import (
 from dfg_kursverwaltung.repositories.pruefungsergebnisse_repository import (
     ExamResultRepository,
 )
-from dfg_kursverwaltung.services.benutzer_kurstage_service import (
-    UserCourseDayService,
-)
-
 
 class ExamResultService:
     def __init__(
         self,
         repository: ExamResultRepository,
         assignment_repository: CourseAssignmentRepository,
-        user_course_day_service: UserCourseDayService,
     ):
         self.repository = repository
         self.assignment_repository = assignment_repository
-        self.user_course_day_service = (
-            user_course_day_service
-        )
 
     def create_exam_result(
         self,
@@ -279,6 +271,16 @@ class ExamResultService:
             )
 
         if (
+            assignment.rolle
+            != CourseAssignmentRole.PARTICIPANT
+        ):
+            raise ValueError(
+                "Ein Prüfungsergebnis kann nur "
+                "für eine Teilnehmer-Zuordnung "
+                "erfasst oder geändert werden."
+            )
+
+        if (
             assignment.status
             != CourseAssignmentStatus.ATTENDED
         ):
@@ -301,27 +303,6 @@ class ExamResultService:
             Permission.EXAM_RESULT_WRITE,
         )
 
-        if UserRole(actor.rolle) != UserRole.INSTRUCTOR:
-            return
-
-        if (
-            assignment.rolle
-            != CourseAssignmentRole.PARTICIPANT
-        ):
-            raise PermissionError(
-                "Instruktor-Benutzer dürfen "
-                "Prüfungsergebnisse nur für "
-                "Teilnehmer-Zuordnungen bearbeiten."
-            )
-
-        if not self.user_course_day_service.has_access(
-            actor.id,
-            assignment.kurstag_id,
-        ):
-            raise PermissionError(
-                "Für diesen Kurstag besteht keine "
-                "Instruktor-Berechtigung."
-            )
 
     @staticmethod
     def _clean_optional(

@@ -91,6 +91,15 @@ class KurszuordnungenWidget(QWidget):
         self._create_ui()
         self.load_data()
 
+    def _can_modify_assignment(
+        self,
+        assignment: CourseAssignment,
+    ) -> bool:
+        if not self.can_write_assignment:
+            return False
+
+        return True
+
     def _create_ui(self):
         main_layout = QVBoxLayout(self)
 
@@ -925,6 +934,11 @@ class KurszuordnungenWidget(QWidget):
         if assignment is None:
             return
 
+
+        if not self._can_modify_assignment(
+            assignment
+        ):
+            return
         person = self.person_service.get_person(
             assignment.person_id
         )
@@ -1007,6 +1021,11 @@ class KurszuordnungenWidget(QWidget):
         if assignment is None:
             return
 
+
+        if not self._can_modify_assignment(
+            assignment
+        ):
+            return
         person = self.person_service.get_person(
             assignment.person_id
         )
@@ -1131,6 +1150,7 @@ class KurszuordnungenWidget(QWidget):
         if assignment is None:
             return
 
+
         if (
             assignment.rolle
             != CourseAssignmentRole.PARTICIPANT
@@ -1248,9 +1268,12 @@ class KurszuordnungenWidget(QWidget):
         self._load_assignments()
 
     def _update_buttons(self):
-        has_course_day = (
+        course_day_id = (
             self.course_day_combo.currentData()
-            is not None
+        )
+
+        has_course_day = (
+            course_day_id is not None
         )
 
         has_assignment = (
@@ -1258,20 +1281,7 @@ class KurszuordnungenWidget(QWidget):
             is not None
         )
 
-        self.add_button.setEnabled(
-            self.can_write_assignment
-            and has_course_day
-        )
-        self.edit_button.setEnabled(
-            self.can_write_assignment
-            and has_assignment
-        )
-        self.remove_button.setEnabled(
-            self.can_write_assignment
-            and has_assignment
-        )
-
-        can_edit_exam_result = False
+        assignment = None
 
         if has_assignment:
             assignment = (
@@ -1281,6 +1291,29 @@ class KurszuordnungenWidget(QWidget):
                 )
             )
 
+        can_add_assignment = (
+            self.can_write_assignment
+            and has_course_day
+        )
+
+        can_edit_assignment = (
+            self.can_write_assignment
+            and assignment is not None
+        )
+
+        self.add_button.setEnabled(
+            can_add_assignment
+        )
+        self.edit_button.setEnabled(
+            can_edit_assignment
+        )
+        self.remove_button.setEnabled(
+            can_edit_assignment
+        )
+
+        can_edit_exam_result = False
+
+        if assignment is not None:
             course_id = (
                 self.course_combo.currentData()
             )
@@ -1297,7 +1330,6 @@ class KurszuordnungenWidget(QWidget):
 
             can_edit_exam_result = (
                 self.can_write_exam_result
-                and assignment is not None
                 and assignment.rolle
                 == CourseAssignmentRole.PARTICIPANT
                 and assignment.status
