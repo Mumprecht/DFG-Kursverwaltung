@@ -4,7 +4,7 @@ PRAGMA foreign_keys = ON;
 -- ============================================================
 -- DFG-Kursverwaltung
 -- SQLite-Datenbankschema
--- Schema-Version: 7
+-- Schema-Version: 8
 -- ============================================================
 
 
@@ -286,6 +286,36 @@ CREATE TABLE IF NOT EXISTS kurstage (
         OR ende > beginn
     )
 );
+
+
+-- ------------------------------------------------------------
+-- Benutzerberechtigungen für Kurstage
+-- ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS benutzer_kurstage (
+    benutzer_id TEXT NOT NULL,
+    kurstag_id TEXT NOT NULL,
+
+    created_at TEXT NOT NULL,
+
+    PRIMARY KEY (
+        benutzer_id,
+        kurstag_id
+    ),
+
+    FOREIGN KEY (benutzer_id)
+        REFERENCES benutzer(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (kurstag_id)
+        REFERENCES kurstage(id)
+        ON DELETE CASCADE
+);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_benutzer_kurstage_kurstag
+ON benutzer_kurstage(kurstag_id);
 
 
 -- ------------------------------------------------------------

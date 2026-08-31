@@ -9,14 +9,23 @@ from dfg_kursverwaltung.core.passwords import (
 from dfg_kursverwaltung.repositories.benutzer_repository import (
     UserRepository,
 )
+from dfg_kursverwaltung.repositories.benutzer_kurstage_repository import (
+    UserCourseDayRepository,
+)
 
 
 class UserService:
     def __init__(
         self,
         repository: UserRepository,
+        course_day_access_repository: (
+            UserCourseDayRepository | None
+        ) = None,
     ):
         self.repository = repository
+        self.course_day_access_repository = (
+            course_day_access_repository
+        )
 
     def create_user(
         self,
@@ -260,9 +269,17 @@ class UserService:
             timezone.utc
         )
 
-        return self.repository.update(
+        updated_user = self.repository.update(
             user
         )
+
+        self._remove_course_day_access_if_needed(
+            original_role=original.rolle,
+            new_role=updated_user.rolle,
+            user_id=updated_user.id,
+        )
+
+        return updated_user
 
     def deactivate_user(
         self,
@@ -279,11 +296,21 @@ class UserService:
                 "nicht deaktiviert werden."
             )
 
+        original_role = user.rolle
+
         user.rolle = UserRole.INACTIVE
 
-        return self.repository.update(
+        updated_user = self.repository.update(
             user
         )
+
+        self._remove_course_day_access_if_needed(
+            original_role=original_role,
+            new_role=updated_user.rolle,
+            user_id=updated_user.id,
+        )
+
+        return updated_user
 
     def set_role(
         self,
@@ -306,11 +333,21 @@ class UserService:
 
             return user
 
+        original_role = user.rolle
+
         user.rolle = rolle
 
-        return self.repository.update(
+        updated_user = self.repository.update(
             user
         )
+
+        self._remove_course_day_access_if_needed(
+            original_role=original_role,
+            new_role=updated_user.rolle,
+            user_id=updated_user.id,
+        )
+
+        return updated_user
 
     def reset_password(
         self,
@@ -386,6 +423,23 @@ class UserService:
         self.repository.delete(
             user_id
         )
+
+    def _remove_course_day_access_if_needed(
+        self,
+        *,
+        original_role: UserRole,
+        new_role: UserRole,
+        user_id: str,
+    ) -> None:
+        if (
+            original_role == UserRole.INSTRUCTOR
+            and new_role != UserRole.INSTRUCTOR
+            and self.course_day_access_repository
+            is not None
+        ):
+            self.course_day_access_repository.revoke_all_for_user(
+                user_id
+            )
 
     def _get_required_user(
         self,

@@ -5,7 +5,7 @@ from pathlib import Path
 import sqlite3
 
 
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 
 class DatabaseManager:
@@ -154,6 +154,10 @@ class DatabaseManager:
         if current_version == 6:
             self._migrate_6_to_7()
             current_version = 7
+
+        if current_version == 7:
+            self._migrate_7_to_8()
+            current_version = 8
 
         if current_version != SCHEMA_VERSION:
             raise RuntimeError(
@@ -939,6 +943,186 @@ class DatabaseManager:
                 """
                 UPDATE schema_info
                 SET version = 7;
+                """
+            )
+
+            connection.commit()
+
+        except Exception:
+            if connection.in_transaction:
+                connection.rollback()
+
+            raise
+
+        finally:
+            connection.close()
+
+    def _migrate_7_to_8(
+        self,
+    ) -> None:
+        connection = sqlite3.connect(
+            self.database_path
+        )
+
+        connection.row_factory = (
+            sqlite3.Row
+        )
+
+        try:
+            connection.execute(
+                "PRAGMA foreign_keys = ON;"
+            )
+
+            connection.execute(
+                "BEGIN IMMEDIATE;"
+            )
+
+            existing_table = (
+                connection.execute(
+                    """
+                    SELECT name
+                    FROM sqlite_master
+                    WHERE
+                        type = 'table'
+                        AND name = 'benutzer_kurstage';
+                    """
+                ).fetchone()
+            )
+
+            if existing_table is not None:
+                raise RuntimeError(
+                    "Die Tabelle "
+                    "'benutzer_kurstage' "
+                    "existiert bereits, obwohl "
+                    "die Datenbank noch "
+                    "Schema-Version 7 meldet."
+                )
+
+            connection.execute(
+                """
+                CREATE TABLE benutzer_kurstage (
+                    benutzer_id TEXT NOT NULL,
+                    kurstag_id TEXT NOT NULL,
+
+                    created_at TEXT NOT NULL,
+
+                    PRIMARY KEY (
+                        benutzer_id,
+                        kurstag_id
+                    ),
+
+                    FOREIGN KEY (benutzer_id)
+                        REFERENCES benutzer(id)
+                        ON DELETE CASCADE,
+
+                    FOREIGN KEY (kurstag_id)
+                        REFERENCES kurstage(id)
+                        ON DELETE CASCADE
+                );
+                """
+            )
+
+            connection.execute(
+                """
+                CREATE INDEX
+                    idx_benutzer_kurstage_kurstag
+                ON benutzer_kurstage(
+                    kurstag_id
+                );
+                """
+            )
+
+            columns = {
+                row["name"]
+                for row in connection.execute(
+                    """
+                    PRAGMA table_info(
+                        benutzer_kurstage
+                    );
+                    """
+                ).fetchall()
+            }
+
+            expected_columns = {
+                "benutzer_id",
+                "kurstag_id",
+                "created_at",
+            }
+
+            if columns != expected_columns:
+                raise RuntimeError(
+                    "Die Tabelle "
+                    "'benutzer_kurstage' "
+                    "besitzt nicht die "
+                    "erwartete Struktur."
+                )
+
+            index_row = connection.execute(
+                """
+                SELECT name
+                FROM sqlite_master
+                WHERE
+                    type = 'index'
+                    AND name =
+                        'idx_benutzer_kurstage_kurstag';
+                """
+            ).fetchone()
+
+            if index_row is None:
+                raise RuntimeError(
+                    "Der Index für "
+                    "'benutzer_kurstage' "
+                    "wurde nicht angelegt."
+                )
+
+            assignment_count = (
+                connection.execute(
+                    """
+                    SELECT COUNT(*)
+                    FROM benutzer_kurstage;
+                    """
+                ).fetchone()[0]
+            )
+
+            if assignment_count != 0:
+                raise RuntimeError(
+                    "Die neue Tabelle "
+                    "'benutzer_kurstage' ist "
+                    "unerwartet nicht leer."
+                )
+
+            foreign_key_errors = (
+                connection.execute(
+                    """
+                    PRAGMA foreign_key_check;
+                    """
+                ).fetchall()
+            )
+
+            if foreign_key_errors:
+                raise RuntimeError(
+                    "Nach der Migration wurden "
+                    "Foreign-Key-Fehler gefunden: "
+                    f"{len(foreign_key_errors)}"
+                )
+
+            integrity = connection.execute(
+                """
+                PRAGMA integrity_check;
+                """
+            ).fetchone()[0]
+
+            if integrity != "ok":
+                raise RuntimeError(
+                    "Integritätsprüfung nach "
+                    "Migration fehlgeschlagen: "
+                    f"{integrity}"
+                )
+
+            connection.execute(
+                """
+                UPDATE schema_info
+                SET version = 8;
                 """
             )
 
