@@ -3559,4 +3559,111 @@ Vulais Vus propi cuntinuar?</translation>
             <translation>Il pled-clav n’ha betg pudì vegnir midà</translation>
         </message>
     </context>
+    <context>
+        <name>InfoWidget</name>
+        <message>
+            <source>DFG-Kursverwaltung</source>
+            <translation>DFG-Kursverwaltung</translation>
+        </message>
+        <message>
+            <source>Adress-, Kurs- und Prüfungsverwaltung der DFG Pfannenstiel</source>
+            <translation>Administraziun d&apos;adressas, curs ed examens da la DFG Pfannenstiel</translation>
+        </message>
+        <message>
+            <source>Anwendung</source>
+            <translation>Applicaziun</translation>
+        </message>
+        <message>
+            <source>Version:</source>
+            <translation>Versiun:</translation>
+        </message>
+        <message>
+            <source>Entwicklung:</source>
+            <translation>Svilupp:</translation>
+        </message>
+        <message>
+            <source>Organisation:</source>
+            <translation>Organisaziun:</translation>
+        </message>
+        <message>
+            <source>Copyright:</source>
+            <translation>Copyright:</translation>
+        </message>
+        <message>
+            <source>Systeminformationen</source>
+            <translation>Infurmaziuns dal sistem</translation>
+        </message>
+        <message>
+            <source>Python:</source>
+            <translation>Python:</translation>
+        </message>
+        <message>
+            <source>PySide6:</source>
+            <translation>PySide6:</translation>
+        </message>
+        <message>
+            <source>Qt:</source>
+            <translation>Qt:</translation>
+        </message>
+        <message>
+            <source>SQLite:</source>
+            <translation>SQLite:</translation>
+        </message>
+        <message>
+            <source>Betriebssystem:</source>
+            <translation>Sistem operativ:</translation>
+        </message>
+        <message>
+            <source>Datenbankschema:</source>
+            <translation>Schema da la banca da datas:</translation>
+        </message>
+        <message>
+            <source>Datenbank:</source>
+            <translation>Banca da datas:</translation>
+        </message>
+        <message>
+            <source>Systeminformationen kopieren</source>
+            <translation>Copiar las infurmaziuns dal sistem</translation>
+        </message>
+        <message>
+            <source>Lizenz</source>
+            <translation>Licenza</translation>
+        </message>
+        <message>
+            <source>Lizenz:</source>
+            <translation>Licenza:</translation>
+        </message>
+        <message>
+            <source>Rechteinhaber:</source>
+            <translation>Titulars dals dretgs:</translation>
+        </message>
+        <message>
+            <source>Nutzung:</source>
+            <translation>Utilisaziun:</translation>
+        </message>
+        <message>
+            <source>Nicht-kommerzielle Nutzung gestattet</source>
+            <translation>Utilisaziun betg commerziala permessa</translation>
+        </message>
+        <message>
+            <source>Massgebend ist die deutsche Fassung des Lizenztextes.</source>
+            <translation>La versiun tudestga dal text da licenza è decisiva.</translation>
+        </message>
+        <message>
+            <source>Hinweis:</source>
+            <translation>Remartga:</translation>
+        </message>
+        <message>
+            <source>Lizenztext anzeigen</source>
+            <translation>Mussar il text da licenza</translation>
+        </message>
+        <message>
+            <source>Der Lizenztext konnte nicht geladen werden.</source>
+            <translation>Il text da licenza n&apos;ha betg pudì vegnir chargià.</translation>
+        </message>
+        <message>
+            <source>DFG-Kursverwaltung Non-Commercial License 1.0</source>
+            <translation>DFG-Kursverwaltung Non-Commercial License 1.0</translation>
+        </message>
+    </context>
 </TS>

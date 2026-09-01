@@ -3559,4 +3559,111 @@ Voulez-vous vraiment continuer ?</translation>
             <translation>Le mot de passe n’a pas pu être modifié</translation>
         </message>
     </context>
+    <context>
+        <name>InfoWidget</name>
+        <message>
+            <source>DFG-Kursverwaltung</source>
+            <translation>DFG-Kursverwaltung</translation>
+        </message>
+        <message>
+            <source>Adress-, Kurs- und Prüfungsverwaltung der DFG Pfannenstiel</source>
+            <translation>Gestion des adresses, des cours et des examens de la DFG Pfannenstiel</translation>
+        </message>
+        <message>
+            <source>Anwendung</source>
+            <translation>Application</translation>
+        </message>
+        <message>
+            <source>Version:</source>
+            <translation>Version :</translation>
+        </message>
+        <message>
+            <source>Entwicklung:</source>
+            <translation>Développement :</translation>
+        </message>
+        <message>
+            <source>Organisation:</source>
+            <translation>Organisation :</translation>
+        </message>
+        <message>
+            <source>Copyright:</source>
+            <translation>Copyright :</translation>
+        </message>
+        <message>
+            <source>Systeminformationen</source>
+            <translation>Informations système</translation>
+        </message>
+        <message>
+            <source>Python:</source>
+            <translation>Python :</translation>
+        </message>
+        <message>
+            <source>PySide6:</source>
+            <translation>PySide6 :</translation>
+        </message>
+        <message>
+            <source>Qt:</source>
+            <translation>Qt :</translation>
+        </message>
+        <message>
+            <source>SQLite:</source>
+            <translation>SQLite :</translation>
+        </message>
+        <message>
+            <source>Betriebssystem:</source>
+            <translation>Système d’exploitation :</translation>
+        </message>
+        <message>
+            <source>Datenbankschema:</source>
+            <translation>Schéma de base de données :</translation>
+        </message>
+        <message>
+            <source>Datenbank:</source>
+            <translation>Base de données :</translation>
+        </message>
+        <message>
+            <source>Systeminformationen kopieren</source>
+            <translation>Copier les informations système</translation>
+        </message>
+        <message>
+            <source>Lizenz</source>
+            <translation>Licence</translation>
+        </message>
+        <message>
+            <source>Lizenz:</source>
+            <translation>Licence :</translation>
+        </message>
+        <message>
+            <source>Rechteinhaber:</source>
+            <translation>Titulaires des droits :</translation>
+        </message>
+        <message>
+            <source>Nutzung:</source>
+            <translation>Utilisation :</translation>
+        </message>
+        <message>
+            <source>Nicht-kommerzielle Nutzung gestattet</source>
+            <translation>Utilisation non commerciale autorisée</translation>
+        </message>
+        <message>
+            <source>Massgebend ist die deutsche Fassung des Lizenztextes.</source>
+            <translation>La version allemande du texte de la licence fait foi.</translation>
+        </message>
+        <message>
+            <source>Hinweis:</source>
+            <translation>Remarque :</translation>
+        </message>
+        <message>
+            <source>Lizenztext anzeigen</source>
+            <translation>Afficher le texte de la licence</translation>
+        </message>
+        <message>
+            <source>Der Lizenztext konnte nicht geladen werden.</source>
+            <translation>Le texte de la licence n’a pas pu être chargé.</translation>
+        </message>
+        <message>
+            <source>DFG-Kursverwaltung Non-Commercial License 1.0</source>
+            <translation>DFG-Kursverwaltung Non-Commercial License 1.0</translation>
+        </message>
+    </context>
 </TS>

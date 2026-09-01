@@ -9,6 +9,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from dfg_kursverwaltung.core.database import (
+    DatabaseManager,
+)
 from dfg_kursverwaltung.core.i18n import (
     SUPPORTED_LANGUAGES,
     TranslationManager,
@@ -26,6 +29,9 @@ from dfg_kursverwaltung.gui.export_widget import (
 )
 from dfg_kursverwaltung.gui.import_widget import (
     ImportWidget,
+)
+from dfg_kursverwaltung.gui.info_widget import (
+    InfoWidget,
 )
 from dfg_kursverwaltung.gui.kurstage_widget import (
     KurstageWidget,
@@ -113,6 +119,7 @@ class MainWindow(QMainWindow):
         export_service: ExportService,
         backup_service: BackupService,
         user_service: UserService,
+        database_manager: DatabaseManager,
         authenticated_user: User,
     ):
         super().__init__()
@@ -132,6 +139,7 @@ class MainWindow(QMainWindow):
         self.export_service = export_service
         self.backup_service = backup_service
         self.user_service = user_service
+        self.database_manager = database_manager
         self.authenticated_user = authenticated_user
 
         self.setWindowTitle(
@@ -382,7 +390,9 @@ class MainWindow(QMainWindow):
                 self.tr("Einstellungen"),
             )
 
-        self.info_tab = QWidget()
+        self.info_tab = InfoWidget(
+            self.database_manager
+        )
 
         self.tabs.addTab(
             self.info_tab,

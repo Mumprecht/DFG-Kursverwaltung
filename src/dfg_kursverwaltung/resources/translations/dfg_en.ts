@@ -3559,4 +3559,111 @@ Do you really want to continue?</translation>
             <translation>Password Could Not Be Changed</translation>
         </message>
     </context>
+    <context>
+        <name>InfoWidget</name>
+        <message>
+            <source>DFG-Kursverwaltung</source>
+            <translation>DFG-Kursverwaltung</translation>
+        </message>
+        <message>
+            <source>Adress-, Kurs- und Prüfungsverwaltung der DFG Pfannenstiel</source>
+            <translation>Address, course and examination management of DFG Pfannenstiel</translation>
+        </message>
+        <message>
+            <source>Anwendung</source>
+            <translation>Application</translation>
+        </message>
+        <message>
+            <source>Version:</source>
+            <translation>Version:</translation>
+        </message>
+        <message>
+            <source>Entwicklung:</source>
+            <translation>Development:</translation>
+        </message>
+        <message>
+            <source>Organisation:</source>
+            <translation>Organisation:</translation>
+        </message>
+        <message>
+            <source>Copyright:</source>
+            <translation>Copyright:</translation>
+        </message>
+        <message>
+            <source>Systeminformationen</source>
+            <translation>System information</translation>
+        </message>
+        <message>
+            <source>Python:</source>
+            <translation>Python:</translation>
+        </message>
+        <message>
+            <source>PySide6:</source>
+            <translation>PySide6:</translation>
+        </message>
+        <message>
+            <source>Qt:</source>
+            <translation>Qt:</translation>
+        </message>
+        <message>
+            <source>SQLite:</source>
+            <translation>SQLite:</translation>
+        </message>
+        <message>
+            <source>Betriebssystem:</source>
+            <translation>Operating system:</translation>
+        </message>
+        <message>
+            <source>Datenbankschema:</source>
+            <translation>Database schema:</translation>
+        </message>
+        <message>
+            <source>Datenbank:</source>
+            <translation>Database:</translation>
+        </message>
+        <message>
+            <source>Systeminformationen kopieren</source>
+            <translation>Copy system information</translation>
+        </message>
+        <message>
+            <source>Lizenz</source>
+            <translation>License</translation>
+        </message>
+        <message>
+            <source>Lizenz:</source>
+            <translation>License:</translation>
+        </message>
+        <message>
+            <source>Rechteinhaber:</source>
+            <translation>Rights holders:</translation>
+        </message>
+        <message>
+            <source>Nutzung:</source>
+            <translation>Use:</translation>
+        </message>
+        <message>
+            <source>Nicht-kommerzielle Nutzung gestattet</source>
+            <translation>Non-commercial use permitted</translation>
+        </message>
+        <message>
+            <source>Massgebend ist die deutsche Fassung des Lizenztextes.</source>
+            <translation>The German version of the license text is authoritative.</translation>
+        </message>
+        <message>
+            <source>Hinweis:</source>
+            <translation>Note:</translation>
+        </message>
+        <message>
+            <source>Lizenztext anzeigen</source>
+            <translation>Show license text</translation>
+        </message>
+        <message>
+            <source>Der Lizenztext konnte nicht geladen werden.</source>
+            <translation>The license text could not be loaded.</translation>
+        </message>
+        <message>
+            <source>DFG-Kursverwaltung Non-Commercial License 1.0</source>
+            <translation>DFG-Kursverwaltung Non-Commercial License 1.0</translation>
+        </message>
+    </context>
 </TS>

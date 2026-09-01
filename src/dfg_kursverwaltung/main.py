@@ -487,6 +487,7 @@ def main():
         export_service,
         backup_service,
         user_service,
+        database_manager,
         authenticated_user,
     )
 
