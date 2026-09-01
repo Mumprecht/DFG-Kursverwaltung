@@ -1,9 +1,7 @@
 from datetime import date
 
-from PySide6.QtCore import QDate
 from PySide6.QtWidgets import (
     QCheckBox,
-    QDateEdit,
     QDialog,
     QDialogButtonBox,
     QFormLayout,
@@ -72,28 +70,10 @@ class PersonDialog(QDialog):
         self.first_name_edit = QLineEdit()
         self.last_name_edit = QLineEdit()
 
-        self.birthdate_edit = QDateEdit()
-        self.birthdate_edit.setCalendarPopup(True)
-        self.birthdate_edit.setDisplayFormat(
-            "dd.MM.yyyy"
-        )
+        self.birthdate_edit = QLineEdit()
 
-        self.birthdate_edit.setMinimumDate(
-            QDate(1900, 1, 1)
-        )
-
-        self.birthdate_edit.setMaximumDate(
-            QDate.currentDate()
-        )
-
-        # Ein spezielles Mindestdatum verwenden wir
-        # als Kennzeichnung für "kein Geburtsdatum".
-        self.birthdate_edit.setSpecialValueText(
-            self.tr("Nicht angegeben")
-        )
-
-        self.birthdate_edit.setDate(
-            self.birthdate_edit.minimumDate()
+        self.birthdate_edit.setPlaceholderText(
+            self.tr("TTMMJJJJ oder TT.MM.JJJJ")
         )
 
         self.email_edit = QLineEdit()
@@ -323,17 +303,13 @@ class PersonDialog(QDialog):
         )
 
         if self.person.geburtsdatum is not None:
-            self.birthdate_edit.setDate(
-                QDate(
-                    self.person.geburtsdatum.year,
-                    self.person.geburtsdatum.month,
-                    self.person.geburtsdatum.day,
+            self.birthdate_edit.setText(
+                self.person.geburtsdatum.strftime(
+                    "%d.%m.%Y"
                 )
             )
         else:
-            self.birthdate_edit.setDate(
-                self.birthdate_edit.minimumDate()
-            )
+            self.birthdate_edit.clear()
 
         self.email_edit.setText(
             self.person.email or ""
@@ -375,6 +351,44 @@ class PersonDialog(QDialog):
             self.person.bemerkungen or ""
         )
 
+    @staticmethod
+    def _parse_birthdate(
+        text: str,
+    ) -> date:
+        text = text.strip()
+
+        if (
+            len(text) == 8
+            and text.isdigit()
+        ):
+            text = (
+                f"{text[0:2]}."
+                f"{text[2:4]}."
+                f"{text[4:8]}"
+            )
+
+        parts = text.split(".")
+
+        if (
+            len(parts) != 3
+            or len(parts[0]) != 2
+            or len(parts[1]) != 2
+            or len(parts[2]) != 4
+            or not all(
+                part.isdigit()
+                for part in parts
+            )
+        ):
+            raise ValueError(
+                "Ungültiges Datumsformat."
+            )
+
+        return date(
+            int(parts[2]),
+            int(parts[1]),
+            int(parts[0]),
+        )
+
     def _validate_and_accept(self):
         first_name = (
             self.first_name_edit.text().strip()
@@ -408,6 +422,54 @@ class PersonDialog(QDialog):
             self.last_name_edit.setFocus()
             return
 
+        birthdate_text = (
+            self.birthdate_edit.text().strip()
+        )
+
+        if birthdate_text:
+            try:
+                birthdate = self._parse_birthdate(
+                    birthdate_text
+                )
+            except ValueError:
+                QMessageBox.warning(
+                    self,
+                    self.tr(
+                        "Ungültiges Geburtsdatum"
+                    ),
+                    self.tr(
+                        "Bitte geben Sie das "
+                        "Geburtsdatum im Format "
+                        "TT.MM.JJJJ ein."
+                    ),
+                )
+
+                self.birthdate_edit.setFocus()
+                self.birthdate_edit.selectAll()
+                return
+
+            if birthdate > date.today():
+                QMessageBox.warning(
+                    self,
+                    self.tr(
+                        "Ungültiges Geburtsdatum"
+                    ),
+                    self.tr(
+                        "Das Geburtsdatum darf nicht "
+                        "in der Zukunft liegen."
+                    ),
+                )
+
+                self.birthdate_edit.setFocus()
+                self.birthdate_edit.selectAll()
+                return
+
+            self.birthdate_edit.setText(
+                birthdate.strftime(
+                    "%d.%m.%Y"
+                )
+            )
+
         email = self.email_edit.text().strip()
 
         if email and (
@@ -429,20 +491,15 @@ class PersonDialog(QDialog):
         self.accept()
 
     def get_data(self) -> dict:
-        birthdate: date | None
+        birthdate_text = (
+            self.birthdate_edit.text().strip()
+        )
 
-        if (
-            self.birthdate_edit.date()
-            == self.birthdate_edit.minimumDate()
-        ):
-            birthdate = None
-        else:
-            qt_date = self.birthdate_edit.date()
+        birthdate: date | None = None
 
-            birthdate = date(
-                qt_date.year(),
-                qt_date.month(),
-                qt_date.day(),
+        if birthdate_text:
+            birthdate = self._parse_birthdate(
+                birthdate_text
             )
 
         return {

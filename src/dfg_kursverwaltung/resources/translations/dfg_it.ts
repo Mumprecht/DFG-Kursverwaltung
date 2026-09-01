@@ -2279,6 +2279,22 @@ La nuova lingua verrà utilizzata al prossimo avvio dell'applicazione.</translat
             <source>Bitte geben Sie eine gültige E-Mail-Adresse ein.</source>
             <translation>Inserire un indirizzo e-mail valido.</translation>
         </message>
+        <message>
+            <source>TTMMJJJJ oder TT.MM.JJJJ</source>
+            <translation>GGMMAAAA oppure GG.MM.AAAA</translation>
+        </message>
+        <message>
+            <source>Ungültiges Geburtsdatum</source>
+            <translation>Data di nascita non valida</translation>
+        </message>
+        <message>
+            <source>Bitte geben Sie das Geburtsdatum im Format TT.MM.JJJJ ein.</source>
+            <translation>Inserire la data di nascita nel formato GG.MM.AAAA.</translation>
+        </message>
+        <message>
+            <source>Das Geburtsdatum darf nicht in der Zukunft liegen.</source>
+            <translation>La data di nascita non può essere nel futuro.</translation>
+        </message>
     </context>
     <context>
         <name>PersonenWidget</name>
@@ -2643,6 +2659,26 @@ I dati storici dei corsi saranno mantenuti.</translation>
             <source>Abgemeldet</source>
             <translation>Disiscritto</translation>
         </message>
+        <message>
+            <source>nicht angegeben</source>
+            <translation>non indicato</translation>
+        </message>
+        <message>
+            <source>Es wurde möglicherweise bereits eine Person mit diesen Angaben gefunden.</source>
+            <translation>Potrebbe già esistere una persona con questi dati.</translation>
+        </message>
+        <message>
+            <source>Vorhandene Person:</source>
+            <translation>Persona esistente:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie die Person trotzdem neu erfassen?</source>
+            <translation>Si desidera comunque creare una nuova persona?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Possibile duplicato</translation>
+        </message>
     </context>
     <context>
         <name>PhoneNumberDialog</name>
@@ -2715,6 +2751,10 @@ I dati storici dei corsi saranno mantenuti.</translation>
             <location filename="../../gui/telefonnummer_dialog.py" line="201" />
             <source>Ungültige Telefonnummer</source>
             <translation>Numero di telefono non valido</translation>
+        </message>
+        <message>
+            <source>Um die Primärnummer zu ändern, legen Sie eine andere Telefonnummer als Primärnummer fest.</source>
+            <translation>Per modificare il numero principale, impostare un altro numero di telefono come numero principale.</translation>
         </message>
     </context>
     <context>

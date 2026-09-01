@@ -165,6 +165,19 @@ class PhoneNumberDialog(QDialog):
             self.phone_number.ist_primaer
         )
 
+        if self.phone_number.ist_primaer:
+            self.primary_checkbox.setEnabled(
+                False
+            )
+
+            self.primary_checkbox.setToolTip(
+                self.tr(
+                    "Um die Primärnummer zu ändern, "
+                    "legen Sie eine andere Telefonnummer "
+                    "als Primärnummer fest."
+                )
+            )
+
         self.notes_edit.setPlainText(
             self.phone_number.bemerkungen or ""
         )

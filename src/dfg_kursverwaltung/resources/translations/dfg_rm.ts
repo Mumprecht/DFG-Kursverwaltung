@@ -2279,6 +2279,22 @@ La nova lingua vegn utilisada la proxima giada che l'applicaziun vegn aviada.</t
             <source>Bitte geben Sie eine gültige E-Mail-Adresse ein.</source>
             <translation>Endatai ina adressa dad e-mail valida.</translation>
         </message>
+        <message>
+            <source>TTMMJJJJ oder TT.MM.JJJJ</source>
+            <translation>GGMMAAAA u GG.MM.AAAA</translation>
+        </message>
+        <message>
+            <source>Ungültiges Geburtsdatum</source>
+            <translation>Data da naschientscha nunvalaivla</translation>
+        </message>
+        <message>
+            <source>Bitte geben Sie das Geburtsdatum im Format TT.MM.JJJJ ein.</source>
+            <translation>Endatai la data da naschientscha en il format GG.MM.AAAA.</translation>
+        </message>
+        <message>
+            <source>Das Geburtsdatum darf nicht in der Zukunft liegen.</source>
+            <translation>La data da naschientscha na dastga betg esser en l&#x27;avegnir.</translation>
+        </message>
     </context>
     <context>
         <name>PersonenWidget</name>
@@ -2643,6 +2659,26 @@ Las datas istoricas dals curs restan conservadas.</translation>
             <source>Abgemeldet</source>
             <translation>Deannunzià</translation>
         </message>
+        <message>
+            <source>nicht angegeben</source>
+            <translation>betg inditgà</translation>
+        </message>
+        <message>
+            <source>Es wurde möglicherweise bereits eine Person mit diesen Angaben gefunden.</source>
+            <translation>Eventualmain exista gia ina persuna cun questas indicaziuns.</translation>
+        </message>
+        <message>
+            <source>Vorhandene Person:</source>
+            <translation>Persuna existenta:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie die Person trotzdem neu erfassen?</source>
+            <translation>Vulais Vus tuttina registrar da nov la persuna?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Dubletta pussaivla</translation>
+        </message>
     </context>
     <context>
         <name>PhoneNumberDialog</name>
@@ -2715,6 +2751,10 @@ Las datas istoricas dals curs restan conservadas.</translation>
             <location filename="../../gui/telefonnummer_dialog.py" line="201" />
             <source>Ungültige Telefonnummer</source>
             <translation>Numer da telefon nunvalid</translation>
+        </message>
+        <message>
+            <source>Um die Primärnummer zu ändern, legen Sie eine andere Telefonnummer als Primärnummer fest.</source>
+            <translation>Per midar il numer principal sto in auter numer da telefon vegnir definì sco numer principal.</translation>
         </message>
     </context>
     <context>

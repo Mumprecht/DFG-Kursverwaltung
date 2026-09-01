@@ -142,6 +142,9 @@ class PhoneNumberService:
                     "die Person bereits vorhanden."
                 )
 
+        if existing.ist_primaer:
+            ist_primaer = True
+
         if ist_primaer:
             self.repository.clear_primary(
                 phone_number.person_id,

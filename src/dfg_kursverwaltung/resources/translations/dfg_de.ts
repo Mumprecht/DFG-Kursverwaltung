@@ -2279,6 +2279,22 @@ Die neue Sprache wird beim nächsten Programmstart verwendet.</translation>
             <source>Bitte geben Sie eine gültige E-Mail-Adresse ein.</source>
             <translation>Bitte geben Sie eine gültige E-Mail-Adresse ein.</translation>
         </message>
+        <message>
+            <source>TTMMJJJJ oder TT.MM.JJJJ</source>
+            <translation>TTMMJJJJ oder TT.MM.JJJJ</translation>
+        </message>
+        <message>
+            <source>Ungültiges Geburtsdatum</source>
+            <translation>Ungültiges Geburtsdatum</translation>
+        </message>
+        <message>
+            <source>Bitte geben Sie das Geburtsdatum im Format TT.MM.JJJJ ein.</source>
+            <translation>Bitte geben Sie das Geburtsdatum im Format TT.MM.JJJJ ein.</translation>
+        </message>
+        <message>
+            <source>Das Geburtsdatum darf nicht in der Zukunft liegen.</source>
+            <translation>Das Geburtsdatum darf nicht in der Zukunft liegen.</translation>
+        </message>
     </context>
     <context>
         <name>PersonenWidget</name>
@@ -2643,6 +2659,26 @@ Historische Kursdaten bleiben erhalten.</translation>
             <source>Abgemeldet</source>
             <translation>Abgemeldet</translation>
         </message>
+        <message>
+            <source>nicht angegeben</source>
+            <translation>nicht angegeben</translation>
+        </message>
+        <message>
+            <source>Es wurde möglicherweise bereits eine Person mit diesen Angaben gefunden.</source>
+            <translation>Es wurde möglicherweise bereits eine Person mit diesen Angaben gefunden.</translation>
+        </message>
+        <message>
+            <source>Vorhandene Person:</source>
+            <translation>Vorhandene Person:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie die Person trotzdem neu erfassen?</source>
+            <translation>Möchten Sie die Person trotzdem neu erfassen?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Mögliche Dublette</translation>
+        </message>
     </context>
     <context>
         <name>PhoneNumberDialog</name>
@@ -2715,6 +2751,10 @@ Historische Kursdaten bleiben erhalten.</translation>
             <location filename="../../gui/telefonnummer_dialog.py" line="201" />
             <source>Ungültige Telefonnummer</source>
             <translation>Ungültige Telefonnummer</translation>
+        </message>
+        <message>
+            <source>Um die Primärnummer zu ändern, legen Sie eine andere Telefonnummer als Primärnummer fest.</source>
+            <translation>Um die Primärnummer zu ändern, legen Sie eine andere Telefonnummer als Primärnummer fest.</translation>
         </message>
     </context>
     <context>

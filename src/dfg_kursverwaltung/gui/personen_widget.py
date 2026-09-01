@@ -1747,6 +1747,96 @@ class PersonenWidget(QWidget):
             self.tr("Deaktivieren")
         )
 
+    def _confirm_possible_duplicate(
+        self,
+        data: dict,
+    ) -> bool:
+        duplicate = None
+
+        email = data.get("email")
+
+        if email:
+            duplicate = (
+                self.person_service
+                .get_person_by_email(
+                    email
+                )
+            )
+
+        if (
+            duplicate is None
+            and data.get("geburtsdatum") is not None
+        ):
+            duplicate = (
+                self.person_service
+                .get_person_by_name_and_birthdate(
+                    data["nachname"],
+                    data["vorname"],
+                    data["geburtsdatum"],
+                )
+            )
+
+        if duplicate is None:
+            return True
+
+        birthdate_text = self.tr(
+            "nicht angegeben"
+        )
+
+        if duplicate.geburtsdatum is not None:
+            birthdate_text = (
+                duplicate.geburtsdatum.strftime(
+                    "%d.%m.%Y"
+                )
+            )
+
+        message = self.tr(
+            "Es wurde möglicherweise bereits eine "
+            "Person mit diesen Angaben gefunden."
+        )
+
+        message += (
+            "\n\n"
+            + self.tr("Vorhandene Person:")
+            + "\n"
+            + f"{duplicate.vorname} "
+            + f"{duplicate.nachname}"
+            + "\n"
+            + self.tr("Geburtsdatum:")
+            + f" {birthdate_text}"
+        )
+
+        if duplicate.email:
+            message += (
+                "\n"
+                + self.tr("E-Mail:")
+                + f" {duplicate.email}"
+            )
+
+        message += (
+            "\n\n"
+            + self.tr(
+                "Möchten Sie die Person trotzdem "
+                "neu erfassen?"
+            )
+        )
+
+        answer = QMessageBox.question(
+            self,
+            self.tr(
+                "Mögliche Dublette"
+            ),
+            message,
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        return (
+            answer
+            == QMessageBox.StandardButton.Yes
+        )
+
     def _new_person(self):
         if not self.can_write:
             return
@@ -1762,6 +1852,11 @@ class PersonenWidget(QWidget):
             return
 
         data = dialog.get_data()
+
+        if not self._confirm_possible_duplicate(
+            data
+        ):
+            return
 
         try:
             person = (

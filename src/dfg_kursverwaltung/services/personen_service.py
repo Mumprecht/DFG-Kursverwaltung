@@ -53,6 +53,14 @@ class PersonService:
                 "in der Zukunft liegen."
             )
 
+        email = self._clean_optional(
+            email
+        )
+
+        self._validate_email(
+            email
+        )
+
         timestamp = datetime.now(
             timezone.utc
         )
@@ -62,9 +70,7 @@ class PersonService:
             nachname=nachname,
             vorname=vorname,
             geburtsdatum=geburtsdatum,
-            email=self._clean_optional(
-                email
-            ),
+            email=email,
             strasse=self._clean_optional(
                 strasse
             ),
@@ -190,6 +196,10 @@ class PersonService:
             person.email
         )
 
+        self._validate_email(
+            person.email
+        )
+
         person.strasse = self._clean_optional(
             person.strasse
         )
@@ -237,6 +247,23 @@ class PersonService:
         self.repository.activate(
             person_id
         )
+
+    @staticmethod
+    def _validate_email(
+        email: str | None,
+    ) -> None:
+        if email is None:
+            return
+
+        at_position = email.find("@")
+
+        if (
+            at_position <= 0
+            or "." not in email[at_position + 1:]
+        ):
+            raise ValueError(
+                "Die E-Mail-Adresse ist ungültig."
+            )
 
     @staticmethod
     def _clean_optional(
