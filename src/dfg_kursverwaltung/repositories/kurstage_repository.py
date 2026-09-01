@@ -206,6 +206,44 @@ class CourseDayRepository:
 
         return course_day
 
+    def has_assignments(
+        self,
+        course_day_id: str,
+    ) -> bool:
+        with self.database_manager.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT 1
+                FROM kurszuordnungen
+                WHERE kurstag_id = ?
+                LIMIT 1;
+                """,
+                (course_day_id,),
+            ).fetchone()
+
+        return row is not None
+
+    def delete(
+        self,
+        course_day_id: str,
+    ) -> None:
+        with self.database_manager.connect() as connection:
+            cursor = connection.execute(
+                """
+                DELETE FROM kurstage
+                WHERE id = ?;
+                """,
+                (course_day_id,),
+            )
+
+            if cursor.rowcount == 0:
+                raise KeyError(
+                    "Kurstag nicht gefunden: "
+                    f"{course_day_id}"
+                )
+
+            connection.commit()
+
     @staticmethod
     def _row_to_course_day(
         row: sqlite3.Row,

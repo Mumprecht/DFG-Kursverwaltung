@@ -1739,6 +1739,26 @@
             <source>Fehler beim Löschen</source>
             <translation>Errore durante l&apos;eliminazione</translation>
         </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Kurstag löschen</source>
+            <translation>Elimina giornata di corso</translation>
+        </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Möchten Sie den Kurstag wirklich löschen?</source>
+            <translation>Si desidera davvero eliminare la giornata di corso?</translation>
+        </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Kurstag kann nicht gelöscht werden</source>
+            <translation>La giornata di corso non può essere eliminata</translation>
+        </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Der Kurstag kann nicht gelöscht werden, weil bereits Kurszuordnungen vorhanden sind.</source>
+            <translation>La giornata di corso non può essere eliminata perché esistono già assegnazioni ai corsi.</translation>
+        </message>
 </context>
     <context>
         <name>LehrgangDialog</name>

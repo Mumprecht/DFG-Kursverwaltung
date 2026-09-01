@@ -377,6 +377,10 @@ class LehrgaengeWidget(QWidget):
             self.tr("Kurstag bearbeiten")
         )
 
+        self.delete_course_day_button = QPushButton(
+            self.tr("Kurstag löschen")
+        )
+
         self.new_course_day_button.clicked.connect(
             self._new_course_day
         )
@@ -385,12 +389,20 @@ class LehrgaengeWidget(QWidget):
             self._edit_course_day
         )
 
+        self.delete_course_day_button.clicked.connect(
+            self._delete_course_day
+        )
+
         course_day_buttons.addWidget(
             self.new_course_day_button
         )
 
         course_day_buttons.addWidget(
             self.edit_course_day_button
+        )
+
+        course_day_buttons.addWidget(
+            self.delete_course_day_button
         )
 
         course_day_buttons.addStretch()
@@ -569,6 +581,10 @@ class LehrgaengeWidget(QWidget):
             False
         )
 
+        self.delete_course_day_button.setEnabled(
+            False
+        )
+
         if self.current_course_id is None:
             return
 
@@ -662,6 +678,10 @@ class LehrgaengeWidget(QWidget):
                 False
             )
 
+            self.delete_course_day_button.setEnabled(
+                False
+            )
+
             return
 
         item = self.course_days_list.item(
@@ -673,6 +693,10 @@ class LehrgaengeWidget(QWidget):
             self.current_course_day_id = None
 
             self.edit_course_day_button.setEnabled(
+                False
+            )
+
+            self.delete_course_day_button.setEnabled(
                 False
             )
 
@@ -689,6 +713,10 @@ class LehrgaengeWidget(QWidget):
                 False
             )
 
+            self.delete_course_day_button.setEnabled(
+                False
+            )
+
             return
 
         self.current_course_day_id = (
@@ -696,6 +724,10 @@ class LehrgaengeWidget(QWidget):
         )
 
         self.edit_course_day_button.setEnabled(
+            self.can_write_course_day
+        )
+
+        self.delete_course_day_button.setEnabled(
             self.can_write_course_day
         )
 
@@ -1095,6 +1127,81 @@ class LehrgaengeWidget(QWidget):
             updated_course_day.id
         )
 
+    def _delete_course_day(self):
+        if not self.can_write_course_day:
+            return
+
+        if self.current_course_day_id is None:
+            return
+
+        course_day = (
+            self.course_day_service
+            .get_course_day(
+                self.current_course_day_id
+            )
+        )
+
+        if course_day is None:
+            return
+
+        description = course_day.datum.strftime(
+            "%d.%m.%Y"
+        )
+
+        if course_day.bezeichnung:
+            description += (
+                "\n"
+                + course_day.bezeichnung
+            )
+
+        answer = QMessageBox.question(
+            self,
+            self.tr("Kurstag löschen"),
+            self.tr(
+                "Möchten Sie den Kurstag wirklich löschen?"
+            )
+            + "\n\n"
+            + description,
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        if (
+            answer
+            != QMessageBox.StandardButton.Yes
+        ):
+            return
+
+        try:
+            self.course_day_service.delete_course_day(
+                course_day.id
+            )
+
+        except ValueError:
+            QMessageBox.warning(
+                self,
+                self.tr(
+                    "Kurstag kann nicht gelöscht werden"
+                ),
+                self.tr(
+                    "Der Kurstag kann nicht gelöscht werden, "
+                    "weil bereits Kurszuordnungen vorhanden sind."
+                ),
+            )
+            return
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler beim Löschen"),
+                str(exc),
+            )
+            return
+
+        self.current_course_day_id = None
+        self._load_course_days()
+
     def _select_course_day(
         self,
         course_day_id: str,
@@ -1146,6 +1253,10 @@ class LehrgaengeWidget(QWidget):
         )
 
         self.edit_course_day_button.setEnabled(
+            False
+        )
+
+        self.delete_course_day_button.setEnabled(
             False
         )
 

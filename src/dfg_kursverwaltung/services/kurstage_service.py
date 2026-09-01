@@ -153,6 +153,39 @@ class CourseDayService:
             course_day
         )
 
+    def delete_course_day(
+        self,
+        course_day_id: str,
+    ) -> None:
+        course_day_id = course_day_id.strip()
+
+        if not course_day_id:
+            raise ValueError(
+                "Die Kurstag-ID darf nicht leer sein."
+            )
+
+        course_day = self.repository.get_by_id(
+            course_day_id
+        )
+
+        if course_day is None:
+            raise KeyError(
+                "Kurstag nicht gefunden: "
+                f"{course_day_id}"
+            )
+
+        if self.repository.has_assignments(
+            course_day_id
+        ):
+            raise ValueError(
+                "Der Kurstag kann nicht gelöscht werden, "
+                "weil bereits Kurszuordnungen vorhanden sind."
+            )
+
+        self.repository.delete(
+            course_day_id
+        )
+
     @staticmethod
     def _validate_times(
         beginn: str | None,

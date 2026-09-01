@@ -1739,6 +1739,26 @@
             <source>Fehler beim Löschen</source>
             <translation>Error while deleting</translation>
         </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Kurstag löschen</source>
+            <translation>Delete Course Day</translation>
+        </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Möchten Sie den Kurstag wirklich löschen?</source>
+            <translation>Do you really want to delete the course day?</translation>
+        </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Kurstag kann nicht gelöscht werden</source>
+            <translation>Course Day Cannot Be Deleted</translation>
+        </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Der Kurstag kann nicht gelöscht werden, weil bereits Kurszuordnungen vorhanden sind.</source>
+            <translation>The course day cannot be deleted because course assignments already exist.</translation>
+        </message>
 </context>
     <context>
         <name>LehrgangDialog</name>

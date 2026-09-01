@@ -1739,6 +1739,26 @@
             <source>Fehler beim Löschen</source>
             <translation>Errur durant stizzar</translation>
         </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Kurstag löschen</source>
+            <translation>Stizzar il di da curs</translation>
+        </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Möchten Sie den Kurstag wirklich löschen?</source>
+            <translation>Vulais Vus propi stizzar il di da curs?</translation>
+        </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Kurstag kann nicht gelöscht werden</source>
+            <translation>Il di da curs na po betg vegnir stizzà</translation>
+        </message>
+        <message>
+            <location filename="../../gui/lehrgaenge_widget.py" />
+            <source>Der Kurstag kann nicht gelöscht werden, weil bereits Kurszuordnungen vorhanden sind.</source>
+            <translation>Il di da curs na po betg vegnir stizzà, perquai ch'i dat gia attribuziuns als curs.</translation>
+        </message>
 </context>
     <context>
         <name>LehrgangDialog</name>
