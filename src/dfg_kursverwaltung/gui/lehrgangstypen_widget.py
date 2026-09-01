@@ -143,6 +143,10 @@ class LehrgangstypenWidget(QWidget):
             self.tr("Bearbeiten")
         )
 
+        self.delete_button = QPushButton(
+            self.tr("Löschen")
+        )
+
         self.new_button.setEnabled(
             self.can_write
         )
@@ -155,12 +159,20 @@ class LehrgangstypenWidget(QWidget):
             self._edit_course_type
         )
 
+        self.delete_button.clicked.connect(
+            self._delete_course_type
+        )
+
         button_layout.addWidget(
             self.new_button
         )
 
         button_layout.addWidget(
             self.edit_button
+        )
+
+        button_layout.addWidget(
+            self.delete_button
         )
 
         layout.addWidget(
@@ -439,6 +451,10 @@ class LehrgangstypenWidget(QWidget):
             self.can_write
         )
 
+        self.delete_button.setEnabled(
+            self.can_write
+        )
+
         self.status_button.setEnabled(
             self.can_write
         )
@@ -508,6 +524,68 @@ class LehrgangstypenWidget(QWidget):
 
         self.load_course_types()
 
+    def _delete_course_type(self):
+        if not self.can_write:
+            return
+
+        if self.current_course_type_id is None:
+            return
+
+        course_type = (
+            self.course_type_service
+            .get_course_type(
+                self.current_course_type_id
+            )
+        )
+
+        if course_type is None:
+            return
+
+        answer = QMessageBox.question(
+            self,
+            self.tr("Lehrgangstyp löschen"),
+            self.tr(
+                "Möchten Sie den Lehrgangstyp wirklich löschen?"
+            )
+            + "\n\n"
+            + course_type.bezeichnung,
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        if (
+            answer
+            != QMessageBox.StandardButton.Yes
+        ):
+            return
+
+        try:
+            self.course_type_service.delete_course_type(
+                course_type.id
+            )
+        except ValueError:
+            QMessageBox.warning(
+                self,
+                self.tr(
+                    "Lehrgangstyp kann nicht gelöscht werden"
+                ),
+                self.tr(
+                    "Der Lehrgangstyp kann nicht gelöscht werden, "
+                    "weil bereits Lehrgänge vorhanden sind."
+                ),
+            )
+            return
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler beim Löschen"),
+                str(exc),
+            )
+            return
+
+        self.current_course_type_id = None
+        self.load_course_types()
     def _edit_course_type(self):
         if not self.can_write:
             return
@@ -667,6 +745,10 @@ class LehrgangstypenWidget(QWidget):
         self.notes_value.clear()
 
         self.edit_button.setEnabled(
+            False
+        )
+
+        self.delete_button.setEnabled(
             False
         )
 

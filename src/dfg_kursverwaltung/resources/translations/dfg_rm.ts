@@ -1699,7 +1699,47 @@
             <source>Unbekannter Lehrgangstyp</source>
             <translation>Tip da curs nunenconuschent</translation>
         </message>
-    </context>
+            <message>
+            <source>Es wurde möglicherweise bereits ein Lehrgang mit diesen Angaben gefunden.</source>
+            <translation>Eventualmain exista gia in curs cun questas indicaziuns.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Lehrgang:</source>
+            <translation>Curs existent:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Lehrgang trotzdem neu erfassen?</source>
+            <translation>Vulais Vus tuttina registrar da nov il curs?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Dubletta pussaivla</translation>
+        </message>
+        <message>
+            <source>Löschen</source>
+            <translation>Stizzar</translation>
+        </message>
+        <message>
+            <source>Lehrgang löschen</source>
+            <translation>Stizzar il curs</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Lehrgang wirklich löschen?</source>
+            <translation>Vulais Vus propi stizzar il curs?</translation>
+        </message>
+        <message>
+            <source>Lehrgang kann nicht gelöscht werden</source>
+            <translation>Il curs na po betg vegnir stizzà</translation>
+        </message>
+        <message>
+            <source>Der Lehrgang kann nicht gelöscht werden, weil bereits Kurstage vorhanden sind.</source>
+            <translation>Il curs na po betg vegnir stizzà, perquai ch&apos;i dat gia dis da curs.</translation>
+        </message>
+        <message>
+            <source>Fehler beim Löschen</source>
+            <translation>Errur durant stizzar</translation>
+        </message>
+</context>
     <context>
         <name>LehrgangDialog</name>
         <message>
@@ -1917,7 +1957,31 @@
             <source>Der Status konnte nicht geändert werden.</source>
             <translation>Il status n'ha betg pudì vegnir modifitgà.</translation>
         </message>
-    </context>
+        <message>
+        <source>Löschen</source>
+        <translation>Stizzar</translation>
+    </message>
+    <message>
+        <source>Lehrgangstyp löschen</source>
+        <translation>Stizzar il tip da curs</translation>
+    </message>
+    <message>
+        <source>Möchten Sie den Lehrgangstyp wirklich löschen?</source>
+        <translation>Vulais Vus propi stizzar il tip da curs?</translation>
+    </message>
+    <message>
+        <source>Lehrgangstyp kann nicht gelöscht werden</source>
+        <translation>Il tip da curs na po betg vegnir stizzà</translation>
+    </message>
+    <message>
+        <source>Der Lehrgangstyp kann nicht gelöscht werden, weil bereits Lehrgänge vorhanden sind.</source>
+        <translation>Il tip da curs na po betg vegnir stizzà, perquai ch&apos;i dat gia curs.</translation>
+    </message>
+    <message>
+        <source>Fehler beim Löschen</source>
+        <translation>Errur durant stizzar</translation>
+    </message>
+</context>
     <context>
         <name>LoginDialog</name>
         <message>
@@ -3384,7 +3448,31 @@ Vulais Vus propi cuntinuar?</translation>
             <source>Mögliche Dublette</source>
             <translation>Dubletta pussaivla</translation>
         </message>
-    </context>
+            <message>
+            <source>Löschen</source>
+            <translation>Stizzar</translation>
+        </message>
+        <message>
+            <source>Ausführungsort löschen</source>
+            <translation>Stizzar il lieu</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Ausführungsort wirklich löschen?</source>
+            <translation>Vulais Vus propi stizzar il lieu?</translation>
+        </message>
+        <message>
+            <source>Ausführungsort kann nicht gelöscht werden</source>
+            <translation>Il lieu na po betg vegnir stizzà</translation>
+        </message>
+        <message>
+            <source>Der Ausführungsort kann nicht gelöscht werden, weil bereits Kurstage vorhanden sind.</source>
+            <translation>Il lieu na po betg vegnir stizzà, perquai ch&apos;i dat gia dis da curs.</translation>
+        </message>
+        <message>
+            <source>Fehler beim Löschen</source>
+            <translation>Errur durant stizzar</translation>
+        </message>
+</context>
     <context>
         <name>SucheWidget</name>
         <message>

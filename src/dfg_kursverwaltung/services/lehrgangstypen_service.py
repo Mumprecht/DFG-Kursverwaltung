@@ -166,6 +166,38 @@ class CourseTypeService:
             ),
         )
 
+    def delete_course_type(
+        self,
+        course_type_id: str,
+    ) -> None:
+        course_type_id = course_type_id.strip()
+
+        if not course_type_id:
+            raise ValueError(
+                "Die Lehrgangstyp-ID darf nicht leer sein."
+            )
+
+        course_type = self.repository.get_by_id(
+            course_type_id
+        )
+
+        if course_type is None:
+            raise KeyError(
+                "Lehrgangstyp nicht gefunden: "
+                f"{course_type_id}"
+            )
+
+        if self.repository.has_courses(
+            course_type_id
+        ):
+            raise ValueError(
+                "Der Lehrgangstyp kann nicht gelöscht werden, "
+                "weil bereits Lehrgänge vorhanden sind."
+            )
+
+        self.repository.delete(
+            course_type_id
+        )
     @staticmethod
     def _clean_optional(
         value: str | None,

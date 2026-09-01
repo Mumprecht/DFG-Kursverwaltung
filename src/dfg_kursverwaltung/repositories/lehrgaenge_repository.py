@@ -175,6 +175,43 @@ class CourseRepository:
 
         return course
 
+    def delete(
+        self,
+        course_id: str,
+    ) -> None:
+        with self.database_manager.connect() as connection:
+            cursor = connection.execute(
+                """
+                DELETE FROM lehrgaenge
+                WHERE id = ?;
+                """,
+                (course_id,),
+            )
+
+            if cursor.rowcount == 0:
+                raise KeyError(
+                    "Lehrgang nicht gefunden: "
+                    f"{course_id}"
+                )
+
+            connection.commit()
+
+    def has_course_days(
+        self,
+        course_id: str,
+    ) -> bool:
+        with self.database_manager.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT 1
+                FROM kurstage
+                WHERE lehrgang_id = ?
+                LIMIT 1;
+                """,
+                (course_id,),
+            ).fetchone()
+
+        return row is not None
     @staticmethod
     def _row_to_course(
         row: sqlite3.Row,

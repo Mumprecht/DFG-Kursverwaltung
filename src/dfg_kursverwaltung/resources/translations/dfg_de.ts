@@ -1699,7 +1699,47 @@
             <source>Unbekannter Lehrgangstyp</source>
             <translation>Unbekannter Lehrgangstyp</translation>
         </message>
-    </context>
+            <message>
+            <source>Es wurde möglicherweise bereits ein Lehrgang mit diesen Angaben gefunden.</source>
+            <translation>Es wurde möglicherweise bereits ein Lehrgang mit diesen Angaben gefunden.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Lehrgang:</source>
+            <translation>Vorhandener Lehrgang:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Lehrgang trotzdem neu erfassen?</source>
+            <translation>Möchten Sie den Lehrgang trotzdem neu erfassen?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Mögliche Dublette</translation>
+        </message>
+        <message>
+            <source>Löschen</source>
+            <translation>Löschen</translation>
+        </message>
+        <message>
+            <source>Lehrgang löschen</source>
+            <translation>Lehrgang löschen</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Lehrgang wirklich löschen?</source>
+            <translation>Möchten Sie den Lehrgang wirklich löschen?</translation>
+        </message>
+        <message>
+            <source>Lehrgang kann nicht gelöscht werden</source>
+            <translation>Lehrgang kann nicht gelöscht werden</translation>
+        </message>
+        <message>
+            <source>Der Lehrgang kann nicht gelöscht werden, weil bereits Kurstage vorhanden sind.</source>
+            <translation>Der Lehrgang kann nicht gelöscht werden, weil bereits Kurstage vorhanden sind.</translation>
+        </message>
+        <message>
+            <source>Fehler beim Löschen</source>
+            <translation>Fehler beim Löschen</translation>
+        </message>
+</context>
     <context>
         <name>LehrgangDialog</name>
         <message>
@@ -1917,7 +1957,31 @@
             <source>Der Status konnte nicht geändert werden.</source>
             <translation>Der Status konnte nicht geändert werden.</translation>
         </message>
-    </context>
+        <message>
+        <source>Löschen</source>
+        <translation>Löschen</translation>
+    </message>
+    <message>
+        <source>Lehrgangstyp löschen</source>
+        <translation>Lehrgangstyp löschen</translation>
+    </message>
+    <message>
+        <source>Möchten Sie den Lehrgangstyp wirklich löschen?</source>
+        <translation>Möchten Sie den Lehrgangstyp wirklich löschen?</translation>
+    </message>
+    <message>
+        <source>Lehrgangstyp kann nicht gelöscht werden</source>
+        <translation>Lehrgangstyp kann nicht gelöscht werden</translation>
+    </message>
+    <message>
+        <source>Der Lehrgangstyp kann nicht gelöscht werden, weil bereits Lehrgänge vorhanden sind.</source>
+        <translation>Der Lehrgangstyp kann nicht gelöscht werden, weil bereits Lehrgänge vorhanden sind.</translation>
+    </message>
+    <message>
+        <source>Fehler beim Löschen</source>
+        <translation>Fehler beim Löschen</translation>
+    </message>
+</context>
     <context>
         <name>LoginDialog</name>
         <message>
@@ -3384,7 +3448,31 @@ Wirklich fortfahren?</translation>
             <source>Mögliche Dublette</source>
             <translation>Mögliche Dublette</translation>
         </message>
-    </context>
+            <message>
+            <source>Löschen</source>
+            <translation>Löschen</translation>
+        </message>
+        <message>
+            <source>Ausführungsort löschen</source>
+            <translation>Ausführungsort löschen</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Ausführungsort wirklich löschen?</source>
+            <translation>Möchten Sie den Ausführungsort wirklich löschen?</translation>
+        </message>
+        <message>
+            <source>Ausführungsort kann nicht gelöscht werden</source>
+            <translation>Ausführungsort kann nicht gelöscht werden</translation>
+        </message>
+        <message>
+            <source>Der Ausführungsort kann nicht gelöscht werden, weil bereits Kurstage vorhanden sind.</source>
+            <translation>Der Ausführungsort kann nicht gelöscht werden, weil bereits Kurstage vorhanden sind.</translation>
+        </message>
+        <message>
+            <source>Fehler beim Löschen</source>
+            <translation>Fehler beim Löschen</translation>
+        </message>
+</context>
     <context>
         <name>SucheWidget</name>
         <message>

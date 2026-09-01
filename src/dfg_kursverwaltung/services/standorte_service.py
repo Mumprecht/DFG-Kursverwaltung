@@ -231,6 +231,39 @@ class LocationService:
             location
         )
 
+    def delete_location(
+        self,
+        location_id: str,
+    ) -> None:
+        location_id = location_id.strip()
+
+        if not location_id:
+            raise ValueError(
+                "Die ID des Ausführungsortes darf nicht leer sein."
+            )
+
+        location = self.repository.get_by_id(
+            location_id
+        )
+
+        if location is None:
+            raise KeyError(
+                "Ausführungsort nicht gefunden: "
+                f"{location_id}"
+            )
+
+        if self.repository.has_course_days(
+            location_id
+        ):
+            raise ValueError(
+                "Der Ausführungsort kann nicht gelöscht werden, "
+                "weil bereits Kurstage vorhanden sind."
+            )
+
+        self.repository.delete(
+            location_id
+        )
+
     def deactivate_location(
         self,
         location_id: str,

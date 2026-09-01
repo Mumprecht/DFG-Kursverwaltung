@@ -141,6 +141,38 @@ class CourseService:
             course
         )
 
+    def delete_course(
+        self,
+        course_id: str,
+    ) -> None:
+        course_id = course_id.strip()
+
+        if not course_id:
+            raise ValueError(
+                "Die Lehrgang-ID darf nicht leer sein."
+            )
+
+        course = self.repository.get_by_id(
+            course_id
+        )
+
+        if course is None:
+            raise KeyError(
+                "Lehrgang nicht gefunden: "
+                f"{course_id}"
+            )
+
+        if self.repository.has_course_days(
+            course_id
+        ):
+            raise ValueError(
+                "Der Lehrgang kann nicht gelöscht werden, "
+                "weil bereits Kurstage vorhanden sind."
+            )
+
+        self.repository.delete(
+            course_id
+        )
     def _validate_course_type(
         self,
         course_type_id: str,

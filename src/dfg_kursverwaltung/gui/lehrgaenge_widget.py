@@ -153,6 +153,10 @@ class LehrgaengeWidget(QWidget):
             self.tr("Bearbeiten")
         )
 
+        self.delete_button = QPushButton(
+            self.tr("Löschen")
+        )
+
         self.new_button.setEnabled(
             self.can_write_course
         )
@@ -165,12 +169,20 @@ class LehrgaengeWidget(QWidget):
             self._edit_course
         )
 
+        self.delete_button.clicked.connect(
+            self._delete_course
+        )
+
         button_layout.addWidget(
             self.new_button
         )
 
         button_layout.addWidget(
             self.edit_button
+        )
+
+        button_layout.addWidget(
+            self.delete_button
         )
 
         layout.addWidget(
@@ -536,6 +548,10 @@ class LehrgaengeWidget(QWidget):
             self.can_write_course
         )
 
+        self.delete_button.setEnabled(
+            self.can_write_course
+        )
+
         self.new_course_day_button.setEnabled(
             self.can_write_course_day
         )
@@ -710,6 +726,65 @@ class LehrgaengeWidget(QWidget):
 
         self._edit_course_day()
 
+    def _confirm_possible_course_duplicate(
+        self,
+        data: dict,
+    ) -> bool:
+        duplicate = (
+            self.course_service
+            .get_course_by_type_and_name(
+                data["lehrgangstyp_id"],
+                data["bezeichnung"],
+            )
+        )
+
+        if duplicate is None:
+            return True
+
+        course_type_text = (
+            self._course_type_text(
+                duplicate.lehrgangstyp_id
+            )
+        )
+
+        message = self.tr(
+            "Es wurde möglicherweise bereits ein "
+            "Lehrgang mit diesen Angaben gefunden."
+        )
+
+        message += (
+            "\n\n"
+            + self.tr(
+                "Vorhandener Lehrgang:"
+            )
+            + "\n"
+            + f"{duplicate.bezeichnung} "
+            + f"({course_type_text})"
+        )
+
+        message += (
+            "\n\n"
+            + self.tr(
+                "Möchten Sie den Lehrgang "
+                "trotzdem neu erfassen?"
+            )
+        )
+
+        answer = QMessageBox.question(
+            self,
+            self.tr(
+                "Mögliche Dublette"
+            ),
+            message,
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        return (
+            answer
+            == QMessageBox.StandardButton.Yes
+        )
     def _new_course(self):
         if not self.can_write_course:
             return
@@ -730,6 +805,10 @@ class LehrgaengeWidget(QWidget):
         data = dialog.get_data()
 
         try:
+            if not self._confirm_possible_course_duplicate(
+                data
+            ):
+                return
             course = (
                 self.course_service.create_course(
                     **data
@@ -752,6 +831,68 @@ class LehrgaengeWidget(QWidget):
         self.current_course_id = course.id
 
         self.search_edit.clear()
+        self.load_courses()
+
+    def _delete_course(self):
+        if not self.can_write_course:
+            return
+
+        if self.current_course_id is None:
+            return
+
+        course = (
+            self.course_service.get_course(
+                self.current_course_id
+            )
+        )
+
+        if course is None:
+            return
+
+        answer = QMessageBox.question(
+            self,
+            self.tr("Lehrgang löschen"),
+            self.tr(
+                "Möchten Sie den Lehrgang wirklich löschen?"
+            )
+            + "\n\n"
+            + course.bezeichnung,
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        if (
+            answer
+            != QMessageBox.StandardButton.Yes
+        ):
+            return
+
+        try:
+            self.course_service.delete_course(
+                course.id
+            )
+        except ValueError:
+            QMessageBox.warning(
+                self,
+                self.tr(
+                    "Lehrgang kann nicht gelöscht werden"
+                ),
+                self.tr(
+                    "Der Lehrgang kann nicht gelöscht werden, "
+                    "weil bereits Kurstage vorhanden sind."
+                ),
+            )
+            return
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler beim Löschen"),
+                str(exc),
+            )
+            return
+
+        self.current_course_id = None
         self.load_courses()
 
     def _edit_course(self):
@@ -998,6 +1139,7 @@ class LehrgaengeWidget(QWidget):
         )
 
         self.edit_button.setEnabled(False)
+        self.delete_button.setEnabled(False)
 
         self.new_course_day_button.setEnabled(
             False

@@ -1699,7 +1699,47 @@
             <source>Unbekannter Lehrgangstyp</source>
             <translation>Tipo di corso sconosciuto</translation>
         </message>
-    </context>
+            <message>
+            <source>Es wurde möglicherweise bereits ein Lehrgang mit diesen Angaben gefunden.</source>
+            <translation>Potrebbe già esistere un corso con questi dati.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Lehrgang:</source>
+            <translation>Corso esistente:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Lehrgang trotzdem neu erfassen?</source>
+            <translation>Si desidera comunque creare un nuovo corso?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Possibile duplicato</translation>
+        </message>
+        <message>
+            <source>Löschen</source>
+            <translation>Elimina</translation>
+        </message>
+        <message>
+            <source>Lehrgang löschen</source>
+            <translation>Elimina corso</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Lehrgang wirklich löschen?</source>
+            <translation>Si desidera davvero eliminare il corso?</translation>
+        </message>
+        <message>
+            <source>Lehrgang kann nicht gelöscht werden</source>
+            <translation>Il corso non può essere eliminato</translation>
+        </message>
+        <message>
+            <source>Der Lehrgang kann nicht gelöscht werden, weil bereits Kurstage vorhanden sind.</source>
+            <translation>Il corso non può essere eliminato perché esistono già giornate di corso.</translation>
+        </message>
+        <message>
+            <source>Fehler beim Löschen</source>
+            <translation>Errore durante l&apos;eliminazione</translation>
+        </message>
+</context>
     <context>
         <name>LehrgangDialog</name>
         <message>
@@ -1917,7 +1957,31 @@
             <source>Der Status konnte nicht geändert werden.</source>
             <translation>Lo stato non è stato modificato.</translation>
         </message>
-    </context>
+        <message>
+        <source>Löschen</source>
+        <translation>Elimina</translation>
+    </message>
+    <message>
+        <source>Lehrgangstyp löschen</source>
+        <translation>Elimina tipo di corso</translation>
+    </message>
+    <message>
+        <source>Möchten Sie den Lehrgangstyp wirklich löschen?</source>
+        <translation>Si desidera davvero eliminare il tipo di corso?</translation>
+    </message>
+    <message>
+        <source>Lehrgangstyp kann nicht gelöscht werden</source>
+        <translation>Il tipo di corso non può essere eliminato</translation>
+    </message>
+    <message>
+        <source>Der Lehrgangstyp kann nicht gelöscht werden, weil bereits Lehrgänge vorhanden sind.</source>
+        <translation>Il tipo di corso non può essere eliminato perché esistono già corsi.</translation>
+    </message>
+    <message>
+        <source>Fehler beim Löschen</source>
+        <translation>Errore durante l&apos;eliminazione</translation>
+    </message>
+</context>
     <context>
         <name>LoginDialog</name>
         <message>
@@ -3384,7 +3448,31 @@ Continuare davvero?</translation>
             <source>Mögliche Dublette</source>
             <translation>Possibile duplicato</translation>
         </message>
-    </context>
+            <message>
+            <source>Löschen</source>
+            <translation>Elimina</translation>
+        </message>
+        <message>
+            <source>Ausführungsort löschen</source>
+            <translation>Elimina luogo</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Ausführungsort wirklich löschen?</source>
+            <translation>Si desidera davvero eliminare il luogo?</translation>
+        </message>
+        <message>
+            <source>Ausführungsort kann nicht gelöscht werden</source>
+            <translation>Il luogo non può essere eliminato</translation>
+        </message>
+        <message>
+            <source>Der Ausführungsort kann nicht gelöscht werden, weil bereits Kurstage vorhanden sind.</source>
+            <translation>Il luogo non può essere eliminato perché esistono già giornate di corso.</translation>
+        </message>
+        <message>
+            <source>Fehler beim Löschen</source>
+            <translation>Errore durante l&apos;eliminazione</translation>
+        </message>
+</context>
     <context>
         <name>SucheWidget</name>
         <message>

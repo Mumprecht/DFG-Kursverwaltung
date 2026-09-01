@@ -150,6 +150,10 @@ class StandorteWidget(QWidget):
             self.tr("Bearbeiten")
         )
 
+        self.delete_button = QPushButton(
+            self.tr("Löschen")
+        )
+
         self.new_button.setEnabled(
             self.can_write
         )
@@ -162,12 +166,20 @@ class StandorteWidget(QWidget):
             self._edit_location
         )
 
+        self.delete_button.clicked.connect(
+            self._delete_location
+        )
+
         button_layout.addWidget(
             self.new_button
         )
 
         button_layout.addWidget(
             self.edit_button
+        )
+
+        button_layout.addWidget(
+            self.delete_button
         )
 
         layout.addWidget(
@@ -570,6 +582,10 @@ class StandorteWidget(QWidget):
             self.can_write
         )
 
+        self.delete_button.setEnabled(
+            self.can_write
+        )
+
         self.status_button.setEnabled(
             self.can_write
         )
@@ -701,6 +717,69 @@ class StandorteWidget(QWidget):
 
         self.search_edit.clear()
 
+        self.load_locations()
+
+    def _delete_location(self):
+        if not self.can_write:
+            return
+
+        if self.current_location_id is None:
+            return
+
+        location = (
+            self.location_service
+            .get_location(
+                self.current_location_id
+            )
+        )
+
+        if location is None:
+            return
+
+        answer = QMessageBox.question(
+            self,
+            self.tr("Ausführungsort löschen"),
+            self.tr(
+                "Möchten Sie den Ausführungsort wirklich löschen?"
+            )
+            + "\n\n"
+            + location.bezeichnung,
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        if (
+            answer
+            != QMessageBox.StandardButton.Yes
+        ):
+            return
+
+        try:
+            self.location_service.delete_location(
+                location.id
+            )
+        except ValueError:
+            QMessageBox.warning(
+                self,
+                self.tr(
+                    "Ausführungsort kann nicht gelöscht werden"
+                ),
+                self.tr(
+                    "Der Ausführungsort kann nicht gelöscht werden, "
+                    "weil bereits Kurstage vorhanden sind."
+                ),
+            )
+            return
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                self.tr("Fehler beim Löschen"),
+                str(exc),
+            )
+            return
+
+        self.current_location_id = None
         self.load_locations()
 
     def _edit_location(self):
@@ -900,6 +979,10 @@ class StandorteWidget(QWidget):
         self.notes_value.clear()
 
         self.edit_button.setEnabled(
+            False
+        )
+
+        self.delete_button.setEnabled(
             False
         )
 

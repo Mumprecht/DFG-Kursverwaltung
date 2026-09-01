@@ -231,6 +231,43 @@ class CourseTypeRepository:
 
             connection.commit()
 
+    def delete(
+        self,
+        course_type_id: str,
+    ) -> None:
+        with self.database_manager.connect() as connection:
+            cursor = connection.execute(
+                """
+                DELETE FROM lehrgangstypen
+                WHERE id = ?;
+                """,
+                (course_type_id,),
+            )
+
+            if cursor.rowcount == 0:
+                raise KeyError(
+                    "Lehrgangstyp nicht gefunden: "
+                    f"{course_type_id}"
+                )
+
+            connection.commit()
+
+    def has_courses(
+        self,
+        course_type_id: str,
+    ) -> bool:
+        with self.database_manager.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT 1
+                FROM lehrgaenge
+                WHERE lehrgangstyp_id = ?
+                LIMIT 1;
+                """,
+                (course_type_id,),
+            ).fetchone()
+
+        return row is not None
     @staticmethod
     def _row_to_course_type(
         row: sqlite3.Row,

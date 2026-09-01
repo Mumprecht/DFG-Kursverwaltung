@@ -1699,7 +1699,47 @@
             <source>Unbekannter Lehrgangstyp</source>
             <translation>Type de cours inconnu</translation>
         </message>
-    </context>
+            <message>
+            <source>Es wurde möglicherweise bereits ein Lehrgang mit diesen Angaben gefunden.</source>
+            <translation>Un cours avec ces informations existe peut-être déjà.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Lehrgang:</source>
+            <translation>Cours existant :</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Lehrgang trotzdem neu erfassen?</source>
+            <translation>Souhaitez-vous tout de même créer un nouveau cours ?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Doublon possible</translation>
+        </message>
+        <message>
+            <source>Löschen</source>
+            <translation>Supprimer</translation>
+        </message>
+        <message>
+            <source>Lehrgang löschen</source>
+            <translation>Supprimer le cours</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Lehrgang wirklich löschen?</source>
+            <translation>Souhaitez-vous vraiment supprimer le cours ?</translation>
+        </message>
+        <message>
+            <source>Lehrgang kann nicht gelöscht werden</source>
+            <translation>Le cours ne peut pas être supprimé</translation>
+        </message>
+        <message>
+            <source>Der Lehrgang kann nicht gelöscht werden, weil bereits Kurstage vorhanden sind.</source>
+            <translation>Le cours ne peut pas être supprimé car des jours de cours existent déjà.</translation>
+        </message>
+        <message>
+            <source>Fehler beim Löschen</source>
+            <translation>Erreur lors de la suppression</translation>
+        </message>
+</context>
     <context>
         <name>LehrgangDialog</name>
         <message>
@@ -1917,7 +1957,31 @@
             <source>Der Status konnte nicht geändert werden.</source>
             <translation>Le statut n’a pas pu être modifié.</translation>
         </message>
-    </context>
+        <message>
+        <source>Löschen</source>
+        <translation>Supprimer</translation>
+    </message>
+    <message>
+        <source>Lehrgangstyp löschen</source>
+        <translation>Supprimer le type de cours</translation>
+    </message>
+    <message>
+        <source>Möchten Sie den Lehrgangstyp wirklich löschen?</source>
+        <translation>Souhaitez-vous vraiment supprimer le type de cours ?</translation>
+    </message>
+    <message>
+        <source>Lehrgangstyp kann nicht gelöscht werden</source>
+        <translation>Le type de cours ne peut pas être supprimé</translation>
+    </message>
+    <message>
+        <source>Der Lehrgangstyp kann nicht gelöscht werden, weil bereits Lehrgänge vorhanden sind.</source>
+        <translation>Le type de cours ne peut pas être supprimé car des cours existent déjà.</translation>
+    </message>
+    <message>
+        <source>Fehler beim Löschen</source>
+        <translation>Erreur lors de la suppression</translation>
+    </message>
+</context>
     <context>
         <name>LoginDialog</name>
         <message>
@@ -3384,7 +3448,31 @@ Voulez-vous vraiment continuer ?</translation>
             <source>Mögliche Dublette</source>
             <translation>Doublon possible</translation>
         </message>
-    </context>
+            <message>
+            <source>Löschen</source>
+            <translation>Supprimer</translation>
+        </message>
+        <message>
+            <source>Ausführungsort löschen</source>
+            <translation>Supprimer le lieu</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Ausführungsort wirklich löschen?</source>
+            <translation>Souhaitez-vous vraiment supprimer le lieu ?</translation>
+        </message>
+        <message>
+            <source>Ausführungsort kann nicht gelöscht werden</source>
+            <translation>Le lieu ne peut pas être supprimé</translation>
+        </message>
+        <message>
+            <source>Der Ausführungsort kann nicht gelöscht werden, weil bereits Kurstage vorhanden sind.</source>
+            <translation>Le lieu ne peut pas être supprimé car des jours de cours existent déjà.</translation>
+        </message>
+        <message>
+            <source>Fehler beim Löschen</source>
+            <translation>Erreur lors de la suppression</translation>
+        </message>
+</context>
     <context>
         <name>SucheWidget</name>
         <message>

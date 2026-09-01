@@ -269,6 +269,44 @@ class LocationRepository:
 
         return location
 
+    def delete(
+        self,
+        location_id: str,
+    ) -> None:
+        with self.database_manager.connect() as connection:
+            cursor = connection.execute(
+                """
+                DELETE FROM standorte
+                WHERE id = ?;
+                """,
+                (location_id,),
+            )
+
+            if cursor.rowcount == 0:
+                raise KeyError(
+                    "Ausführungsort nicht gefunden: "
+                    f"{location_id}"
+                )
+
+            connection.commit()
+
+    def has_course_days(
+        self,
+        location_id: str,
+    ) -> bool:
+        with self.database_manager.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT 1
+                FROM kurstage
+                WHERE standort_id = ?
+                LIMIT 1;
+                """,
+                (location_id,),
+            ).fetchone()
+
+        return row is not None
+
     def set_active_status(
         self,
         location_id: str,
