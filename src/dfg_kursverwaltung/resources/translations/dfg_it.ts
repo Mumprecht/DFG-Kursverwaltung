@@ -1712,6 +1712,18 @@
             <translation>Si desidera comunque creare un nuovo corso?</translation>
         </message>
         <message>
+            <source>Es wurde möglicherweise bereits ein Kurstag mit diesen Angaben gefunden.</source>
+            <translation>Potrebbe già esistere una giornata di corso con questi dati.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Kurstag:</source>
+            <translation>Giornata di corso esistente:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Kurstag trotzdem neu erfassen?</source>
+            <translation>Si desidera comunque creare una nuova giornata di corso?</translation>
+        </message>
+        <message>
             <source>Mögliche Dublette</source>
             <translation>Possibile duplicato</translation>
         </message>

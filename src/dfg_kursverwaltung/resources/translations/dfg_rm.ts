@@ -1712,6 +1712,18 @@
             <translation>Vulais Vus tuttina registrar da nov il curs?</translation>
         </message>
         <message>
+            <source>Es wurde möglicherweise bereits ein Kurstag mit diesen Angaben gefunden.</source>
+            <translation>Eventualmain exista gia in di da curs cun questas indicaziuns.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Kurstag:</source>
+            <translation>Di da curs existent:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Kurstag trotzdem neu erfassen?</source>
+            <translation>Vulais Vus tuttina registrar da nov il di da curs?</translation>
+        </message>
+        <message>
             <source>Mögliche Dublette</source>
             <translation>Dubletta pussaivla</translation>
         </message>

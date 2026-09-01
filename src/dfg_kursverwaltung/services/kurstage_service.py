@@ -99,6 +99,29 @@ class CourseDayService:
             bezeichnung,
         )
 
+    def find_possible_duplicate(
+        self,
+        *,
+        lehrgang_id: str,
+        datum: date,
+        beginn: str | None = None,
+        ende: str | None = None,
+    ) -> CourseDay | None:
+        beginn = self._clean_optional(
+            beginn
+        )
+
+        ende = self._clean_optional(
+            ende
+        )
+
+        return self.repository.find_possible_duplicate(
+            lehrgang_id,
+            datum,
+            beginn,
+            ende,
+        )
+
     def list_all_course_days(
         self,
     ) -> list[CourseDay]:

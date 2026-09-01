@@ -1712,6 +1712,18 @@
             <translation>Do you still want to create the course?</translation>
         </message>
         <message>
+            <source>Es wurde möglicherweise bereits ein Kurstag mit diesen Angaben gefunden.</source>
+            <translation>A course day with these details may already exist.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Kurstag:</source>
+            <translation>Existing course day:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Kurstag trotzdem neu erfassen?</source>
+            <translation>Do you still want to create the course day?</translation>
+        </message>
+        <message>
             <source>Mögliche Dublette</source>
             <translation>Possible duplicate</translation>
         </message>

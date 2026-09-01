@@ -998,6 +998,75 @@ class LehrgaengeWidget(QWidget):
 
         self.load_courses()
 
+    def _confirm_possible_course_day_duplicate(
+        self,
+        data: dict,
+    ) -> bool:
+        if self.current_course_id is None:
+            return False
+
+        existing = (
+            self.course_day_service
+            .find_possible_duplicate(
+                lehrgang_id=self.current_course_id,
+                datum=data["datum"],
+                beginn=data["beginn"],
+                ende=data["ende"],
+            )
+        )
+
+        if existing is None:
+            return True
+
+        description = existing.datum.strftime(
+            "%d.%m.%Y"
+        )
+
+        if existing.beginn and existing.ende:
+            description += (
+                f"\n{existing.beginn}"
+                f"–{existing.ende}"
+            )
+        elif existing.beginn:
+            description += (
+                f"\nab {existing.beginn}"
+            )
+        elif existing.ende:
+            description += (
+                f"\nbis {existing.ende}"
+            )
+
+        if existing.bezeichnung:
+            description += (
+                "\n" + existing.bezeichnung
+            )
+
+        answer = QMessageBox.question(
+            self,
+            self.tr("Mögliche Dublette"),
+            self.tr(
+                "Es wurde möglicherweise bereits ein "
+                "Kurstag mit diesen Angaben gefunden."
+            )
+            + "\n\n"
+            + self.tr("Vorhandener Kurstag:")
+            + "\n"
+            + description
+            + "\n\n"
+            + self.tr(
+                "Möchten Sie den Kurstag trotzdem "
+                "neu erfassen?"
+            ),
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        return (
+            answer
+            == QMessageBox.StandardButton.Yes
+        )
+
     def _new_course_day(self):
         if not self.can_write_course_day:
             return
@@ -1017,6 +1086,11 @@ class LehrgaengeWidget(QWidget):
             return
 
         data = dialog.get_data()
+
+        if not self._confirm_possible_course_day_duplicate(
+            data
+        ):
+            return
 
         try:
             course_day = (

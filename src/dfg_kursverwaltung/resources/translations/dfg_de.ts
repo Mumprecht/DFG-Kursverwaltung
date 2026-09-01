@@ -1712,6 +1712,18 @@
             <translation>Möchten Sie den Lehrgang trotzdem neu erfassen?</translation>
         </message>
         <message>
+            <source>Es wurde möglicherweise bereits ein Kurstag mit diesen Angaben gefunden.</source>
+            <translation>Es wurde möglicherweise bereits ein Kurstag mit diesen Angaben gefunden.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Kurstag:</source>
+            <translation>Vorhandener Kurstag:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Kurstag trotzdem neu erfassen?</source>
+            <translation>Möchten Sie den Kurstag trotzdem neu erfassen?</translation>
+        </message>
+        <message>
             <source>Mögliche Dublette</source>
             <translation>Mögliche Dublette</translation>
         </message>

@@ -1712,6 +1712,18 @@
             <translation>Souhaitez-vous tout de même créer un nouveau cours ?</translation>
         </message>
         <message>
+            <source>Es wurde möglicherweise bereits ein Kurstag mit diesen Angaben gefunden.</source>
+            <translation>Un jour de cours avec ces informations existe peut-être déjà.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Kurstag:</source>
+            <translation>Jour de cours existant :</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Kurstag trotzdem neu erfassen?</source>
+            <translation>Souhaitez-vous tout de même créer un nouveau jour de cours ?</translation>
+        </message>
+        <message>
             <source>Mögliche Dublette</source>
             <translation>Doublon possible</translation>
         </message>
