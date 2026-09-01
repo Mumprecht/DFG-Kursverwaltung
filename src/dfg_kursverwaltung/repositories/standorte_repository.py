@@ -86,6 +86,47 @@ class LocationRepository:
             row
         )
 
+    def find_possible_duplicate(
+        self,
+        bezeichnung: str,
+        ort: str | None,
+    ) -> Location | None:
+        bezeichnung = bezeichnung.strip()
+        ort = ort.strip() if ort else None
+
+        with self.database_manager.connect() as connection:
+            if ort:
+                row = connection.execute(
+                    """
+                    SELECT *
+                    FROM standorte
+                    WHERE bezeichnung = ? COLLATE NOCASE
+                      AND ort = ? COLLATE NOCASE
+                    LIMIT 1;
+                    """,
+                    (
+                        bezeichnung,
+                        ort,
+                    ),
+                ).fetchone()
+            else:
+                row = connection.execute(
+                    """
+                    SELECT *
+                    FROM standorte
+                    WHERE bezeichnung = ? COLLATE NOCASE
+                    LIMIT 1;
+                    """,
+                    (bezeichnung,),
+                ).fetchone()
+
+        if row is None:
+            return None
+
+        return self._row_to_location(
+            row
+        )
+
     def list_all(
         self,
         include_inactive: bool = False,

@@ -574,6 +574,66 @@ class StandorteWidget(QWidget):
             self.can_write
         )
 
+    def _confirm_possible_duplicate(
+        self,
+        data: dict,
+    ) -> bool:
+        duplicate = (
+            self.location_service
+            .find_possible_duplicate(
+                data["bezeichnung"],
+                data.get("ort"),
+            )
+        )
+
+        if duplicate is None:
+            return True
+
+        duplicate_text = duplicate.bezeichnung
+
+        if duplicate.ort:
+            duplicate_text += (
+                f" ({duplicate.ort})"
+            )
+
+        message = self.tr(
+            "Es wurde möglicherweise bereits ein "
+            "Ausführungsort mit diesen Angaben gefunden."
+        )
+
+        message += (
+            "\n\n"
+            + self.tr(
+                "Vorhandener Ausführungsort:"
+            )
+            + "\n"
+            + duplicate_text
+        )
+
+        message += (
+            "\n\n"
+            + self.tr(
+                "Möchten Sie den Ausführungsort "
+                "trotzdem neu erfassen?"
+            )
+        )
+
+        answer = QMessageBox.question(
+            self,
+            self.tr(
+                "Mögliche Dublette"
+            ),
+            message,
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        return (
+            answer
+            == QMessageBox.StandardButton.Yes
+        )
+
     def _new_location(self):
         if not self.can_write:
             return
@@ -590,11 +650,16 @@ class StandorteWidget(QWidget):
 
         data = dialog.get_data()
 
-        active = data.pop(
-            "aktiv"
-        )
-
         try:
+            if not self._confirm_possible_duplicate(
+                data
+            ):
+                return
+
+            active = data.pop(
+                "aktiv"
+            )
+
             location = (
                 self.location_service
                 .create_location(

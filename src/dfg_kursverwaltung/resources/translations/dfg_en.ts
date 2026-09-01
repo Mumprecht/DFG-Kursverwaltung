@@ -3368,6 +3368,22 @@ Do you really want to continue?</translation>
             <source>Der Status konnte nicht geändert werden.</source>
             <translation>The status could not be changed.</translation>
         </message>
+        <message>
+            <source>Es wurde möglicherweise bereits ein Ausführungsort mit diesen Angaben gefunden.</source>
+            <translation>A location with these details may already exist.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Ausführungsort:</source>
+            <translation>Existing location:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Ausführungsort trotzdem neu erfassen?</source>
+            <translation>Do you still want to create the location?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Possible duplicate</translation>
+        </message>
     </context>
     <context>
         <name>SucheWidget</name>

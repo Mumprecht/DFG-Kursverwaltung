@@ -3368,6 +3368,22 @@ Voulez-vous vraiment continuer ?</translation>
             <source>Der Status konnte nicht geändert werden.</source>
             <translation>Le statut n’a pas pu être modifié.</translation>
         </message>
+        <message>
+            <source>Es wurde möglicherweise bereits ein Ausführungsort mit diesen Angaben gefunden.</source>
+            <translation>Un lieu d'exécution avec ces informations existe peut-être déjà.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Ausführungsort:</source>
+            <translation>Lieu d'exécution existant :</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Ausführungsort trotzdem neu erfassen?</source>
+            <translation>Souhaitez-vous tout de même créer un nouveau lieu d'exécution ?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Doublon possible</translation>
+        </message>
     </context>
     <context>
         <name>SucheWidget</name>

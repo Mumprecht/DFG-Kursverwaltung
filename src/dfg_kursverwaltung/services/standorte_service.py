@@ -140,6 +140,16 @@ class LocationService:
             include_inactive=include_inactive,
         )
 
+    def find_possible_duplicate(
+        self,
+        bezeichnung: str,
+        ort: str | None,
+    ) -> Location | None:
+        return self.repository.find_possible_duplicate(
+            bezeichnung,
+            ort,
+        )
+
     def update_location(
         self,
         location: Location,

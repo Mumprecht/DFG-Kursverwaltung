@@ -3368,6 +3368,22 @@ Wirklich fortfahren?</translation>
             <source>Der Status konnte nicht geändert werden.</source>
             <translation>Der Status konnte nicht geändert werden.</translation>
         </message>
+        <message>
+            <source>Es wurde möglicherweise bereits ein Ausführungsort mit diesen Angaben gefunden.</source>
+            <translation>Es wurde möglicherweise bereits ein Ausführungsort mit diesen Angaben gefunden.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Ausführungsort:</source>
+            <translation>Vorhandener Ausführungsort:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Ausführungsort trotzdem neu erfassen?</source>
+            <translation>Möchten Sie den Ausführungsort trotzdem neu erfassen?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Mögliche Dublette</translation>
+        </message>
     </context>
     <context>
         <name>SucheWidget</name>

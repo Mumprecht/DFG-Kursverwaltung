@@ -3368,6 +3368,22 @@ Vulais Vus propi cuntinuar?</translation>
             <source>Der Status konnte nicht geändert werden.</source>
             <translation>Il status n'ha betg pudì vegnir modifitgà.</translation>
         </message>
+        <message>
+            <source>Es wurde möglicherweise bereits ein Ausführungsort mit diesen Angaben gefunden.</source>
+            <translation>Eventualmain exista gia in lieu d'execuziun cun questas indicaziuns.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Ausführungsort:</source>
+            <translation>Lieu d'execuziun existent:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Ausführungsort trotzdem neu erfassen?</source>
+            <translation>Vulais Vus tuttina registrar da nov il lieu d'execuziun?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Dubletta pussaivla</translation>
+        </message>
     </context>
     <context>
         <name>SucheWidget</name>

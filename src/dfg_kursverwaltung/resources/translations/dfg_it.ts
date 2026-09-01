@@ -3368,6 +3368,22 @@ Continuare davvero?</translation>
             <source>Der Status konnte nicht geändert werden.</source>
             <translation>Lo stato non è stato modificato.</translation>
         </message>
+        <message>
+            <source>Es wurde möglicherweise bereits ein Ausführungsort mit diesen Angaben gefunden.</source>
+            <translation>Potrebbe già esistere un luogo di svolgimento con questi dati.</translation>
+        </message>
+        <message>
+            <source>Vorhandener Ausführungsort:</source>
+            <translation>Luogo di svolgimento esistente:</translation>
+        </message>
+        <message>
+            <source>Möchten Sie den Ausführungsort trotzdem neu erfassen?</source>
+            <translation>Si desidera comunque creare un nuovo luogo di svolgimento?</translation>
+        </message>
+        <message>
+            <source>Mögliche Dublette</source>
+            <translation>Possibile duplicato</translation>
+        </message>
     </context>
     <context>
         <name>SucheWidget</name>
