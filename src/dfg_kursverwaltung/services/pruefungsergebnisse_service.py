@@ -7,7 +7,6 @@ from dfg_kursverwaltung.core.models import (
     CourseAssignmentStatus,
     ExamResult,
     User,
-    UserRole,
 )
 from dfg_kursverwaltung.core.permissions import (
     Permission,
@@ -160,15 +159,13 @@ class ExamResultService:
         )
 
         if (
-            UserRole(actor.rolle)
-            == UserRole.INSTRUCTOR
-            and exam_result.kurszuordnung_id
+            exam_result.kurszuordnung_id
             != original.kurszuordnung_id
         ):
-            raise PermissionError(
-                "Instruktor-Benutzer dürfen die "
-                "Kurszuordnung eines "
-                "Prüfungsergebnisses nicht ändern."
+            raise ValueError(
+                "Die Kurszuordnung eines "
+                "Prüfungsergebnisses kann nicht "
+                "nachträglich geändert werden."
             )
 
         assignment = self._validate_assignment_status(
