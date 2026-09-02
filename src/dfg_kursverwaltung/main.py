@@ -262,6 +262,7 @@ def main():
     )
 
     import_service = ImportService(
+        database_manager,
         person_service,
         phone_number_service,
         location_service,

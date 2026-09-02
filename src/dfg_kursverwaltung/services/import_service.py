@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
+from dfg_kursverwaltung.core.database import DatabaseManager
 from dfg_kursverwaltung.core.models import (
     User,
     CourseAssignmentRole,
@@ -461,6 +462,7 @@ class ImportService:
 
     def __init__(
         self,
+        database_manager: DatabaseManager,
         person_service: PersonService,
         phone_number_service: PhoneNumberService,
         location_service: LocationService,
@@ -470,6 +472,7 @@ class ImportService:
         assignment_service: CourseAssignmentService,
         exam_result_service: ExamResultService,
     ):
+        self.database_manager = database_manager
         self.person_service = person_service
         self.phone_number_service = phone_number_service
         self.location_service = location_service
@@ -552,129 +555,130 @@ class ImportService:
         self,
         preview: ImportPreview,
     ) -> tuple[int, int]:
-        created_count = 0
-        updated_count = 0
+        with self.database_manager.transaction():
+            created_count = 0
+            updated_count = 0
 
-        for row in preview.rows:
-            if row.action == "create":
-                person = (
-                    self.person_service
-                    .create_person(
-                        nachname=row.nachname,
-                        vorname=row.vorname,
-                        geburtsdatum=(
-                            row.geburtsdatum
-                        ),
-                        email=row.email,
-                        strasse=row.strasse,
-                        hausnummer=(
-                            row.hausnummer
-                        ),
-                        plz=row.plz,
-                        ort=row.ort,
-                        organisation=(
-                            row.organisation
-                        ),
-                        mitglied=row.mitglied,
-                        ist_teilnehmer=(
-                            row.ist_teilnehmer
-                        ),
-                        ist_instruktor=(
-                            row.ist_instruktor
-                        ),
-                        bemerkungen=(
-                            row.bemerkungen
-                        ),
-                    )
-                )
-
-                if not row.aktiv:
-                    self.person_service.deactivate_person(
-                        person.id
+            for row in preview.rows:
+                if row.action == "create":
+                    person = (
+                        self.person_service
+                        .create_person(
+                            nachname=row.nachname,
+                            vorname=row.vorname,
+                            geburtsdatum=(
+                                row.geburtsdatum
+                            ),
+                            email=row.email,
+                            strasse=row.strasse,
+                            hausnummer=(
+                                row.hausnummer
+                            ),
+                            plz=row.plz,
+                            ort=row.ort,
+                            organisation=(
+                                row.organisation
+                            ),
+                            mitglied=row.mitglied,
+                            ist_teilnehmer=(
+                                row.ist_teilnehmer
+                            ),
+                            ist_instruktor=(
+                                row.ist_instruktor
+                            ),
+                            bemerkungen=(
+                                row.bemerkungen
+                            ),
+                        )
                     )
 
-                self._replace_phone_numbers(
-                    person.id,
-                    row,
-                )
+                    if not row.aktiv:
+                        self.person_service.deactivate_person(
+                            person.id
+                        )
 
-                created_count += 1
-
-            elif row.action == "update":
-                if row.person_id is None:
-                    raise ValueError(
-                        "Bei einer Aktualisierung "
-                        "fehlt die Personen-ID."
+                    self._replace_phone_numbers(
+                        person.id,
+                        row,
                     )
 
-                person = (
-                    self.person_service
-                    .get_person(
-                        row.person_id
-                    )
-                )
+                    created_count += 1
 
-                if person is None:
-                    raise ValueError(
-                        "Person für Aktualisierung "
-                        "nicht gefunden: "
-                        f"{row.person_id}"
-                    )
+                elif row.action == "update":
+                    if row.person_id is None:
+                        raise ValueError(
+                            "Bei einer Aktualisierung "
+                            "fehlt die Personen-ID."
+                        )
 
-                person.nachname = row.nachname
-                person.vorname = row.vorname
-                person.geburtsdatum = (
-                    row.geburtsdatum
-                )
-                person.email = row.email
-                person.strasse = row.strasse
-                person.hausnummer = (
-                    row.hausnummer
-                )
-                person.plz = row.plz
-                person.ort = row.ort
-                person.organisation = (
-                    row.organisation
-                )
-                person.mitglied = row.mitglied
-                person.ist_teilnehmer = (
-                    row.ist_teilnehmer
-                )
-                person.ist_instruktor = (
-                    row.ist_instruktor
-                )
-                person.bemerkungen = (
-                    row.bemerkungen
-                )
-
-                self.person_service.update_person(
-                    person
-                )
-
-                if row.aktiv and not person.aktiv:
-                    self.person_service.activate_person(
-                        person.id
+                    person = (
+                        self.person_service
+                        .get_person(
+                            row.person_id
+                        )
                     )
 
-                elif (
-                    not row.aktiv
-                    and person.aktiv
-                ):
-                    self.person_service.deactivate_person(
-                        person.id
+                    if person is None:
+                        raise ValueError(
+                            "Person für Aktualisierung "
+                            "nicht gefunden: "
+                            f"{row.person_id}"
+                        )
+
+                    person.nachname = row.nachname
+                    person.vorname = row.vorname
+                    person.geburtsdatum = (
+                        row.geburtsdatum
+                    )
+                    person.email = row.email
+                    person.strasse = row.strasse
+                    person.hausnummer = (
+                        row.hausnummer
+                    )
+                    person.plz = row.plz
+                    person.ort = row.ort
+                    person.organisation = (
+                        row.organisation
+                    )
+                    person.mitglied = row.mitglied
+                    person.ist_teilnehmer = (
+                        row.ist_teilnehmer
+                    )
+                    person.ist_instruktor = (
+                        row.ist_instruktor
+                    )
+                    person.bemerkungen = (
+                        row.bemerkungen
                     )
 
-                self._replace_phone_numbers(
-                    person.id,
-                    row,
-                )
+                    self.person_service.update_person(
+                        person
+                    )
 
-                updated_count += 1
+                    if row.aktiv and not person.aktiv:
+                        self.person_service.activate_person(
+                            person.id
+                        )
 
-        return (
-            created_count,
-            updated_count,
-        )
+                    elif (
+                        not row.aktiv
+                        and person.aktiv
+                    ):
+                        self.person_service.deactivate_person(
+                            person.id
+                        )
+
+                    self._replace_phone_numbers(
+                        person.id,
+                        row,
+                    )
+
+                    updated_count += 1
+
+            return (
+                created_count,
+                updated_count,
+            )
 
     # ========================================================
     # Ausführungsorte – Vorschau
@@ -749,116 +753,117 @@ class ImportService:
         self,
         preview: LocationImportPreview,
     ) -> tuple[int, int]:
-        created_count = 0
-        updated_count = 0
+        with self.database_manager.transaction():
+            created_count = 0
+            updated_count = 0
 
-        for row in preview.rows:
-            if row.action == "create":
-                location = (
-                    self.location_service
-                    .create_location(
-                        bezeichnung=(
-                            row.bezeichnung
+            for row in preview.rows:
+                if row.action == "create":
+                    location = (
+                        self.location_service
+                        .create_location(
+                            bezeichnung=(
+                                row.bezeichnung
+                            ),
+                            strasse=row.strasse,
+                            hausnummer=(
+                                row.hausnummer
+                            ),
+                            plz=row.plz,
+                            ort=row.ort,
+                            kontakt_vorname=(
+                                row.kontakt_vorname
+                            ),
+                            kontakt_nachname=(
+                                row.kontakt_nachname
+                            ),
+                            telefon=row.telefon,
+                            email=row.email,
+                            webseite=row.webseite,
+                            bemerkungen=(
+                                row.bemerkungen
+                            ),
+                        )
+                    )
+
+                    if not row.aktiv:
+                        self.location_service.deactivate_location(
+                            location.id
+                        )
+
+                    created_count += 1
+
+                elif row.action == "update":
+                    if row.location_id is None:
+                        raise ValueError(
+                            "Bei einer Aktualisierung "
+                            "fehlt die Standort-ID."
+                        )
+
+                    location = (
+                        self.location_service
+                        .get_location(
+                            row.location_id
+                        )
+                    )
+
+                    if location is None:
+                        raise ValueError(
+                            "Ausführungsort für "
+                            "Aktualisierung nicht "
+                            "gefunden: "
+                            f"{row.location_id}"
+                        )
+
+                    location.bezeichnung = (
+                        row.bezeichnung
+                    )
+                    location.strasse = row.strasse
+                    location.hausnummer = (
+                        row.hausnummer
+                    )
+                    location.plz = row.plz
+                    location.ort = row.ort
+                    location.kontakt_vorname = (
+                        row.kontakt_vorname
+                    )
+                    location.kontakt_nachname = (
+                        row.kontakt_nachname
+                    )
+                    location.email = row.email
+                    location.webseite = row.webseite
+                    location.bemerkungen = (
+                        row.bemerkungen
+                    )
+
+                    self.location_service.update_location(
+                        location,
+                        telefon=(
+                            row.telefon
+                            if row.telefon is not None
+                            else ""
                         ),
-                        strasse=row.strasse,
-                        hausnummer=(
-                            row.hausnummer
-                        ),
-                        plz=row.plz,
-                        ort=row.ort,
-                        kontakt_vorname=(
-                            row.kontakt_vorname
-                        ),
-                        kontakt_nachname=(
-                            row.kontakt_nachname
-                        ),
-                        telefon=row.telefon,
-                        email=row.email,
-                        webseite=row.webseite,
-                        bemerkungen=(
-                            row.bemerkungen
-                        ),
-                    )
-                )
-
-                if not row.aktiv:
-                    self.location_service.deactivate_location(
-                        location.id
                     )
 
-                created_count += 1
+                    if row.aktiv and not location.aktiv:
+                        self.location_service.activate_location(
+                            location.id
+                        )
 
-            elif row.action == "update":
-                if row.location_id is None:
-                    raise ValueError(
-                        "Bei einer Aktualisierung "
-                        "fehlt die Standort-ID."
-                    )
+                    elif (
+                        not row.aktiv
+                        and location.aktiv
+                    ):
+                        self.location_service.deactivate_location(
+                            location.id
+                        )
 
-                location = (
-                    self.location_service
-                    .get_location(
-                        row.location_id
-                    )
-                )
+                    updated_count += 1
 
-                if location is None:
-                    raise ValueError(
-                        "Ausführungsort für "
-                        "Aktualisierung nicht "
-                        "gefunden: "
-                        f"{row.location_id}"
-                    )
-
-                location.bezeichnung = (
-                    row.bezeichnung
-                )
-                location.strasse = row.strasse
-                location.hausnummer = (
-                    row.hausnummer
-                )
-                location.plz = row.plz
-                location.ort = row.ort
-                location.kontakt_vorname = (
-                    row.kontakt_vorname
-                )
-                location.kontakt_nachname = (
-                    row.kontakt_nachname
-                )
-                location.email = row.email
-                location.webseite = row.webseite
-                location.bemerkungen = (
-                    row.bemerkungen
-                )
-
-                self.location_service.update_location(
-                    location,
-                    telefon=(
-                        row.telefon
-                        if row.telefon is not None
-                        else ""
-                    ),
-                )
-
-                if row.aktiv and not location.aktiv:
-                    self.location_service.activate_location(
-                        location.id
-                    )
-
-                elif (
-                    not row.aktiv
-                    and location.aktiv
-                ):
-                    self.location_service.deactivate_location(
-                        location.id
-                    )
-
-                updated_count += 1
-
-        return (
-            created_count,
-            updated_count,
-        )
+            return (
+                created_count,
+                updated_count,
+            )
 
     # ========================================================
     # Lehrgänge – Vorschau
@@ -933,65 +938,66 @@ class ImportService:
         self,
         preview: CourseImportPreview,
     ) -> tuple[int, int]:
-        created_count = 0
-        updated_count = 0
+        with self.database_manager.transaction():
+            created_count = 0
+            updated_count = 0
 
-        for row in preview.rows:
-            if row.action == "create":
-                self.course_service.create_course(
-                    lehrgangstyp_id=(
+            for row in preview.rows:
+                if row.action == "create":
+                    self.course_service.create_course(
+                        lehrgangstyp_id=(
+                            row.lehrgangstyp_id
+                        ),
+                        bezeichnung=row.bezeichnung,
+                        beschreibung=row.beschreibung,
+                        bemerkungen=row.bemerkungen,
+                    )
+
+                    created_count += 1
+
+                elif row.action == "update":
+                    if row.course_id is None:
+                        raise ValueError(
+                            "Bei einer Aktualisierung "
+                            "fehlt die Lehrgangs-ID."
+                        )
+
+                    course = (
+                        self.course_service.get_course(
+                            row.course_id
+                        )
+                    )
+
+                    if course is None:
+                        raise ValueError(
+                            "Lehrgang für Aktualisierung "
+                            "nicht gefunden: "
+                            f"{row.course_id}"
+                        )
+
+                    course.lehrgangstyp_id = (
                         row.lehrgangstyp_id
-                    ),
-                    bezeichnung=row.bezeichnung,
-                    beschreibung=row.beschreibung,
-                    bemerkungen=row.bemerkungen,
-                )
-
-                created_count += 1
-
-            elif row.action == "update":
-                if row.course_id is None:
-                    raise ValueError(
-                        "Bei einer Aktualisierung "
-                        "fehlt die Lehrgangs-ID."
+                    )
+                    course.bezeichnung = (
+                        row.bezeichnung
+                    )
+                    course.beschreibung = (
+                        row.beschreibung
+                    )
+                    course.bemerkungen = (
+                        row.bemerkungen
                     )
 
-                course = (
-                    self.course_service.get_course(
-                        row.course_id
-                    )
-                )
-
-                if course is None:
-                    raise ValueError(
-                        "Lehrgang für Aktualisierung "
-                        "nicht gefunden: "
-                        f"{row.course_id}"
+                    self.course_service.update_course(
+                        course
                     )
 
-                course.lehrgangstyp_id = (
-                    row.lehrgangstyp_id
-                )
-                course.bezeichnung = (
-                    row.bezeichnung
-                )
-                course.beschreibung = (
-                    row.beschreibung
-                )
-                course.bemerkungen = (
-                    row.bemerkungen
-                )
+                    updated_count += 1
 
-                self.course_service.update_course(
-                    course
-                )
-
-                updated_count += 1
-
-        return (
-            created_count,
-            updated_count,
-        )
+            return (
+                created_count,
+                updated_count,
+            )
 
     # ========================================================
     # Kurstage – Vorschau
@@ -1066,66 +1072,67 @@ class ImportService:
         self,
         preview: CourseDayImportPreview,
     ) -> tuple[int, int]:
-        created_count = 0
-        updated_count = 0
+        with self.database_manager.transaction():
+            created_count = 0
+            updated_count = 0
 
-        for row in preview.rows:
-            if row.action == "create":
-                self.course_day_service.create_course_day(
-                    lehrgang_id=row.course_id,
-                    datum=row.datum,
-                    standort_id=row.location_id,
-                    beginn=row.beginn,
-                    ende=row.ende,
-                    bezeichnung=row.bezeichnung,
-                    bemerkungen=row.bemerkungen,
-                )
-
-                created_count += 1
-
-            elif row.action == "update":
-                if row.course_day_id is None:
-                    raise ValueError(
-                        "Bei einer Aktualisierung "
-                        "fehlt die Kurstag-ID."
+            for row in preview.rows:
+                if row.action == "create":
+                    self.course_day_service.create_course_day(
+                        lehrgang_id=row.course_id,
+                        datum=row.datum,
+                        standort_id=row.location_id,
+                        beginn=row.beginn,
+                        ende=row.ende,
+                        bezeichnung=row.bezeichnung,
+                        bemerkungen=row.bemerkungen,
                     )
 
-                course_day = (
-                    self.course_day_service
-                    .get_course_day(
-                        row.course_day_id
+                    created_count += 1
+
+                elif row.action == "update":
+                    if row.course_day_id is None:
+                        raise ValueError(
+                            "Bei einer Aktualisierung "
+                            "fehlt die Kurstag-ID."
+                        )
+
+                    course_day = (
+                        self.course_day_service
+                        .get_course_day(
+                            row.course_day_id
+                        )
                     )
-                )
 
-                if course_day is None:
-                    raise ValueError(
-                        "Kurstag für Aktualisierung "
-                        "nicht gefunden: "
-                        f"{row.course_day_id}"
+                    if course_day is None:
+                        raise ValueError(
+                            "Kurstag für Aktualisierung "
+                            "nicht gefunden: "
+                            f"{row.course_day_id}"
+                        )
+
+                    course_day.lehrgang_id = row.course_id
+                    course_day.standort_id = row.location_id
+                    course_day.datum = row.datum
+                    course_day.beginn = row.beginn
+                    course_day.ende = row.ende
+                    course_day.bezeichnung = (
+                        row.bezeichnung
+                    )
+                    course_day.bemerkungen = (
+                        row.bemerkungen
                     )
 
-                course_day.lehrgang_id = row.course_id
-                course_day.standort_id = row.location_id
-                course_day.datum = row.datum
-                course_day.beginn = row.beginn
-                course_day.ende = row.ende
-                course_day.bezeichnung = (
-                    row.bezeichnung
-                )
-                course_day.bemerkungen = (
-                    row.bemerkungen
-                )
+                    self.course_day_service.update_course_day(
+                        course_day
+                    )
 
-                self.course_day_service.update_course_day(
-                    course_day
-                )
+                    updated_count += 1
 
-                updated_count += 1
-
-        return (
-            created_count,
-            updated_count,
-        )
+            return (
+                created_count,
+                updated_count,
+            )
 
     # ========================================================
     # Kurszuordnungen – Vorschau
@@ -1140,73 +1147,74 @@ class ImportService:
         actor: User,
         preview: ExamResultImportPreview,
     ) -> tuple[int, int]:
-        require_permission(
-            actor,
-            Permission.IMPORT,
-        )
+        with self.database_manager.transaction():
+            require_permission(
+                actor,
+                Permission.IMPORT,
+            )
 
-        created_count = 0
-        updated_count = 0
+            created_count = 0
+            updated_count = 0
 
-        for row in preview.rows:
-            if row.action == "create":
-                self.exam_result_service.create_exam_result(
-                    actor=actor,
-                    kurszuordnung_id=row.assignment_id,
-                    bestanden=row.bestanden,
-                    note=row.note,
-                    bemerkungen=row.bemerkungen,
-                )
+            for row in preview.rows:
+                if row.action == "create":
+                    self.exam_result_service.create_exam_result(
+                        actor=actor,
+                        kurszuordnung_id=row.assignment_id,
+                        bestanden=row.bestanden,
+                        note=row.note,
+                        bemerkungen=row.bemerkungen,
+                    )
 
-                created_count += 1
+                    created_count += 1
 
-            elif row.action == "update":
-                if row.exam_result_id is None:
+                elif row.action == "update":
+                    if row.exam_result_id is None:
+                        raise RuntimeError(
+                            "Für ein Update fehlt die "
+                            "Prüfungsergebnis-ID."
+                        )
+
+                    existing = (
+                        self.exam_result_service
+                        .get_exam_result(
+                            row.exam_result_id
+                        )
+                    )
+
+                    if existing is None:
+                        raise RuntimeError(
+                            "Das zu aktualisierende "
+                            "Prüfungsergebnis wurde "
+                            "nicht gefunden."
+                        )
+
+                    # Die historische Kurszuordnung
+                    # bleibt bei einem Update bewusst
+                    # unverändert.
+                    existing.bestanden = row.bestanden
+                    existing.note = row.note
+                    existing.bemerkungen = (
+                        row.bemerkungen
+                    )
+
+                    self.exam_result_service.update_exam_result(
+                        actor,
+                        existing,
+                    )
+
+                    updated_count += 1
+
+                else:
                     raise RuntimeError(
-                        "Für ein Update fehlt die "
-                        "Prüfungsergebnis-ID."
+                        "Unbekannte Importaktion: "
+                        f"{row.action}"
                     )
 
-                existing = (
-                    self.exam_result_service
-                    .get_exam_result(
-                        row.exam_result_id
-                    )
-                )
-
-                if existing is None:
-                    raise RuntimeError(
-                        "Das zu aktualisierende "
-                        "Prüfungsergebnis wurde "
-                        "nicht gefunden."
-                    )
-
-                # Die historische Kurszuordnung
-                # bleibt bei einem Update bewusst
-                # unverändert.
-                existing.bestanden = row.bestanden
-                existing.note = row.note
-                existing.bemerkungen = (
-                    row.bemerkungen
-                )
-
-                self.exam_result_service.update_exam_result(
-                    actor,
-                    existing,
-                )
-
-                updated_count += 1
-
-            else:
-                raise RuntimeError(
-                    "Unbekannte Importaktion: "
-                    f"{row.action}"
-                )
-
-        return (
-            created_count,
-            updated_count,
-        )
+            return (
+                created_count,
+                updated_count,
+            )
 
 
     def preview_exam_result_import(
@@ -1355,68 +1363,69 @@ class ImportService:
         actor: User,
         preview: CourseAssignmentImportPreview,
     ) -> tuple[int, int]:
-        require_permission(
-            actor,
-            Permission.IMPORT,
-        )
+        with self.database_manager.transaction():
+            require_permission(
+                actor,
+                Permission.IMPORT,
+            )
 
-        created_count = 0
-        updated_count = 0
+            created_count = 0
+            updated_count = 0
 
-        for row in preview.rows:
-            if row.action == "create":
-                self.assignment_service.create_historical_assignment(
-                    actor=actor,
-                    person_id=row.person_id,
-                    kurstag_id=row.kurstag_id,
-                    rolle=row.rolle,
-                    status=row.status,
-                    bemerkungen=row.bemerkungen,
-                )
-
-                created_count += 1
-
-            elif row.action == "update":
-                if row.assignment_id is None:
-                    raise ValueError(
-                        "Bei einer Aktualisierung fehlt "
-                        "die Kurszuordnungs-ID."
+            for row in preview.rows:
+                if row.action == "create":
+                    self.assignment_service.create_historical_assignment(
+                        actor=actor,
+                        person_id=row.person_id,
+                        kurstag_id=row.kurstag_id,
+                        rolle=row.rolle,
+                        status=row.status,
+                        bemerkungen=row.bemerkungen,
                     )
 
-                assignment = (
-                    self.assignment_service
-                    .get_assignment(
-                        row.assignment_id
+                    created_count += 1
+
+                elif row.action == "update":
+                    if row.assignment_id is None:
+                        raise ValueError(
+                            "Bei einer Aktualisierung fehlt "
+                            "die Kurszuordnungs-ID."
+                        )
+
+                    assignment = (
+                        self.assignment_service
+                        .get_assignment(
+                            row.assignment_id
+                        )
                     )
-                )
 
-                if assignment is None:
-                    raise ValueError(
-                        "Kurszuordnung für "
-                        "Aktualisierung nicht gefunden: "
-                        f"{row.assignment_id}"
+                    if assignment is None:
+                        raise ValueError(
+                            "Kurszuordnung für "
+                            "Aktualisierung nicht gefunden: "
+                            f"{row.assignment_id}"
+                        )
+
+                    # Die Person und der Kurstag bilden
+                    # die historische Identität der
+                    # Zuordnung und werden nicht ersetzt.
+                    assignment.rolle = row.rolle
+                    assignment.status = row.status
+                    assignment.bemerkungen = (
+                        row.bemerkungen
                     )
 
-                # Die Person und der Kurstag bilden
-                # die historische Identität der
-                # Zuordnung und werden nicht ersetzt.
-                assignment.rolle = row.rolle
-                assignment.status = row.status
-                assignment.bemerkungen = (
-                    row.bemerkungen
-                )
+                    self.assignment_service.update_assignment(
+                        actor,
+                        assignment,
+                    )
 
-                self.assignment_service.update_assignment(
-                    actor,
-                    assignment,
-                )
+                    updated_count += 1
 
-                updated_count += 1
-
-        return (
-            created_count,
-            updated_count,
-        )
+            return (
+                created_count,
+                updated_count,
+            )
 
     # ========================================================
     # Personen – CSV-Zeile
@@ -1468,6 +1477,25 @@ class ImportService:
             csv_row.get(
                 "Geburtsdatum"
             )
+        )
+
+        if (
+            geburtsdatum is not None
+            and geburtsdatum > date.today()
+        ):
+            raise ValueError(
+                "Das Geburtsdatum darf nicht "
+                "in der Zukunft liegen."
+            )
+
+        email = self._clean_optional(
+            csv_row.get(
+                "E-Mail"
+            )
+        )
+
+        self.person_service._validate_email(
+            email
         )
 
         mitglied = self._parse_bool(
@@ -1553,11 +1581,7 @@ class ImportService:
             nachname=nachname,
             vorname=vorname,
             geburtsdatum=geburtsdatum,
-            email=self._clean_optional(
-                csv_row.get(
-                    "E-Mail"
-                )
-            ),
+            email=email,
             strasse=self._clean_optional(
                 csv_row.get(
                     "Strasse"
@@ -1924,6 +1948,14 @@ class ImportService:
             )
         )
 
+        location_name = self._clean_optional(
+            csv_row.get(
+                "Standort"
+            )
+        )
+
+        location = None
+
         if location_id:
             location = (
                 self.location_service.get_location(
@@ -1931,11 +1963,52 @@ class ImportService:
                 )
             )
 
-            if location is None:
-                raise ValueError(
-                    "Die Standort ID ist unbekannt: "
-                    f"{location_id}"
+        if location is None and location_name:
+            normalized_location_name = (
+                location_name.strip().casefold()
+            )
+
+            matching_locations = [
+                candidate
+                for candidate
+                in self.location_service.list_locations(
+                    include_inactive=True
                 )
+                if (
+                    candidate.bezeichnung
+                    .strip()
+                    .casefold()
+                    == normalized_location_name
+                )
+            ]
+
+            if len(matching_locations) > 1:
+                raise ValueError(
+                    "Der Standort kann nicht eindeutig "
+                    "aufgelöst werden: "
+                    f"{location_name}."
+                )
+
+            if len(matching_locations) == 1:
+                location = matching_locations[0]
+
+        if location is not None:
+            location_id = location.id
+
+        elif location_id:
+            raise ValueError(
+                "Die Standort ID ist unbekannt und "
+                "der Standort konnte nicht über die "
+                "Bezeichnung aufgelöst werden: "
+                f"{location_id}"
+            )
+
+        elif location_name:
+            raise ValueError(
+                "Der Standort konnte nicht aufgelöst "
+                "werden: "
+                f"{location_name}."
+            )
 
         existing = None
 

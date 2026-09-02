@@ -5,6 +5,37 @@ from pathlib import Path
 import sqlite3
 
 
+class _TransactionConnectionProxy:
+    def __init__(
+        self,
+        connection: sqlite3.Connection,
+    ):
+        self._connection = connection
+
+    def __getattr__(
+        self,
+        name: str,
+    ):
+        return getattr(
+            self._connection,
+            name,
+        )
+
+    def commit(
+        self,
+    ) -> None:
+        # Innerhalb einer übergeordneten Transaktion
+        # darf ein Repository nicht selbst committen.
+        pass
+
+    def rollback(
+        self,
+    ) -> None:
+        # Das Rollback wird vom äußeren
+        # Transaktionskontext gesteuert.
+        pass
+
+
 SCHEMA_VERSION = 8
 
 
@@ -38,10 +69,19 @@ class DatabaseManager:
             / "schema.sql"
         )
 
+        self._transaction_connection = None
+        self._transaction_depth = 0
+
     @contextmanager
     def connect(
         self,
     ) -> Iterator[sqlite3.Connection]:
+        if self._transaction_connection is not None:
+            yield _TransactionConnectionProxy(
+                self._transaction_connection
+            )
+            return
+
         self.database_path.parent.mkdir(
             parents=True,
             exist_ok=True,
@@ -67,6 +107,60 @@ class DatabaseManager:
             raise
 
         finally:
+            connection.close()
+
+    @contextmanager
+    def transaction(
+        self,
+    ) -> Iterator[sqlite3.Connection]:
+        if self._transaction_connection is not None:
+            self._transaction_depth += 1
+
+            try:
+                yield self._transaction_connection
+
+            finally:
+                self._transaction_depth -= 1
+
+            return
+
+        self.database_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        connection = sqlite3.connect(
+            self.database_path
+        )
+
+        connection.row_factory = (
+            sqlite3.Row
+        )
+
+        connection.execute(
+            "PRAGMA foreign_keys = ON;"
+        )
+
+        connection.execute(
+            "BEGIN IMMEDIATE;"
+        )
+
+        self._transaction_connection = connection
+        self._transaction_depth = 1
+
+        try:
+            yield connection
+
+        except Exception:
+            connection.rollback()
+            raise
+
+        else:
+            connection.commit()
+
+        finally:
+            self._transaction_connection = None
+            self._transaction_depth = 0
             connection.close()
 
     def initialize_database(
