@@ -15,18 +15,30 @@ from dfg_kursverwaltung.core.permissions import (
 from dfg_kursverwaltung.repositories.kurszuordnungen_repository import (
     CourseAssignmentRepository,
 )
+from dfg_kursverwaltung.repositories.kurstage_repository import (
+    CourseDayRepository,
+)
+from dfg_kursverwaltung.repositories.lehrgaenge_repository import (
+    CourseRepository,
+)
 from dfg_kursverwaltung.repositories.pruefungsergebnisse_repository import (
     ExamResultRepository,
 )
 
 class ExamResultService:
+    EXAM_COURSE_TYPE_ID = "course-type-exam"
+
     def __init__(
         self,
         repository: ExamResultRepository,
         assignment_repository: CourseAssignmentRepository,
+        course_day_repository: CourseDayRepository,
+        course_repository: CourseRepository,
     ):
         self.repository = repository
         self.assignment_repository = assignment_repository
+        self.course_day_repository = course_day_repository
+        self.course_repository = course_repository
 
     def create_exam_result(
         self,
@@ -286,6 +298,37 @@ class ExamResultService:
                 "für eine Kurszuordnung mit dem "
                 "Status 'Teilgenommen' erfasst "
                 "oder geändert werden."
+            )
+
+        course_day = self.course_day_repository.get_by_id(
+            assignment.kurstag_id
+        )
+
+        if course_day is None:
+            raise ValueError(
+                "Der zugehörige Kurstag "
+                "existiert nicht."
+            )
+
+        course = self.course_repository.get_by_id(
+            course_day.lehrgang_id
+        )
+
+        if course is None:
+            raise ValueError(
+                "Der zugehörige Lehrgang "
+                "existiert nicht."
+            )
+
+        if (
+            course.lehrgangstyp_id
+            != self.EXAM_COURSE_TYPE_ID
+        ):
+            raise ValueError(
+                "Ein Prüfungsergebnis kann nur "
+                "für einen Kurstag eines "
+                "Prüfungslehrgangs erfasst oder "
+                "geändert werden."
             )
 
         return assignment

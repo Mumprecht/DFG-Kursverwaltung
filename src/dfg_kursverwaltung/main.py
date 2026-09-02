@@ -242,6 +242,8 @@ def main():
     exam_result_service = ExamResultService(
         exam_result_repository,
         assignment_repository,
+        course_day_repository,
+        course_repository,
     )
 
     search_service = SearchService(
