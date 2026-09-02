@@ -214,6 +214,14 @@ class CourseDayService:
         beginn: str | None,
         ende: str | None,
     ) -> None:
+        if (beginn is None) != (ende is None):
+            raise ValueError(
+                "Beginn und Ende müssen entweder "
+                "beide angegeben oder beide leer sein."
+            )
+
+        parsed_times = {}
+
         for name, value in (
             ("Beginn", beginn),
             ("Ende", ende),
@@ -222,7 +230,7 @@ class CourseDayService:
                 continue
 
             try:
-                datetime.strptime(
+                parsed = datetime.strptime(
                     value,
                     "%H:%M",
                 )
@@ -232,10 +240,19 @@ class CourseDayService:
                     "HH:MM angegeben werden."
                 ) from exc
 
+            if parsed.strftime("%H:%M") != value:
+                raise ValueError(
+                    f"{name} muss im Format "
+                    "HH:MM angegeben werden."
+                )
+
+            parsed_times[name] = parsed.time()
+
         if (
             beginn is not None
             and ende is not None
-            and ende <= beginn
+            and parsed_times["Ende"]
+            <= parsed_times["Beginn"]
         ):
             raise ValueError(
                 "Das Ende muss nach dem "
