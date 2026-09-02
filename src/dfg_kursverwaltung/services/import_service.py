@@ -2073,7 +2073,7 @@ class ImportService:
             )
         )
 
-        self.person_service._validate_email(
+        self.person_service.validate_email(
             email
         )
 
@@ -2260,7 +2260,7 @@ class ImportService:
             )
         )
 
-        self.location_service._validate_email(
+        self.location_service.validate_email(
             email
         )
 
@@ -2516,7 +2516,7 @@ class ImportService:
             )
         )
 
-        self.course_day_service._validate_times(
+        self.course_day_service.validate_times(
             beginn,
             ende,
         )

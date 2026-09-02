@@ -47,7 +47,7 @@ class LocationService:
             email
         )
 
-        self._validate_email(
+        self.validate_email(
             email
         )
 
@@ -197,7 +197,7 @@ class LocationService:
             location.email
         )
 
-        self._validate_email(
+        self.validate_email(
             location.email
         )
 
@@ -344,7 +344,7 @@ class LocationService:
         )
 
     @staticmethod
-    def _validate_email(
+    def validate_email(
         email: str | None,
     ) -> None:
         if not email:

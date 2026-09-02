@@ -57,7 +57,7 @@ class PersonService:
             email
         )
 
-        self._validate_email(
+        self.validate_email(
             email
         )
 
@@ -196,7 +196,7 @@ class PersonService:
             person.email
         )
 
-        self._validate_email(
+        self.validate_email(
             person.email
         )
 
@@ -249,7 +249,7 @@ class PersonService:
         )
 
     @staticmethod
-    def _validate_email(
+    def validate_email(
         email: str | None,
     ) -> None:
         if email is None:

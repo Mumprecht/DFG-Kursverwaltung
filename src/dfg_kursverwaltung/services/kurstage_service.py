@@ -49,7 +49,7 @@ class CourseDayService:
             ende
         )
 
-        self._validate_times(
+        self.validate_times(
             beginn,
             ende,
         )
@@ -175,7 +175,7 @@ class CourseDayService:
             )
         )
 
-        self._validate_times(
+        self.validate_times(
             course_day.beginn,
             course_day.ende,
         )
@@ -261,7 +261,7 @@ class CourseDayService:
             )
 
     @staticmethod
-    def _validate_times(
+    def validate_times(
         beginn: str | None,
         ende: str | None,
     ) -> None:
