@@ -217,7 +217,9 @@ def main():
     )
 
     course_day_service = CourseDayService(
-        course_day_repository
+        course_day_repository,
+        course_repository,
+        location_repository,
     )
 
     location_service = LocationService(

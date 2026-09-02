@@ -5,14 +5,24 @@ from dfg_kursverwaltung.core.models import CourseDay
 from dfg_kursverwaltung.repositories.kurstage_repository import (
     CourseDayRepository,
 )
+from dfg_kursverwaltung.repositories.lehrgaenge_repository import (
+    CourseRepository,
+)
+from dfg_kursverwaltung.repositories.standorte_repository import (
+    LocationRepository,
+)
 
 
 class CourseDayService:
     def __init__(
         self,
         repository: CourseDayRepository,
+        course_repository: CourseRepository,
+        location_repository: LocationRepository,
     ):
         self.repository = repository
+        self.course_repository = course_repository
+        self.location_repository = location_repository
 
     def create_course_day(
         self,
@@ -25,6 +35,13 @@ class CourseDayService:
         bezeichnung: str | None = None,
         bemerkungen: str | None = None,
     ) -> CourseDay:
+        self._ensure_course_exists(
+            lehrgang_id
+        )
+        self._ensure_location_exists(
+            standort_id
+        )
+
         beginn = self._clean_optional(
             beginn
         )
@@ -139,6 +156,13 @@ class CourseDayService:
         self,
         course_day: CourseDay,
     ) -> CourseDay:
+        self._ensure_course_exists(
+            course_day.lehrgang_id
+        )
+        self._ensure_location_exists(
+            course_day.standort_id
+        )
+
         course_day.beginn = (
             self._clean_optional(
                 course_day.beginn
@@ -208,6 +232,33 @@ class CourseDayService:
         self.repository.delete(
             course_day_id
         )
+
+    def _ensure_course_exists(
+        self,
+        course_id: str,
+    ) -> None:
+        if self.course_repository.get_by_id(
+            course_id
+        ) is None:
+            raise KeyError(
+                "Lehrgang nicht gefunden: "
+                f"{course_id}"
+            )
+
+    def _ensure_location_exists(
+        self,
+        location_id: str | None,
+    ) -> None:
+        if location_id is None:
+            return
+
+        if self.location_repository.get_by_id(
+            location_id
+        ) is None:
+            raise KeyError(
+                "Standort nicht gefunden: "
+                f"{location_id}"
+            )
 
     @staticmethod
     def _validate_times(
