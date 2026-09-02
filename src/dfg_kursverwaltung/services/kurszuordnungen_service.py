@@ -255,26 +255,36 @@ class CourseAssignmentService:
             assignment.kurstag_id
         )
 
-        # Wenn bereits ein Prüfungsergebnis existiert,
-        # muss der Status "Teilgenommen" erhalten bleiben.
-        # Das Ergebnis wird niemals stillschweigend gelöscht.
-        if (
-            assignment.status
-            != CourseAssignmentStatus.ATTENDED
-        ):
-            exam_result = (
-                self.exam_result_repository
-                .get_by_assignment_id(
-                    assignment.id
-                )
+        # Ein Prüfungsergebnis gehört dauerhaft zu
+        # einer konkreten Teilnahme. Solange es
+        # existiert, dürfen Person, Kurstag, Rolle
+        # und Teilnahmestatus nicht verändert werden.
+        exam_result = (
+            self.exam_result_repository
+            .get_by_assignment_id(
+                assignment.id
+            )
+        )
+
+        if exam_result is not None:
+            protected_fields_changed = (
+                assignment.person_id
+                != original.person_id
+                or assignment.kurstag_id
+                != original.kurstag_id
+                or assignment.rolle
+                != original.rolle
+                or assignment.status
+                != original.status
             )
 
-            if exam_result is not None:
+            if protected_fields_changed:
                 raise ValueError(
                     "Für diese Kurszuordnung existiert "
                     "ein Prüfungsergebnis. "
                     "Löschen Sie zuerst das "
-                    "Prüfungsergebnis, bevor Sie den "
+                    "Prüfungsergebnis, bevor Sie "
+                    "Person, Kurstag, Rolle oder "
                     "Status ändern."
                 )
 
