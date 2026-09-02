@@ -236,6 +236,7 @@ def main():
         assignment_repository,
         person_repository,
         exam_result_repository,
+        course_day_repository,
     )
 
     exam_result_service = ExamResultService(

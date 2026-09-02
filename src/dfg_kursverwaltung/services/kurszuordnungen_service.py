@@ -15,6 +15,9 @@ from dfg_kursverwaltung.core.permissions import (
 from dfg_kursverwaltung.repositories.kurszuordnungen_repository import (
     CourseAssignmentRepository,
 )
+from dfg_kursverwaltung.repositories.kurstage_repository import (
+    CourseDayRepository,
+)
 from dfg_kursverwaltung.repositories.personen_repository import (
     PersonRepository,
 )
@@ -28,10 +31,12 @@ class CourseAssignmentService:
         repository: CourseAssignmentRepository,
         person_repository: PersonRepository,
         exam_result_repository: ExamResultRepository,
+        course_day_repository: CourseDayRepository,
     ):
         self.repository = repository
         self.person_repository = person_repository
         self.exam_result_repository = exam_result_repository
+        self.course_day_repository = course_day_repository
 
     def create_assignment(
         self,
@@ -56,6 +61,10 @@ class CourseAssignmentService:
         self._ensure_assignment_write_access(
             actor,
             kurstag_id,
+        )
+
+        self._ensure_course_day_exists(
+            kurstag_id
         )
 
         self._validate_role_for_person(
@@ -113,6 +122,10 @@ class CourseAssignmentService:
         require_permission(
             actor,
             Permission.IMPORT,
+        )
+
+        self._ensure_course_day_exists(
+            kurstag_id
         )
 
         rolle = CourseAssignmentRole(
@@ -236,6 +249,10 @@ class CourseAssignmentService:
             actor,
             original,
             assignment,
+        )
+
+        self._ensure_course_day_exists(
+            assignment.kurstag_id
         )
 
         # Wenn bereits ein Prüfungsergebnis existiert,
@@ -363,6 +380,18 @@ class CourseAssignmentService:
                 "Instruktor-Benutzer dürfen den "
                 "Kurstag einer Kurszuordnung nicht "
                 "ändern."
+            )
+
+    def _ensure_course_day_exists(
+        self,
+        course_day_id: str,
+    ) -> None:
+        if self.course_day_repository.get_by_id(
+            course_day_id
+        ) is None:
+            raise KeyError(
+                "Kurstag nicht gefunden: "
+                f"{course_day_id}"
             )
 
     def _validate_role_for_person(
