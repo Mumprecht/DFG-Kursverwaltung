@@ -502,6 +502,13 @@ class ImportService:
         rows: list[PersonImportRow] = []
         issues: list[ImportIssue] = []
 
+        seen_create_emails: dict[str, int] = {}
+        seen_create_identity: dict[
+            tuple[str, str, date],
+            int,
+        ] = {}
+        seen_update_ids: dict[str, int] = {}
+
         with path.open(
             "r",
             encoding="utf-8-sig",
@@ -538,9 +545,125 @@ class ImportService:
                     )
                     continue
 
+                duplicate_message = None
+
+                if parsed_row.action == "create":
+                    if parsed_row.email:
+                        email_key = (
+                            parsed_row.email
+                            .strip()
+                            .casefold()
+                        )
+
+                        first_row = (
+                            seen_create_emails.get(
+                                email_key
+                            )
+                        )
+
+                        if first_row is not None:
+                            duplicate_message = (
+                                "Dublette innerhalb der "
+                                "Importdatei: Die "
+                                "E-Mail-Adresse stimmt "
+                                f"mit Zeile {first_row} "
+                                "überein."
+                            )
+
+                    if (
+                        duplicate_message is None
+                        and parsed_row.geburtsdatum
+                        is not None
+                    ):
+                        identity_key = (
+                            parsed_row.vorname
+                            .strip()
+                            .casefold(),
+                            parsed_row.nachname
+                            .strip()
+                            .casefold(),
+                            parsed_row.geburtsdatum,
+                        )
+
+                        first_row = (
+                            seen_create_identity.get(
+                                identity_key
+                            )
+                        )
+
+                        if first_row is not None:
+                            duplicate_message = (
+                                "Dublette innerhalb der "
+                                "Importdatei: Vorname, "
+                                "Nachname und "
+                                "Geburtsdatum stimmen "
+                                f"mit Zeile {first_row} "
+                                "überein."
+                            )
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.person_id
+                ):
+                    first_row = (
+                        seen_update_ids.get(
+                            parsed_row.person_id
+                        )
+                    )
+
+                    if first_row is not None:
+                        duplicate_message = (
+                            "Dieselbe bestehende Person "
+                            "wird innerhalb der "
+                            "Importdatei mehrfach "
+                            "aktualisiert: "
+                            f"Zeile {first_row}."
+                        )
+
+                if duplicate_message is not None:
+                    issues.append(
+                        ImportIssue(
+                            row_number=row_number,
+                            message=duplicate_message,
+                        )
+                    )
+                    continue
+
                 rows.append(
                     parsed_row
                 )
+
+                if parsed_row.action == "create":
+                    if parsed_row.email:
+                        seen_create_emails[
+                            parsed_row.email
+                            .strip()
+                            .casefold()
+                        ] = row_number
+
+                    if (
+                        parsed_row.geburtsdatum
+                        is not None
+                    ):
+                        seen_create_identity[
+                            (
+                                parsed_row.vorname
+                                .strip()
+                                .casefold(),
+                                parsed_row.nachname
+                                .strip()
+                                .casefold(),
+                                parsed_row.geburtsdatum,
+                            )
+                        ] = row_number
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.person_id
+                ):
+                    seen_update_ids[
+                        parsed_row.person_id
+                    ] = row_number
 
         return ImportPreview(
             rows=rows,
@@ -700,6 +823,14 @@ class ImportService:
         rows: list[LocationImportRow] = []
         issues: list[ImportIssue] = []
 
+        seen_create_any_name: dict[str, int] = {}
+        seen_create_without_location: dict[str, int] = {}
+        seen_create_with_location: dict[
+            tuple[str, str],
+            int,
+        ] = {}
+        seen_update_ids: dict[str, int] = {}
+
         with path.open(
             "r",
             encoding="utf-8-sig",
@@ -736,9 +867,156 @@ class ImportService:
                     )
                     continue
 
+                duplicate_message = None
+
+                if parsed_row.action == "create":
+                    name_key = (
+                        parsed_row.bezeichnung
+                        .strip()
+                        .casefold()
+                    )
+
+                    location_key = (
+                        parsed_row.ort
+                        .strip()
+                        .casefold()
+                        if parsed_row.ort
+                        else None
+                    )
+
+                    if location_key is None:
+                        first_row = (
+                            seen_create_any_name.get(
+                                name_key
+                            )
+                        )
+
+                        if first_row is not None:
+                            duplicate_message = (
+                                "Dublette innerhalb der "
+                                "Importdatei: Die "
+                                "Bezeichnung stimmt mit "
+                                f"Zeile {first_row} "
+                                "überein; mindestens bei "
+                                "einem der beiden "
+                                "Ausführungsorte ist kein "
+                                "Ort angegeben."
+                            )
+
+                    else:
+                        first_row = (
+                            seen_create_without_location
+                            .get(
+                                name_key
+                            )
+                        )
+
+                        if first_row is not None:
+                            duplicate_message = (
+                                "Dublette innerhalb der "
+                                "Importdatei: Die "
+                                "Bezeichnung stimmt mit "
+                                f"Zeile {first_row} "
+                                "überein; mindestens bei "
+                                "einem der beiden "
+                                "Ausführungsorte ist kein "
+                                "Ort angegeben."
+                            )
+
+                        else:
+                            first_row = (
+                                seen_create_with_location
+                                .get(
+                                    (
+                                        name_key,
+                                        location_key,
+                                    )
+                                )
+                            )
+
+                            if first_row is not None:
+                                duplicate_message = (
+                                    "Dublette innerhalb "
+                                    "der Importdatei: "
+                                    "Bezeichnung und Ort "
+                                    "stimmen mit Zeile "
+                                    f"{first_row} "
+                                    "überein."
+                                )
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.location_id
+                ):
+                    first_row = (
+                        seen_update_ids.get(
+                            parsed_row.location_id
+                        )
+                    )
+
+                    if first_row is not None:
+                        duplicate_message = (
+                            "Derselbe bestehende "
+                            "Ausführungsort wird "
+                            "innerhalb der "
+                            "Importdatei mehrfach "
+                            "aktualisiert: "
+                            f"Zeile {first_row}."
+                        )
+
+                if duplicate_message is not None:
+                    issues.append(
+                        ImportIssue(
+                            row_number=row_number,
+                            message=duplicate_message,
+                        )
+                    )
+                    continue
+
                 rows.append(
                     parsed_row
                 )
+
+                if parsed_row.action == "create":
+                    name_key = (
+                        parsed_row.bezeichnung
+                        .strip()
+                        .casefold()
+                    )
+
+                    location_key = (
+                        parsed_row.ort
+                        .strip()
+                        .casefold()
+                        if parsed_row.ort
+                        else None
+                    )
+
+                    seen_create_any_name.setdefault(
+                        name_key,
+                        row_number,
+                    )
+
+                    if location_key is None:
+                        seen_create_without_location[
+                            name_key
+                        ] = row_number
+
+                    else:
+                        seen_create_with_location[
+                            (
+                                name_key,
+                                location_key,
+                            )
+                        ] = row_number
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.location_id
+                ):
+                    seen_update_ids[
+                        parsed_row.location_id
+                    ] = row_number
 
         return LocationImportPreview(
             rows=rows,
@@ -885,6 +1163,12 @@ class ImportService:
         rows: list[CourseImportRow] = []
         issues: list[ImportIssue] = []
 
+        seen_create_courses: dict[
+            tuple[str, str],
+            int,
+        ] = {}
+        seen_update_ids: dict[str, int] = {}
+
         with path.open(
             "r",
             encoding="utf-8-sig",
@@ -921,9 +1205,83 @@ class ImportService:
                     )
                     continue
 
+                duplicate_message = None
+
+                if parsed_row.action == "create":
+                    duplicate_key = (
+                        parsed_row.lehrgangstyp_id,
+                        parsed_row.bezeichnung
+                        .strip()
+                        .casefold(),
+                    )
+
+                    first_row = (
+                        seen_create_courses.get(
+                            duplicate_key
+                        )
+                    )
+
+                    if first_row is not None:
+                        duplicate_message = (
+                            "Dublette innerhalb der "
+                            "Importdatei: "
+                            "Lehrgangstyp und "
+                            "Bezeichnung stimmen mit "
+                            f"Zeile {first_row} "
+                            "überein."
+                        )
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.course_id
+                ):
+                    first_row = (
+                        seen_update_ids.get(
+                            parsed_row.course_id
+                        )
+                    )
+
+                    if first_row is not None:
+                        duplicate_message = (
+                            "Derselbe bestehende "
+                            "Lehrgang wird innerhalb "
+                            "der Importdatei mehrfach "
+                            "aktualisiert: "
+                            f"Zeile {first_row}."
+                        )
+
+                if duplicate_message is not None:
+                    issues.append(
+                        ImportIssue(
+                            row_number=row_number,
+                            message=duplicate_message,
+                        )
+                    )
+                    continue
+
                 rows.append(
                     parsed_row
                 )
+
+                if parsed_row.action == "create":
+                    duplicate_key = (
+                        parsed_row.lehrgangstyp_id,
+                        parsed_row.bezeichnung
+                        .strip()
+                        .casefold(),
+                    )
+
+                    seen_create_courses[
+                        duplicate_key
+                    ] = row_number
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.course_id
+                ):
+                    seen_update_ids[
+                        parsed_row.course_id
+                    ] = row_number
 
         return CourseImportPreview(
             rows=rows,
@@ -1019,6 +1377,17 @@ class ImportService:
         rows: list[CourseDayImportRow] = []
         issues: list[ImportIssue] = []
 
+        seen_create_course_days: dict[
+            tuple[
+                str,
+                date,
+                str | None,
+                str | None,
+            ],
+            int,
+        ] = {}
+        seen_update_ids: dict[str, int] = {}
+
         with path.open(
             "r",
             encoding="utf-8-sig",
@@ -1055,9 +1424,83 @@ class ImportService:
                     )
                     continue
 
+                duplicate_message = None
+
+                if parsed_row.action == "create":
+                    duplicate_key = (
+                        parsed_row.course_id,
+                        parsed_row.datum,
+                        parsed_row.beginn,
+                        parsed_row.ende,
+                    )
+
+                    first_row = (
+                        seen_create_course_days.get(
+                            duplicate_key
+                        )
+                    )
+
+                    if first_row is not None:
+                        duplicate_message = (
+                            "Dublette innerhalb der "
+                            "Importdatei: Lehrgang, "
+                            "Datum, Beginn und Ende "
+                            "stimmen mit "
+                            f"Zeile {first_row} "
+                            "überein."
+                        )
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.course_day_id
+                ):
+                    first_row = (
+                        seen_update_ids.get(
+                            parsed_row.course_day_id
+                        )
+                    )
+
+                    if first_row is not None:
+                        duplicate_message = (
+                            "Derselbe bestehende "
+                            "Kurstag wird innerhalb "
+                            "der Importdatei mehrfach "
+                            "aktualisiert: "
+                            f"Zeile {first_row}."
+                        )
+
+                if duplicate_message is not None:
+                    issues.append(
+                        ImportIssue(
+                            row_number=row_number,
+                            message=duplicate_message,
+                        )
+                    )
+                    continue
+
                 rows.append(
                     parsed_row
                 )
+
+                if parsed_row.action == "create":
+                    duplicate_key = (
+                        parsed_row.course_id,
+                        parsed_row.datum,
+                        parsed_row.beginn,
+                        parsed_row.ende,
+                    )
+
+                    seen_create_course_days[
+                        duplicate_key
+                    ] = row_number
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.course_day_id
+                ):
+                    seen_update_ids[
+                        parsed_row.course_day_id
+                    ] = row_number
 
         return CourseDayImportPreview(
             rows=rows,
@@ -1233,6 +1676,9 @@ class ImportService:
         rows: list[ExamResultImportRow] = []
         issues: list[ImportIssue] = []
 
+        seen_create_assignments: dict[str, int] = {}
+        seen_update_ids: dict[str, int] = {}
+
         with path.open(
             "r",
             encoding="utf-8-sig",
@@ -1283,9 +1729,69 @@ class ImportService:
                     )
                     continue
 
+                duplicate_message = None
+
+                if parsed_row.action == "create":
+                    first_row = (
+                        seen_create_assignments.get(
+                            parsed_row.assignment_id
+                        )
+                    )
+
+                    if first_row is not None:
+                        duplicate_message = (
+                            "Dublette innerhalb der "
+                            "Importdatei: Für dieselbe "
+                            "Kurszuordnung ist bereits "
+                            "in Zeile "
+                            f"{first_row} ein "
+                            "Prüfungsergebnis enthalten."
+                        )
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.exam_result_id
+                ):
+                    first_row = (
+                        seen_update_ids.get(
+                            parsed_row.exam_result_id
+                        )
+                    )
+
+                    if first_row is not None:
+                        duplicate_message = (
+                            "Dasselbe bestehende "
+                            "Prüfungsergebnis wird "
+                            "innerhalb der Importdatei "
+                            "mehrfach aktualisiert: "
+                            f"Zeile {first_row}."
+                        )
+
+                if duplicate_message is not None:
+                    issues.append(
+                        ImportIssue(
+                            row_number=row_number,
+                            message=duplicate_message,
+                        )
+                    )
+                    continue
+
                 rows.append(
                     parsed_row
                 )
+
+                if parsed_row.action == "create":
+                    seen_create_assignments[
+                        parsed_row.assignment_id
+                    ] = row_number
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.exam_result_id
+                ):
+                    seen_update_ids[
+                        parsed_row.exam_result_id
+                    ] = row_number
 
         return ExamResultImportPreview(
             rows=rows,
@@ -1308,6 +1814,12 @@ class ImportService:
 
         rows: list[CourseAssignmentImportRow] = []
         issues: list[ImportIssue] = []
+
+        seen_create_assignments: dict[
+            tuple[str, str],
+            int,
+        ] = {}
+        seen_update_ids: dict[str, int] = {}
 
         with path.open(
             "r",
@@ -1345,9 +1857,76 @@ class ImportService:
                     )
                     continue
 
+                duplicate_message = None
+
+                if parsed_row.action == "create":
+                    duplicate_key = (
+                        parsed_row.person_id,
+                        parsed_row.kurstag_id,
+                    )
+
+                    first_row = (
+                        seen_create_assignments.get(
+                            duplicate_key
+                        )
+                    )
+
+                    if first_row is not None:
+                        duplicate_message = (
+                            "Dublette innerhalb der "
+                            "Importdatei: Dieselbe Person "
+                            "ist bereits in Zeile "
+                            f"{first_row} demselben "
+                            "Kurstag zugeordnet."
+                        )
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.assignment_id
+                ):
+                    first_row = (
+                        seen_update_ids.get(
+                            parsed_row.assignment_id
+                        )
+                    )
+
+                    if first_row is not None:
+                        duplicate_message = (
+                            "Dieselbe bestehende "
+                            "Kurszuordnung wird innerhalb "
+                            "der Importdatei mehrfach "
+                            "aktualisiert: "
+                            f"Zeile {first_row}."
+                        )
+
+                if duplicate_message is not None:
+                    issues.append(
+                        ImportIssue(
+                            row_number=row_number,
+                            message=duplicate_message,
+                        )
+                    )
+                    continue
+
                 rows.append(
                     parsed_row
                 )
+
+                if parsed_row.action == "create":
+                    seen_create_assignments[
+                        (
+                            parsed_row.person_id,
+                            parsed_row.kurstag_id,
+                        )
+                    ] = row_number
+
+                elif (
+                    parsed_row.action == "update"
+                    and parsed_row.assignment_id
+                ):
+                    seen_update_ids[
+                        parsed_row.assignment_id
+                    ] = row_number
 
         return CourseAssignmentImportPreview(
             rows=rows,
