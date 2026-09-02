@@ -1505,6 +1505,16 @@
             <translation>Remove Assignment</translation>
         </message>
         <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="1065" />
+            <source>Kurszuordnung kann nicht entfernt werden</source>
+            <translation>Course assignment cannot be removed</translation>
+        </message>
+        <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="1069" />
+            <source>Die Kurszuordnung kann nicht entfernt werden, solange ein Prüfungsergebnis vorhanden ist. Löschen Sie zuerst das Prüfungsergebnis.</source>
+            <translation>The course assignment cannot be removed while an exam result exists. Delete the exam result first.</translation>
+        </message>
+        <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="996" />
             <source>Soll die Kurszuordnung von </source>
             <translation>Do you really want to remove the course assignment for </translation>

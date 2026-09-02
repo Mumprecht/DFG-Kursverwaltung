@@ -1505,6 +1505,16 @@
             <translation>Allontanar attribuziun</translation>
         </message>
         <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="1065" />
+            <source>Kurszuordnung kann nicht entfernt werden</source>
+            <translation>L’attribuziun al curs na po betg vegnir allontanada</translation>
+        </message>
+        <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="1069" />
+            <source>Die Kurszuordnung kann nicht entfernt werden, solange ein Prüfungsergebnis vorhanden ist. Löschen Sie zuerst das Prüfungsergebnis.</source>
+            <translation>L’attribuziun al curs na po betg vegnir allontanada uschè ditg ch’in resultat d’examen exista. Stizzai l’emprim il resultat d’examen.</translation>
+        </message>
+        <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="996" />
             <source>Soll die Kurszuordnung von </source>
             <translation>Duai l’attribuziun al curs da </translation>

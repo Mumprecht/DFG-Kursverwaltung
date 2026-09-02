@@ -1505,6 +1505,16 @@
             <translation>Rimuovi assegnazione</translation>
         </message>
         <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="1065" />
+            <source>Kurszuordnung kann nicht entfernt werden</source>
+            <translation>L’assegnazione al corso non può essere rimossa</translation>
+        </message>
+        <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="1069" />
+            <source>Die Kurszuordnung kann nicht entfernt werden, solange ein Prüfungsergebnis vorhanden ist. Löschen Sie zuerst das Prüfungsergebnis.</source>
+            <translation>L’assegnazione al corso non può essere rimossa finché esiste un risultato d’esame. Eliminare prima il risultato d’esame.</translation>
+        </message>
+        <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="996" />
             <source>Soll die Kurszuordnung von </source>
             <translation>Rimuovere l’assegnazione al corso di </translation>

@@ -1060,6 +1060,23 @@ class KurszuordnungenWidget(QWidget):
                 assignment.id,
             )
 
+        except ValueError:
+            QMessageBox.warning(
+                self,
+                self.tr(
+                    "Kurszuordnung kann nicht "
+                    "entfernt werden"
+                ),
+                self.tr(
+                    "Die Kurszuordnung kann nicht "
+                    "entfernt werden, solange ein "
+                    "Prüfungsergebnis vorhanden ist. "
+                    "Löschen Sie zuerst das "
+                    "Prüfungsergebnis."
+                ),
+            )
+            return
+
         except Exception as exc:
             QMessageBox.critical(
                 self,

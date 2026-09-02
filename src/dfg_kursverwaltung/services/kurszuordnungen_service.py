@@ -339,6 +339,22 @@ class CourseAssignmentService:
             assignment.kurstag_id,
         )
 
+        exam_result = (
+            self.exam_result_repository
+            .get_by_assignment_id(
+                assignment_id
+            )
+        )
+
+        if exam_result is not None:
+            raise ValueError(
+                "Die Kurszuordnung kann nicht "
+                "gelöscht werden, solange ein "
+                "Prüfungsergebnis vorhanden ist. "
+                "Löschen Sie zuerst das "
+                "Prüfungsergebnis."
+            )
+
         self.repository.delete(
             assignment_id
         )

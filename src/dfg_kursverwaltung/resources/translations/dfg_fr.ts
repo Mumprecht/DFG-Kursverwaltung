@@ -1505,6 +1505,16 @@
             <translation>Retirer l’affectation</translation>
         </message>
         <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="1065" />
+            <source>Kurszuordnung kann nicht entfernt werden</source>
+            <translation>L’affectation au cours ne peut pas être retirée</translation>
+        </message>
+        <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="1069" />
+            <source>Die Kurszuordnung kann nicht entfernt werden, solange ein Prüfungsergebnis vorhanden ist. Löschen Sie zuerst das Prüfungsergebnis.</source>
+            <translation>L’affectation au cours ne peut pas être retirée tant qu’un résultat d’examen existe. Supprimez d’abord le résultat d’examen.</translation>
+        </message>
+        <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="996" />
             <source>Soll die Kurszuordnung von </source>
             <translation>Voulez-vous vraiment retirer l’affectation de </translation>

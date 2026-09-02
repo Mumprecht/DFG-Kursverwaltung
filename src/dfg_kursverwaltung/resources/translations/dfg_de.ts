@@ -1505,6 +1505,16 @@
             <translation>Zuordnung entfernen</translation>
         </message>
         <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="1065" />
+            <source>Kurszuordnung kann nicht entfernt werden</source>
+            <translation>Kurszuordnung kann nicht entfernt werden</translation>
+        </message>
+        <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="1069" />
+            <source>Die Kurszuordnung kann nicht entfernt werden, solange ein Prüfungsergebnis vorhanden ist. Löschen Sie zuerst das Prüfungsergebnis.</source>
+            <translation>Die Kurszuordnung kann nicht entfernt werden, solange ein Prüfungsergebnis vorhanden ist. Löschen Sie zuerst das Prüfungsergebnis.</translation>
+        </message>
+        <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="996" />
             <source>Soll die Kurszuordnung von </source>
             <translation>Soll die Kurszuordnung von </translation>
