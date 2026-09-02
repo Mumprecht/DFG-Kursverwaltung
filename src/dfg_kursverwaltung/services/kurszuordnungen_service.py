@@ -279,10 +279,13 @@ class CourseAssignmentService:
                 )
 
         # Die historische Rolle bleibt gültig.
-        # Nur wenn die Rolle tatsächlich geändert
-        # wird, muss die neue Rolle bei der Person
-        # aktuell freigegeben sein.
-        if assignment.rolle != original.rolle:
+        # Nur wenn Rolle oder Person tatsächlich
+        # geändert werden, muss die aktuelle
+        # Rollenfreigabe geprüft werden.
+        if (
+            assignment.rolle != original.rolle
+            or assignment.person_id != original.person_id
+        ):
             self._validate_role_for_person(
                 assignment.person_id,
                 assignment.rolle,
