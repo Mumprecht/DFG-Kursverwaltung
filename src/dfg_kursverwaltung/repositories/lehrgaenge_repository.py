@@ -212,6 +212,28 @@ class CourseRepository:
             ).fetchone()
 
         return row is not None
+
+    def has_exam_results(
+        self,
+        course_id: str,
+    ) -> bool:
+        with self.database_manager.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT 1
+                FROM pruefungsergebnisse pe
+                INNER JOIN kurszuordnungen kz
+                    ON kz.id = pe.kurszuordnung_id
+                INNER JOIN kurstage kt
+                    ON kt.id = kz.kurstag_id
+                WHERE kt.lehrgang_id = ?
+                LIMIT 1;
+                """,
+                (course_id,),
+            ).fetchone()
+
+        return row is not None
+
     @staticmethod
     def _row_to_course(
         row: sqlite3.Row,

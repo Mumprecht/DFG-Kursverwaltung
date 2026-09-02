@@ -113,6 +113,16 @@ class CourseService:
         self,
         course: Course,
     ) -> Course:
+        original = self.repository.get_by_id(
+            course.id
+        )
+
+        if original is None:
+            raise KeyError(
+                "Lehrgang nicht gefunden: "
+                f"{course.id}"
+            )
+
         course.bezeichnung = course.bezeichnung.strip()
         course.lehrgangstyp_id = course.lehrgangstyp_id.strip()
 
@@ -124,6 +134,19 @@ class CourseService:
         self._validate_course_type(
             course.lehrgangstyp_id
         )
+
+        if (
+            course.lehrgangstyp_id
+            != original.lehrgangstyp_id
+            and self.repository.has_exam_results(
+                course.id
+            )
+        ):
+            raise ValueError(
+                "Der Lehrgangstyp kann nicht geändert "
+                "werden, solange für diesen Lehrgang "
+                "Prüfungsergebnisse vorhanden sind."
+            )
 
         course.beschreibung = self._clean_optional(
             course.beschreibung
