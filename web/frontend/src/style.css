@@ -111,3 +111,51 @@ h1 {
         gap: 8px;
     }
 }
+
+.persons-section {
+    margin-top: 32px;
+}
+
+.persons-section h2 {
+    margin: 0 0 12px;
+    color: #111827;
+}
+
+.list-status {
+    margin-bottom: 16px;
+    color: #6b7280;
+}
+
+.personen-table-wrapper {
+    overflow-x: auto;
+}
+
+.personen-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+.personen-table th,
+.personen-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    vertical-align: top;
+}
+
+.personen-table th {
+    background: #f9fafb;
+    color: #374151;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.personen-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.empty-state {
+    margin: 0;
+    color: #6b7280;
+}
