@@ -36,7 +36,7 @@ class _TransactionConnectionProxy:
         pass
 
 
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 10
 
 
 class DatabaseManager:
@@ -256,6 +256,10 @@ class DatabaseManager:
         if current_version == 8:
             self._migrate_8_to_9()
             current_version = 9
+
+        if current_version == 9:
+            self._migrate_9_to_10()
+            current_version = 10
 
         if current_version != SCHEMA_VERSION:
             raise RuntimeError(
@@ -1468,6 +1472,140 @@ class DatabaseManager:
                 """
                 UPDATE schema_info
                 SET version = 9;
+                """
+            )
+
+            connection.commit()
+
+        except Exception:
+            if connection.in_transaction:
+                connection.rollback()
+
+            raise
+
+        finally:
+            connection.close()
+
+
+    def _migrate_9_to_10(
+        self,
+    ) -> None:
+        connection = sqlite3.connect(
+            self.database_path
+        )
+
+        connection.row_factory = (
+            sqlite3.Row
+        )
+
+        try:
+            connection.execute(
+                "PRAGMA foreign_keys = ON;"
+            )
+
+            connection.execute(
+                "BEGIN IMMEDIATE;"
+            )
+
+            existing_table = (
+                connection.execute(
+                    """
+                    SELECT name
+                    FROM sqlite_master
+                    WHERE
+                        type = 'table'
+                        AND name =
+                            'benutzer_kurstage';
+                    """
+                ).fetchone()
+            )
+
+            if existing_table is None:
+                raise RuntimeError(
+                    "Die Tabelle "
+                    "'benutzer_kurstage' fehlt, "
+                    "obwohl die Datenbank "
+                    "Schema-Version 9 meldet."
+                )
+
+            connection.execute(
+                """
+                DROP TABLE benutzer_kurstage;
+                """
+            )
+
+            remaining_table = (
+                connection.execute(
+                    """
+                    SELECT name
+                    FROM sqlite_master
+                    WHERE
+                        type = 'table'
+                        AND name =
+                            'benutzer_kurstage';
+                    """
+                ).fetchone()
+            )
+
+            if remaining_table is not None:
+                raise RuntimeError(
+                    "Die Tabelle "
+                    "'benutzer_kurstage' konnte "
+                    "nicht entfernt werden."
+                )
+
+            remaining_index = (
+                connection.execute(
+                    """
+                    SELECT name
+                    FROM sqlite_master
+                    WHERE
+                        type = 'index'
+                        AND name =
+                            'idx_benutzer_kurstage_kurstag';
+                    """
+                ).fetchone()
+            )
+
+            if remaining_index is not None:
+                raise RuntimeError(
+                    "Der Index "
+                    "'idx_benutzer_kurstage_kurstag' "
+                    "wurde nicht entfernt."
+                )
+
+            foreign_key_errors = (
+                connection.execute(
+                    """
+                    PRAGMA foreign_key_check;
+                    """
+                ).fetchall()
+            )
+
+            if foreign_key_errors:
+                raise RuntimeError(
+                    "Nach der Migration wurden "
+                    "Foreign-Key-Fehler gefunden: "
+                    f"{len(foreign_key_errors)}"
+                )
+
+            integrity = connection.execute(
+                """
+                PRAGMA integrity_check;
+                """
+            ).fetchone()[0]
+
+            if integrity != "ok":
+                raise RuntimeError(
+                    "Integritätsprüfung nach "
+                    "Migration fehlgeschlagen: "
+                    f"{integrity}"
+                )
+
+            connection.execute(
+                """
+                UPDATE schema_info
+                SET version = 10;
                 """
             )
 

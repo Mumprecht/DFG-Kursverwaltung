@@ -59,9 +59,6 @@ from dfg_kursverwaltung.repositories.telefonnummern_repository import (
 from dfg_kursverwaltung.repositories.benutzer_repository import (
     UserRepository,
 )
-from dfg_kursverwaltung.repositories.benutzer_kurstage_repository import (
-    UserCourseDayRepository,
-)
 from dfg_kursverwaltung.services.auth_service import (
     AuthenticationService,
 )
@@ -226,12 +223,6 @@ def main():
         location_repository
     )
 
-    user_course_day_repository = (
-        UserCourseDayRepository(
-            database_manager
-        )
-    )
-
     assignment_service = CourseAssignmentService(
         assignment_repository,
         person_repository,
@@ -279,7 +270,6 @@ def main():
 
     user_service = UserService(
         user_repository,
-        user_course_day_repository,
     )
 
     bootstrap_service = BootstrapService(
