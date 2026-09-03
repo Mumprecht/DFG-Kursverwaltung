@@ -314,7 +314,7 @@ class CourseAssignmentImportPreview:
 
 
 # ============================================================
-# Prüfungsergebnisse
+# Kursergebnisse
 # ============================================================
 
 @dataclass(slots=True)
@@ -1582,7 +1582,7 @@ class ImportService:
     # ========================================================
 
     # ========================================================
-    # Prüfungsergebnisse – Vorschau
+    # Kursergebnisse – Vorschau
     # ========================================================
 
     def import_exam_results(
@@ -1615,7 +1615,7 @@ class ImportService:
                     if row.exam_result_id is None:
                         raise RuntimeError(
                             "Für ein Update fehlt die "
-                            "Prüfungsergebnis-ID."
+                            "Kursergebnis-ID."
                         )
 
                     existing = (
@@ -1628,7 +1628,7 @@ class ImportService:
                     if existing is None:
                         raise RuntimeError(
                             "Das zu aktualisierende "
-                            "Prüfungsergebnis wurde "
+                            "Kursergebnis wurde "
                             "nicht gefunden."
                         )
 
@@ -1745,7 +1745,7 @@ class ImportService:
                             "Kurszuordnung ist bereits "
                             "in Zeile "
                             f"{first_row} ein "
-                            "Prüfungsergebnis enthalten."
+                            "Kursergebnis enthalten."
                         )
 
                 elif (
@@ -1761,7 +1761,7 @@ class ImportService:
                     if first_row is not None:
                         duplicate_message = (
                             "Dasselbe bestehende "
-                            "Prüfungsergebnis wird "
+                            "Kursergebnis wird "
                             "innerhalb der Importdatei "
                             "mehrfach aktualisiert: "
                             f"Zeile {first_row}."
@@ -2663,7 +2663,7 @@ class ImportService:
     # ========================================================
 
     # ========================================================
-    # Prüfungsergebnisse – CSV-Zeile
+    # Kursergebnisse – CSV-Zeile
     # ========================================================
 
     def _parse_exam_result_row(
@@ -2698,7 +2698,7 @@ class ImportService:
         # fachliche Auflösung wie beim bereits getesteten
         # Kurszuordnungs-Import.
         if assignment is None:
-            # Die Prüfungsergebnis-CSV enthält keinen
+            # Die Kursergebnis-CSV enthält keinen
             # Zuordnungsstatus. Für die fachliche Auflösung
             # einer bereits bestehenden Kurszuordnung wird
             # dieser jedoch nicht benötigt.
@@ -2743,14 +2743,14 @@ class ImportService:
         if assignment is None:
             raise ValueError(
                 "Die Kurszuordnung für das "
-                "Prüfungsergebnis konnte nicht "
+                "Kursergebnis konnte nicht "
                 "aufgelöst werden."
             )
 
         assignment_id = assignment.id
 
         # ----------------------------------------------------
-        # Prüfungsergebnis auflösen
+        # Kursergebnis auflösen
         # ----------------------------------------------------
 
         existing = None
@@ -2763,8 +2763,8 @@ class ImportService:
                 )
             )
 
-        # Fremde Prüfungsergebnis-ID:
-        # Ein Prüfungsergebnis ist fachlich eindeutig
+        # Fremde Kursergebnis-ID:
+        # Ein Kursergebnis ist fachlich eindeutig
         # über die Kurszuordnung identifizierbar.
         if existing is None:
             existing = (

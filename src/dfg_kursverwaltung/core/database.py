@@ -628,7 +628,7 @@ class DatabaseManager:
                 """
             ).fetchone()[0]
 
-            # Schema 5 kann Prüfungsergebnisse nur
+            # Schema 5 kann Kursergebnisse nur
             # über Person + Lehrgang identifizieren.
             # Eine automatische Zuordnung zu einer
             # konkreten Kurszuordnung wäre daher
@@ -640,7 +640,7 @@ class DatabaseManager:
                     "auf Schema 6 kann nicht "
                     "automatisch durchgeführt "
                     "werden, weil bereits "
-                    "Prüfungsergebnisse vorhanden "
+                    "Kursergebnisse vorhanden "
                     "sind. Anzahl: "
                     f"{old_count}"
                 )
@@ -713,7 +713,7 @@ class DatabaseManager:
             if new_count != old_count:
                 raise RuntimeError(
                     "Bei der Migration der "
-                    "Prüfungsergebnisse ist ein "
+                    "Kursergebnisse ist ein "
                     "Datenverlust aufgetreten. "
                     f"Vorher: {old_count}, "
                     f"nachher: {new_count}."

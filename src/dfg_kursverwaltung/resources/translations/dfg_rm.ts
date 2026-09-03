@@ -591,13 +591,13 @@
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="256" />
-            <source>Prüfungsergebnisse-Export</source>
-            <translation>Export dals resultats d’examen</translation>
+            <source>Kursergebnisse-Export</source>
+            <translation>Export dals resultats dals curs</translation>
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="266" />
-            <source>Prüfungsergebnisse als CSV exportieren</source>
-            <translation>Exportar resultats d’examen sco CSV</translation>
+            <source>Kursergebnisse als CSV exportieren</source>
+            <translation>Exportar ils resultats dals curs sco CSV</translation>
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="297" />
@@ -691,18 +691,18 @@
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="599" />
-            <source>Prüfungsergebnisse exportieren</source>
-            <translation>Exportar resultats d’examen</translation>
+            <source>Kursergebnisse exportieren</source>
+            <translation>Exportar ils resultats dals curs</translation>
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="633" />
-            <source>Der Export der Prüfungsergebnisse konnte nicht erstellt werden.</source>
-            <translation>L’export dals resultats d’examen n’ha betg pudì vegnir creà.</translation>
+            <source>Der Export der Kursergebnisse konnte nicht erstellt werden.</source>
+            <translation>L’export dals resultats dals curs n’ha betg pudì vegnir creà.</translation>
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="648" />
-            <source>%1 Prüfungsergebnisse wurden erfolgreich exportiert.</source>
-            <translation>%1 resultats d’examen èn vegnids exportads cun success.</translation>
+            <source>%1 Kursergebnisse wurden erfolgreich exportiert.</source>
+            <translation>%1 resultats dals curs èn vegnids exportads cun success.</translation>
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="671" />
@@ -771,8 +771,8 @@
         <message>
             <location filename="../../gui/import_widget.py" line="129" />
             <location filename="../../gui/import_widget.py" line="887" />
-            <source>Prüfungsergebnisse</source>
-            <translation>Resultats d’examen</translation>
+            <source>Kursergebnisse</source>
+            <translation>Resultats dals curs</translation>
         </message>
         <message>
             <location filename="../../gui/import_widget.py" line="151" />
@@ -934,8 +934,8 @@
         </message>
         <message>
             <location filename="../../gui/import_widget.py" line="459" />
-            <source>Importieren Sie Prüfungsergebnisse aus einer DFG-CSV-Datei. Vor dem Import werden die Daten zuerst geprüft.</source>
-            <translation>Importai resultats d’examen d’ina datoteca CSV da la DFG. Avant l’import vegnan las datas controlladas.</translation>
+            <source>Importieren Sie Kursergebnisse aus einer DFG-CSV-Datei. Vor dem Import werden die Daten zuerst geprüft.</source>
+            <translation>Importai resultats dals curs d’ina datoteca CSV da DFG. Las datas vegnan controlladas avant l’import.</translation>
         </message>
         <message>
             <location filename="../../gui/import_widget.py" line="469" />
@@ -974,8 +974,8 @@
         </message>
         <message>
             <location filename="../../gui/import_widget.py" line="524" />
-            <source>Prüfungsergebnisse importieren</source>
-            <translation>Importar resultats d’examen</translation>
+            <source>Kursergebnisse importieren</source>
+            <translation>Importar ils resultats dals curs</translation>
         </message>
         <message>
             <location filename="../../gui/import_widget.py" line="538" />
@@ -1428,8 +1428,8 @@
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="270" />
-            <source>Prüfungsergebnis</source>
-            <translation>Resultat d’examen</translation>
+            <source>Kursergebnis</source>
+            <translation>Resultat dal curs</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="306" />
@@ -1455,6 +1455,11 @@
             <location filename="../../gui/kurszuordnungen_widget.py" line="618" />
             <source>Nicht bestanden</source>
             <translation>Betg reussì</translation>
+        </message>
+        <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="687" />
+            <source>Ohne Ergebnis</source>
+            <translation>Senza resultat</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="830" />
@@ -1511,8 +1516,8 @@
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1069" />
-            <source>Die Kurszuordnung kann nicht entfernt werden, solange ein Prüfungsergebnis vorhanden ist. Löschen Sie zuerst das Prüfungsergebnis.</source>
-            <translation>L’attribuziun al curs na po betg vegnir allontanada uschè ditg ch’in resultat d’examen exista. Stizzai l’emprim il resultat d’examen.</translation>
+            <source>Die Kurszuordnung kann nicht entfernt werden, solange ein Kursergebnis vorhanden ist. Löschen Sie zuerst das Kursergebnis.</source>
+            <translation>L’attribuziun al curs na po betg vegnir eliminada uschè ditg ch’i dat in resultat dal curs. Eliminai l’emprim il resultat dal curs.</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="996" />
@@ -1531,13 +1536,13 @@
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1109" />
-            <source>Kein Prüfungsergebnis</source>
-            <translation>Nagin resultat d’examen</translation>
+            <source>Kein Kursergebnis</source>
+            <translation>Nagin resultat dal curs</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1112" />
-            <source>Ein Prüfungsergebnis kann nur für Teilnehmer erfasst werden.</source>
-            <translation>In resultat d’examen po vegnir registrà mo per participants.</translation>
+            <source>Ein Kursergebnis kann nur für Teilnehmer erfasst werden.</source>
+            <translation>In resultat dal curs po vegnir registrà mo per participants.</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1140" />
@@ -1551,8 +1556,8 @@
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1205" />
-            <source>Das Prüfungsergebnis konnte nicht gespeichert werden.</source>
-            <translation>Il resultat d’examen n’ha betg pudì vegnir memorisà.</translation>
+            <source>Das Kursergebnis konnte nicht gespeichert werden.</source>
+            <translation>Il resultat dal curs n’ha betg pudì vegnir memorisà.</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1304" />
@@ -2867,13 +2872,13 @@ Las datas istoricas dals curs restan conservadas.</translation>
         <name>PruefungsergebnisDialog</name>
         <message>
             <location filename="../../gui/pruefungsergebnis_dialog.py" line="31" />
-            <source>Prüfungsergebnis erfassen</source>
-            <translation>Registrar resultat d’examen</translation>
+            <source>Kursergebnis erfassen</source>
+            <translation>Registrar il resultat dal curs</translation>
         </message>
         <message>
             <location filename="../../gui/pruefungsergebnis_dialog.py" line="37" />
-            <source>Prüfungsergebnis bearbeiten</source>
-            <translation>Modifitgar resultat d’examen</translation>
+            <source>Kursergebnis bearbeiten</source>
+            <translation>Modifitgar il resultat dal curs</translation>
         </message>
         <message>
             <location filename="../../gui/pruefungsergebnis_dialog.py" line="66" />
@@ -3181,12 +3186,12 @@ Vulais Vus cuntinuar?</translation>
         </message>
         <message>
             <location filename="../../gui/sicherung_widget.py" line="483" />
-            <source>ACHTUNG: Alle Personen, Telefonnummern, Drohnen, Ausführungsorte, Lehrgänge, Kurstage, Kurszuordnungen und Prüfungsergebnisse werden gelöscht.
+            <source>ACHTUNG: Alle Personen, Telefonnummern, Drohnen, Ausführungsorte, Lehrgänge, Kurstage, Kurszuordnungen und Kursergebnisse werden gelöscht.
 
 Vorher wird automatisch eine vollständige Sicherheitskopie erstellt.
 
 Möchten Sie fortfahren?</source>
-            <translation>ATTENZIUN: Tut las persunas, ils numers da telefon, las dronas, ils lieus, ils curs, ils dis da curs, las attribuziuns als curs ed ils resultats d'examen vegnan stizzads.
+            <translation>ATTENZIUN: Tut las persunas, numers da telefon, dronas, lieus, curs, dis da curs, attribuziuns als curs e resultats dals curs vegnan eliminads.
 
 Avant vegn creada automaticamain ina copia da segirezza cumpletta.
 

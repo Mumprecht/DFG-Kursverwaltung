@@ -259,12 +259,12 @@ class ExportWidget(QWidget):
         )
 
         # -----------------------------------------------------
-        # Prüfungsergebnisse
+        # Kursergebnisse
         # -----------------------------------------------------
 
         exam_result_group = QGroupBox(
             self.tr(
-                "Prüfungsergebnisse-Export"
+                "Kursergebnisse-Export"
             )
         )
 
@@ -274,7 +274,7 @@ class ExportWidget(QWidget):
 
         self.export_exam_results_button = QPushButton(
             self.tr(
-                "Prüfungsergebnisse als CSV exportieren"
+                "Kursergebnisse als CSV exportieren"
             )
         )
 
@@ -639,14 +639,14 @@ class ExportWidget(QWidget):
         )
 
         default_name = (
-            f"DFG-Pruefungsergebnisse_{timestamp}.csv"
+            f"DFG-Kursergebnisse_{timestamp}.csv"
         )
 
         file_path, _selected_filter = (
             QFileDialog.getSaveFileName(
                 self,
                 self.tr(
-                    "Prüfungsergebnisse exportieren"
+                    "Kursergebnisse exportieren"
                 ),
                 str(
                     Path.home()
@@ -681,7 +681,7 @@ class ExportWidget(QWidget):
                 self.tr("Fehler"),
                 self.tr(
                     "Der Export der "
-                    "Prüfungsergebnisse konnte "
+                    "Kursergebnisse konnte "
                     "nicht erstellt werden."
                 )
                 + "\n\n"
@@ -695,7 +695,7 @@ class ExportWidget(QWidget):
                 "Export abgeschlossen"
             ),
             self.tr(
-                "%1 Prüfungsergebnisse wurden "
+                "%1 Kursergebnisse wurden "
                 "erfolgreich exportiert."
             ).replace(
                 "%1",

@@ -138,7 +138,7 @@ class ExamResultRepository:
 
             if cursor.rowcount == 0:
                 raise KeyError(
-                    "Prüfungsergebnis nicht gefunden: "
+                    "Kursergebnis nicht gefunden: "
                     f"{exam_result.id}"
                 )
 
@@ -161,7 +161,7 @@ class ExamResultRepository:
 
             if cursor.rowcount == 0:
                 raise KeyError(
-                    "Prüfungsergebnis nicht gefunden: "
+                    "Kursergebnis nicht gefunden: "
                     f"{exam_result_id}"
                 )
 

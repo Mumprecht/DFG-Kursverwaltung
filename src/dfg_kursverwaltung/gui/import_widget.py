@@ -137,7 +137,7 @@ class ImportWidget(QWidget):
         )
 
         self.import_type_combo.addItem(
-            self.tr("Prüfungsergebnisse"),
+            self.tr("Kursergebnisse"),
             self.IMPORT_EXAM_RESULTS,
         )
 
@@ -471,7 +471,7 @@ class ImportWidget(QWidget):
         elif import_type == self.IMPORT_EXAM_RESULTS:
             self.description_label.setText(
                 self.tr(
-                    "Importieren Sie Prüfungsergebnisse "
+                    "Importieren Sie Kursergebnisse "
                     "aus einer DFG-CSV-Datei. "
                     "Vor dem Import werden die Daten "
                     "zuerst geprüft."
@@ -539,7 +539,7 @@ class ImportWidget(QWidget):
 
         elif import_type == self.IMPORT_EXAM_RESULTS:
             dialog_title = self.tr(
-                "Prüfungsergebnisse importieren"
+                "Kursergebnisse importieren"
             )
 
         else:
@@ -906,7 +906,7 @@ class ImportWidget(QWidget):
 
         elif import_type == self.IMPORT_EXAM_RESULTS:
             object_name = self.tr(
-                "Prüfungsergebnisse"
+                "Kursergebnisse"
             )
 
         else:

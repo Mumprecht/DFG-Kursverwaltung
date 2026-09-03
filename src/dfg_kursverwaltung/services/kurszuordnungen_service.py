@@ -6,7 +6,6 @@ from dfg_kursverwaltung.core.models import (
     CourseAssignmentRole,
     CourseAssignmentStatus,
     User,
-    UserRole,
 )
 from dfg_kursverwaltung.core.permissions import (
     Permission,
@@ -255,7 +254,7 @@ class CourseAssignmentService:
             assignment.kurstag_id
         )
 
-        # Ein Prüfungsergebnis gehört dauerhaft zu
+        # Ein Kursergebnis gehört dauerhaft zu
         # einer konkreten Teilnahme. Solange es
         # existiert, dürfen Person, Kurstag, Rolle
         # und Teilnahmestatus nicht verändert werden.
@@ -281,9 +280,9 @@ class CourseAssignmentService:
             if protected_fields_changed:
                 raise ValueError(
                     "Für diese Kurszuordnung existiert "
-                    "ein Prüfungsergebnis. "
+                    "ein Kursergebnis. "
                     "Löschen Sie zuerst das "
-                    "Prüfungsergebnis, bevor Sie "
+                    "Kursergebnis, bevor Sie "
                     "Person, Kurstag, Rolle oder "
                     "Status ändern."
                 )
@@ -363,9 +362,9 @@ class CourseAssignmentService:
             raise ValueError(
                 "Die Kurszuordnung kann nicht "
                 "gelöscht werden, solange ein "
-                "Prüfungsergebnis vorhanden ist. "
+                "Kursergebnis vorhanden ist. "
                 "Löschen Sie zuerst das "
-                "Prüfungsergebnis."
+                "Kursergebnis."
             )
 
         self.repository.delete(
@@ -382,7 +381,6 @@ class CourseAssignmentService:
             Permission.ASSIGNMENT_WRITE,
         )
 
-
     def _ensure_assignment_update_access(
         self,
         actor: User,
@@ -393,23 +391,6 @@ class CourseAssignmentService:
             actor,
             original.kurstag_id,
         )
-
-        if UserRole(actor.rolle) != UserRole.INSTRUCTOR:
-            return
-
-        if assignment.person_id != original.person_id:
-            raise PermissionError(
-                "Instruktor-Benutzer dürfen die "
-                "Person einer Kurszuordnung nicht "
-                "ändern."
-            )
-
-        if assignment.kurstag_id != original.kurstag_id:
-            raise PermissionError(
-                "Instruktor-Benutzer dürfen den "
-                "Kurstag einer Kurszuordnung nicht "
-                "ändern."
-            )
 
     def _ensure_course_day_exists(
         self,

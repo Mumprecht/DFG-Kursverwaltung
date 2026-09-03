@@ -591,13 +591,13 @@
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="256" />
-            <source>Prüfungsergebnisse-Export</source>
-            <translation>Esportazione risultati d’esame</translation>
+            <source>Kursergebnisse-Export</source>
+            <translation>Esportazione dei risultati dei corsi</translation>
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="266" />
-            <source>Prüfungsergebnisse als CSV exportieren</source>
-            <translation>Esporta risultati d’esame come CSV</translation>
+            <source>Kursergebnisse als CSV exportieren</source>
+            <translation>Esporta i risultati dei corsi come CSV</translation>
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="297" />
@@ -691,18 +691,18 @@
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="599" />
-            <source>Prüfungsergebnisse exportieren</source>
-            <translation>Esporta risultati d’esame</translation>
+            <source>Kursergebnisse exportieren</source>
+            <translation>Esporta i risultati dei corsi</translation>
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="633" />
-            <source>Der Export der Prüfungsergebnisse konnte nicht erstellt werden.</source>
-            <translation>Non è stato possibile creare l’esportazione dei risultati d’esame.</translation>
+            <source>Der Export der Kursergebnisse konnte nicht erstellt werden.</source>
+            <translation>Non è stato possibile creare l’esportazione dei risultati dei corsi.</translation>
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="648" />
-            <source>%1 Prüfungsergebnisse wurden erfolgreich exportiert.</source>
-            <translation>%1 risultati d’esame esportati correttamente.</translation>
+            <source>%1 Kursergebnisse wurden erfolgreich exportiert.</source>
+            <translation>%1 risultati dei corsi sono stati esportati correttamente.</translation>
         </message>
         <message>
             <location filename="../../gui/export_widget.py" line="671" />
@@ -771,8 +771,8 @@
         <message>
             <location filename="../../gui/import_widget.py" line="129" />
             <location filename="../../gui/import_widget.py" line="887" />
-            <source>Prüfungsergebnisse</source>
-            <translation>Risultati d’esame</translation>
+            <source>Kursergebnisse</source>
+            <translation>Risultati dei corsi</translation>
         </message>
         <message>
             <location filename="../../gui/import_widget.py" line="151" />
@@ -934,8 +934,8 @@
         </message>
         <message>
             <location filename="../../gui/import_widget.py" line="459" />
-            <source>Importieren Sie Prüfungsergebnisse aus einer DFG-CSV-Datei. Vor dem Import werden die Daten zuerst geprüft.</source>
-            <translation>Importare i risultati d’esame da un file CSV DFG. Prima dell’importazione i dati vengono verificati.</translation>
+            <source>Importieren Sie Kursergebnisse aus einer DFG-CSV-Datei. Vor dem Import werden die Daten zuerst geprüft.</source>
+            <translation>Importa i risultati dei corsi da un file CSV DFG. I dati vengono verificati prima dell’importazione.</translation>
         </message>
         <message>
             <location filename="../../gui/import_widget.py" line="469" />
@@ -974,8 +974,8 @@
         </message>
         <message>
             <location filename="../../gui/import_widget.py" line="524" />
-            <source>Prüfungsergebnisse importieren</source>
-            <translation>Importa risultati d’esame</translation>
+            <source>Kursergebnisse importieren</source>
+            <translation>Importa i risultati dei corsi</translation>
         </message>
         <message>
             <location filename="../../gui/import_widget.py" line="538" />
@@ -1428,8 +1428,8 @@
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="270" />
-            <source>Prüfungsergebnis</source>
-            <translation>Risultato d’esame</translation>
+            <source>Kursergebnis</source>
+            <translation>Risultato del corso</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="306" />
@@ -1455,6 +1455,11 @@
             <location filename="../../gui/kurszuordnungen_widget.py" line="618" />
             <source>Nicht bestanden</source>
             <translation>Non superato</translation>
+        </message>
+        <message>
+            <location filename="../../gui/kurszuordnungen_widget.py" line="687" />
+            <source>Ohne Ergebnis</source>
+            <translation>Senza risultato</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="830" />
@@ -1511,8 +1516,8 @@
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1069" />
-            <source>Die Kurszuordnung kann nicht entfernt werden, solange ein Prüfungsergebnis vorhanden ist. Löschen Sie zuerst das Prüfungsergebnis.</source>
-            <translation>L’assegnazione al corso non può essere rimossa finché esiste un risultato d’esame. Eliminare prima il risultato d’esame.</translation>
+            <source>Die Kurszuordnung kann nicht entfernt werden, solange ein Kursergebnis vorhanden ist. Löschen Sie zuerst das Kursergebnis.</source>
+            <translation>L’assegnazione al corso non può essere rimossa finché esiste un risultato del corso. Eliminare prima il risultato del corso.</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="996" />
@@ -1531,13 +1536,13 @@
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1109" />
-            <source>Kein Prüfungsergebnis</source>
-            <translation>Nessun risultato d’esame</translation>
+            <source>Kein Kursergebnis</source>
+            <translation>Nessun risultato del corso</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1112" />
-            <source>Ein Prüfungsergebnis kann nur für Teilnehmer erfasst werden.</source>
-            <translation>Un risultato d’esame può essere registrato solo per i partecipanti.</translation>
+            <source>Ein Kursergebnis kann nur für Teilnehmer erfasst werden.</source>
+            <translation>Un risultato del corso può essere registrato solo per i partecipanti.</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1140" />
@@ -1551,8 +1556,8 @@
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1205" />
-            <source>Das Prüfungsergebnis konnte nicht gespeichert werden.</source>
-            <translation>Il risultato d’esame non è stato salvato.</translation>
+            <source>Das Kursergebnis konnte nicht gespeichert werden.</source>
+            <translation>Non è stato possibile salvare il risultato del corso.</translation>
         </message>
         <message>
             <location filename="../../gui/kurszuordnungen_widget.py" line="1304" />
@@ -2867,13 +2872,13 @@ I dati storici dei corsi saranno mantenuti.</translation>
         <name>PruefungsergebnisDialog</name>
         <message>
             <location filename="../../gui/pruefungsergebnis_dialog.py" line="31" />
-            <source>Prüfungsergebnis erfassen</source>
-            <translation>Registra risultato d’esame</translation>
+            <source>Kursergebnis erfassen</source>
+            <translation>Registra il risultato del corso</translation>
         </message>
         <message>
             <location filename="../../gui/pruefungsergebnis_dialog.py" line="37" />
-            <source>Prüfungsergebnis bearbeiten</source>
-            <translation>Modifica risultato d’esame</translation>
+            <source>Kursergebnis bearbeiten</source>
+            <translation>Modifica il risultato del corso</translation>
         </message>
         <message>
             <location filename="../../gui/pruefungsergebnis_dialog.py" line="66" />
@@ -3181,14 +3186,14 @@ Continuare?</translation>
         </message>
         <message>
             <location filename="../../gui/sicherung_widget.py" line="483" />
-            <source>ACHTUNG: Alle Personen, Telefonnummern, Drohnen, Ausführungsorte, Lehrgänge, Kurstage, Kurszuordnungen und Prüfungsergebnisse werden gelöscht.
+            <source>ACHTUNG: Alle Personen, Telefonnummern, Drohnen, Ausführungsorte, Lehrgänge, Kurstage, Kurszuordnungen und Kursergebnisse werden gelöscht.
 
 Vorher wird automatisch eine vollständige Sicherheitskopie erstellt.
 
 Möchten Sie fortfahren?</source>
-            <translation>ATTENZIONE: tutte le persone, i numeri di telefono, i droni, i luoghi, i corsi, i giorni di corso, le assegnazioni ai corsi e i risultati d’esame verranno eliminati.
+            <translation>ATTENZIONE: Tutte le persone, i numeri di telefono, i droni, i luoghi, i corsi, le giornate di corso, le assegnazioni ai corsi e i risultati dei corsi verranno eliminati.
 
-Prima dell’operazione viene creata automaticamente una copia di sicurezza completa.
+Prima verrà creata automaticamente una copia di sicurezza completa.
 
 Continuare?</translation>
         </message>

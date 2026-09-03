@@ -26,7 +26,6 @@ from dfg_kursverwaltung.repositories.pruefungsergebnisse_repository import (
 )
 
 class ExamResultService:
-    EXAM_COURSE_TYPE_ID = "course-type-exam"
 
     def __init__(
         self,
@@ -79,7 +78,7 @@ class ExamResultService:
             raise ValueError(
                 "Für diese Kurszuordnung "
                 "existiert bereits ein "
-                "Prüfungsergebnis."
+                "Kursergebnis."
             )
 
         timestamp = datetime.now(
@@ -139,7 +138,7 @@ class ExamResultService:
 
         if original is None:
             raise KeyError(
-                "Prüfungsergebnis nicht gefunden: "
+                "Kursergebnis nicht gefunden: "
                 f"{exam_result.id}"
             )
 
@@ -176,7 +175,7 @@ class ExamResultService:
         ):
             raise ValueError(
                 "Die Kurszuordnung eines "
-                "Prüfungsergebnisses kann nicht "
+                "Kursergebnisses kann nicht "
                 "nachträglich geändert werden."
             )
 
@@ -203,7 +202,7 @@ class ExamResultService:
             raise ValueError(
                 "Für diese Kurszuordnung "
                 "existiert bereits ein "
-                "Prüfungsergebnis."
+                "Kursergebnis."
             )
 
         exam_result.note = (
@@ -237,7 +236,7 @@ class ExamResultService:
 
         if exam_result is None:
             raise KeyError(
-                "Prüfungsergebnis nicht gefunden: "
+                "Kursergebnis nicht gefunden: "
                 f"{exam_result_id}"
             )
 
@@ -284,7 +283,7 @@ class ExamResultService:
             != CourseAssignmentRole.PARTICIPANT
         ):
             raise ValueError(
-                "Ein Prüfungsergebnis kann nur "
+                "Ein Kursergebnis kann nur "
                 "für eine Teilnehmer-Zuordnung "
                 "erfasst oder geändert werden."
             )
@@ -294,7 +293,7 @@ class ExamResultService:
             != CourseAssignmentStatus.ATTENDED
         ):
             raise ValueError(
-                "Ein Prüfungsergebnis kann nur "
+                "Ein Kursergebnis kann nur "
                 "für eine Kurszuordnung mit dem "
                 "Status 'Teilgenommen' erfasst "
                 "oder geändert werden."
@@ -320,17 +319,6 @@ class ExamResultService:
                 "existiert nicht."
             )
 
-        if (
-            course.lehrgangstyp_id
-            != self.EXAM_COURSE_TYPE_ID
-        ):
-            raise ValueError(
-                "Ein Prüfungsergebnis kann nur "
-                "für einen Kurstag eines "
-                "Prüfungslehrgangs erfasst oder "
-                "geändert werden."
-            )
-
         return assignment
 
     def _ensure_exam_result_write_access(
@@ -342,7 +330,6 @@ class ExamResultService:
             actor,
             Permission.EXAM_RESULT_WRITE,
         )
-
 
     @staticmethod
     def _clean_optional(

@@ -524,7 +524,7 @@ class SicherungWidget(QWidget):
                 "ACHTUNG: Alle Personen, Telefonnummern, "
                 "Drohnen, Ausführungsorte, Lehrgänge, "
                 "Kurstage, Kurszuordnungen und "
-                "Prüfungsergebnisse werden gelöscht.\n\n"
+                "Kursergebnisse werden gelöscht.\n\n"
                 "Vorher wird automatisch eine vollständige "
                 "Sicherheitskopie erstellt.\n\n"
                 "Möchten Sie fortfahren?"

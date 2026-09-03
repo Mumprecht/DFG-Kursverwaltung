@@ -51,9 +51,7 @@ from dfg_kursverwaltung.services.standorte_service import (
     LocationService,
 )
 
-
 class KurszuordnungenWidget(QWidget):
-    EXAM_COURSE_TYPE_ID = "course-type-exam"
 
     def __init__(
         self,
@@ -293,7 +291,7 @@ class KurszuordnungenWidget(QWidget):
         )
 
         self.exam_result_button = QPushButton(
-            self.tr("Prüfungsergebnis")
+            self.tr("Kursergebnis")
         )
 
         self.add_button.clicked.connect(
@@ -538,12 +536,6 @@ class KurszuordnungenWidget(QWidget):
                 )
             )
 
-        is_exam = (
-            course is not None
-            and course.lehrgangstyp_id
-            == self.EXAM_COURSE_TYPE_ID
-        )
-
         rows = []
 
         participant_count = 0
@@ -618,8 +610,7 @@ class KurszuordnungenWidget(QWidget):
                     cancelled_count += 1
 
             if (
-                is_exam
-                and assignment.rolle
+                assignment.rolle
                 == CourseAssignmentRole.PARTICIPANT
             ):
                 exam_result = (
@@ -663,51 +654,50 @@ class KurszuordnungenWidget(QWidget):
             key=lambda row: row[0]
         )
 
-        if is_exam:
-            summary_parts = [
-                (
-                    f"{self.tr('Teilnehmer')}: "
-                    f"{participant_count}"
-                ),
-                (
-                    f"{self.tr('Angemeldet')}: "
-                    f"{registered_count}"
-                ),
-                (
-                    f"{self.tr('Teilgenommen')}: "
-                    f"{attended_count}"
-                ),
-                (
-                    f"{self.tr('Nicht erschienen')}: "
-                    f"{absent_count}"
-                ),
-                (
-                    f"{self.tr('Abgemeldet')}: "
-                    f"{cancelled_count}"
-                ),
-                (
-                    f"{self.tr('Bestanden')}: "
-                    f"{passed_count}"
-                ),
-                (
-                    f"{self.tr('Nicht bestanden')}: "
-                    f"{failed_count}"
-                ),
-                (
-                    f"{self.tr('Ohne Ergebnis')}: "
-                    f"{without_result_count}"
-                ),
-            ]
+        summary_parts = [
+            (
+                f"{self.tr('Teilnehmer')}: "
+                f"{participant_count}"
+            ),
+            (
+                f"{self.tr('Angemeldet')}: "
+                f"{registered_count}"
+            ),
+            (
+                f"{self.tr('Teilgenommen')}: "
+                f"{attended_count}"
+            ),
+            (
+                f"{self.tr('Nicht erschienen')}: "
+                f"{absent_count}"
+            ),
+            (
+                f"{self.tr('Abgemeldet')}: "
+                f"{cancelled_count}"
+            ),
+            (
+                f"{self.tr('Bestanden')}: "
+                f"{passed_count}"
+            ),
+            (
+                f"{self.tr('Nicht bestanden')}: "
+                f"{failed_count}"
+            ),
+            (
+                f"{self.tr('Ohne Ergebnis')}: "
+                f"{without_result_count}"
+            ),
+        ]
 
-            self.exam_summary.setText(
-                "   |   ".join(
-                    summary_parts
-                )
+        self.exam_summary.setText(
+            "   |   ".join(
+                summary_parts
             )
+        )
 
-            self.exam_summary.setVisible(
-                True
-            )
+        self.exam_summary.setVisible(
+            True
+        )
 
         self.assignment_list.setRowCount(
             len(rows)
@@ -1070,9 +1060,9 @@ class KurszuordnungenWidget(QWidget):
                 self.tr(
                     "Die Kurszuordnung kann nicht "
                     "entfernt werden, solange ein "
-                    "Prüfungsergebnis vorhanden ist. "
+                    "Kursergebnis vorhanden ist. "
                     "Löschen Sie zuerst das "
-                    "Prüfungsergebnis."
+                    "Kursergebnis."
                 ),
             )
             return
@@ -1167,7 +1157,6 @@ class KurszuordnungenWidget(QWidget):
         if assignment is None:
             return
 
-
         if (
             assignment.rolle
             != CourseAssignmentRole.PARTICIPANT
@@ -1175,43 +1164,12 @@ class KurszuordnungenWidget(QWidget):
             QMessageBox.information(
                 self,
                 self.tr(
-                    "Kein Prüfungsergebnis"
+                    "Kein Kursergebnis"
                 ),
                 self.tr(
-                    "Ein Prüfungsergebnis kann "
+                    "Ein Kursergebnis kann "
                     "nur für Teilnehmer erfasst "
                     "werden."
-                ),
-            )
-            return
-
-        course_id = (
-            self.course_combo.currentData()
-        )
-
-        if not course_id:
-            return
-
-        course = (
-            self.course_service.get_course(
-                course_id
-            )
-        )
-
-        if (
-            course is None
-            or course.lehrgangstyp_id
-            != self.EXAM_COURSE_TYPE_ID
-        ):
-            QMessageBox.information(
-                self,
-                self.tr(
-                    "Kein Prüfungstermin"
-                ),
-                self.tr(
-                    "Für diesen Lehrgang kann "
-                    "kein Prüfungsergebnis "
-                    "erfasst werden."
                 ),
             )
             return
@@ -1274,7 +1232,7 @@ class KurszuordnungenWidget(QWidget):
                 self,
                 self.tr("Fehler"),
                 self.tr(
-                    "Das Prüfungsergebnis konnte "
+                    "Das Kursergebnis konnte "
                     "nicht gespeichert werden."
                 )
                 + "\n\n"
@@ -1331,29 +1289,12 @@ class KurszuordnungenWidget(QWidget):
         can_edit_exam_result = False
 
         if assignment is not None:
-            course_id = (
-                self.course_combo.currentData()
-            )
-
-            course = None
-
-            if course_id:
-                course = (
-                    self.course_service
-                    .get_course(
-                        course_id
-                    )
-                )
-
             can_edit_exam_result = (
                 self.can_write_exam_result
                 and assignment.rolle
                 == CourseAssignmentRole.PARTICIPANT
                 and assignment.status
                 == CourseAssignmentStatus.ATTENDED
-                and course is not None
-                and course.lehrgangstyp_id
-                == self.EXAM_COURSE_TYPE_ID
             )
 
         self.exam_result_button.setEnabled(

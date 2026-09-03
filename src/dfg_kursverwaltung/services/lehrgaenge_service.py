@@ -145,7 +145,7 @@ class CourseService:
             raise ValueError(
                 "Der Lehrgangstyp kann nicht geändert "
                 "werden, solange für diesen Lehrgang "
-                "Prüfungsergebnisse vorhanden sind."
+                "Kursergebnisse vorhanden sind."
             )
 
         course.beschreibung = self._clean_optional(

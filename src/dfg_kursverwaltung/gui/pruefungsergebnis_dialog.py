@@ -28,13 +28,13 @@ class PruefungsergebnisDialog(QDialog):
         if exam_result is None:
             self.setWindowTitle(
                 self.tr(
-                    "Prüfungsergebnis erfassen"
+                    "Kursergebnis erfassen"
                 )
             )
         else:
             self.setWindowTitle(
                 self.tr(
-                    "Prüfungsergebnis bearbeiten"
+                    "Kursergebnis bearbeiten"
                 )
             )
 
@@ -47,7 +47,7 @@ class PruefungsergebnisDialog(QDialog):
         form = QFormLayout()
 
         # ----------------------------------------------------
-        # Prüfungsergebnis
+        # Kursergebnis
         # ----------------------------------------------------
 
         result_widget = QWidget()
