@@ -2,6 +2,26 @@
 
 Alle wesentlichen Änderungen an der DFG-Kursverwaltung werden in dieser Datei dokumentiert.
 
+## [0.3.0] - 2026-09-03
+
+### Hinzugefügt
+
+* Portablen Windows-Build mit PyInstaller im `onedir`-Format eingerichtet
+* Reproduzierbares PowerShell-Buildskript `scripts/build-windows.ps1` hinzugefügt
+* Windows-Anwendungsicon für EXE, Titelleiste und Taskleiste eingerichtet
+
+### Geändert
+
+* Ressourcenpfade für den Betrieb als gepackte PyInstaller-Anwendung angepasst
+* Benutzerrolle Instruktor vollständig von individuellen Kurstagberechtigungen entkoppelt
+
+### Datenbank
+
+* Datenbankschema auf Schema-Version 10 erweitert
+* Veraltete Tabelle `benutzer_kurstage` und zugehörigen Index entfernt
+* Migration von Schema 9 auf Schema 10 mit Foreign-Key- und Integritätsprüfung umgesetzt
+* Erstellung einer neuen Datenbank direkt mit Schema-Version 10 verifiziert
+
 ## [0.2.0] - 2026-09-03
 
 ### Hinzugefügt
