@@ -2,6 +2,7 @@ import csv
 from pathlib import Path
 
 from dfg_kursverwaltung.core.models import (
+    CourseResultType,
     PhoneNumberType,
 )
 from dfg_kursverwaltung.services.kurstage_service import (
@@ -611,10 +612,16 @@ class ExportService:
                     "Rolle": (
                         assignment.rolle.value
                     ),
-                    "Bestanden": (
-                        "Ja"
-                        if exam_result.bestanden
-                        else "Nein"
+                    "Ergebnis": (
+                        "Bestanden"
+                        if exam_result.ergebnis
+                        == CourseResultType.PASSED
+                        else (
+                            "Nicht bestanden"
+                            if exam_result.ergebnis
+                            == CourseResultType.FAILED
+                            else "Attest erteilt"
+                        )
                     ),
                     "Note": (
                         exam_result.note or ""
@@ -795,7 +802,7 @@ class ExportService:
             "Ende",
             "Kurstag Bezeichnung",
             "Rolle",
-            "Bestanden",
+            "Ergebnis",
             "Note",
             "Bemerkungen",
         ]

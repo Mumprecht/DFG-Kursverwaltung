@@ -1083,6 +1083,14 @@
             <source>Aktualisiert: %1</source>
             <translation>Updated: %1</translation>
         </message>
+        <message>
+            <source>Ergebnis</source>
+            <translation>Result</translation>
+        </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Certificate issued</translation>
+        </message>
     </context>
     <context>
         <name>KurstagDialog</name>
@@ -1589,6 +1597,10 @@
             <source>Abgemeldet</source>
             <translation>Cancelled</translation>
         </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Certificate issued</translation>
+        </message>
     </context>
     <context>
         <name>LehrgaengeWidget</name>
@@ -1714,7 +1726,7 @@
             <source>Unbekannter Lehrgangstyp</source>
             <translation>Unknown Course Type</translation>
         </message>
-            <message>
+        <message>
             <source>Es wurde möglicherweise bereits ein Lehrgang mit diesen Angaben gefunden.</source>
             <translation>A course with these details may already exist.</translation>
         </message>
@@ -2790,6 +2802,10 @@ Historical course data will be retained.</translation>
             <source>Mögliche Dublette</source>
             <translation>Possible duplicate</translation>
         </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Certificate issued</translation>
+        </message>
     </context>
     <context>
         <name>PhoneNumberDialog</name>
@@ -2924,6 +2940,10 @@ Historical course data will be retained.</translation>
             <location filename="../../gui/pruefungsergebnis_dialog.py" line="163" />
             <source>Abbrechen</source>
             <translation>Cancel</translation>
+        </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Certificate issued</translation>
         </message>
     </context>
     <context>
@@ -3495,7 +3515,7 @@ Do you really want to continue?</translation>
             <source>Mögliche Dublette</source>
             <translation>Possible duplicate</translation>
         </message>
-            <message>
+        <message>
             <source>Löschen</source>
             <translation>Delete</translation>
         </message>

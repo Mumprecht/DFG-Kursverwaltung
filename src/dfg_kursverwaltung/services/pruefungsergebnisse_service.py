@@ -5,6 +5,7 @@ from dfg_kursverwaltung.core.models import (
     CourseAssignment,
     CourseAssignmentRole,
     CourseAssignmentStatus,
+    CourseResultType,
     ExamResult,
     User,
 )
@@ -44,7 +45,7 @@ class ExamResultService:
         *,
         actor: User,
         kurszuordnung_id: str,
-        bestanden: bool,
+        ergebnis: CourseResultType,
         note: str | None = None,
         bemerkungen: str | None = None,
     ) -> ExamResult:
@@ -88,7 +89,7 @@ class ExamResultService:
         exam_result = ExamResult(
             id=str(uuid4()),
             kurszuordnung_id=kurszuordnung_id,
-            bestanden=bestanden,
+            ergebnis=ergebnis,
             note=self._clean_optional(
                 note
             ),

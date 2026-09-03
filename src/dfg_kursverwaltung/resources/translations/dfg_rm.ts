@@ -1083,6 +1083,14 @@
             <source>Aktualisiert: %1</source>
             <translation>Actualisà: %1</translation>
         </message>
+        <message>
+            <source>Ergebnis</source>
+            <translation>Resultat</translation>
+        </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestat concedì</translation>
+        </message>
     </context>
     <context>
         <name>KurstagDialog</name>
@@ -1589,6 +1597,10 @@
             <source>Abgemeldet</source>
             <translation>Deannunzià</translation>
         </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestat concedì</translation>
+        </message>
     </context>
     <context>
         <name>LehrgaengeWidget</name>
@@ -1714,7 +1726,7 @@
             <source>Unbekannter Lehrgangstyp</source>
             <translation>Tip da curs nunenconuschent</translation>
         </message>
-            <message>
+        <message>
             <source>Es wurde möglicherweise bereits ein Lehrgang mit diesen Angaben gefunden.</source>
             <translation>Eventualmain exista gia in curs cun questas indicaziuns.</translation>
         </message>
@@ -2790,6 +2802,10 @@ Las datas istoricas dals curs restan conservadas.</translation>
             <source>Mögliche Dublette</source>
             <translation>Dubletta pussaivla</translation>
         </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestat concedì</translation>
+        </message>
     </context>
     <context>
         <name>PhoneNumberDialog</name>
@@ -2924,6 +2940,10 @@ Las datas istoricas dals curs restan conservadas.</translation>
             <location filename="../../gui/pruefungsergebnis_dialog.py" line="163" />
             <source>Abbrechen</source>
             <translation>Interrumper</translation>
+        </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestat concedì</translation>
         </message>
     </context>
     <context>
@@ -3495,7 +3515,7 @@ Vulais Vus propi cuntinuar?</translation>
             <source>Mögliche Dublette</source>
             <translation>Dubletta pussaivla</translation>
         </message>
-            <message>
+        <message>
             <source>Löschen</source>
             <translation>Stizzar</translation>
         </message>

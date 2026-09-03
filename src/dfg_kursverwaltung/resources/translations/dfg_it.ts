@@ -1083,6 +1083,14 @@
             <source>Aktualisiert: %1</source>
             <translation>Aggiornati: %1</translation>
         </message>
+        <message>
+            <source>Ergebnis</source>
+            <translation>Risultato</translation>
+        </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestato rilasciato</translation>
+        </message>
     </context>
     <context>
         <name>KurstagDialog</name>
@@ -1589,6 +1597,10 @@
             <source>Abgemeldet</source>
             <translation>Disiscritto</translation>
         </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestato rilasciato</translation>
+        </message>
     </context>
     <context>
         <name>LehrgaengeWidget</name>
@@ -1714,7 +1726,7 @@
             <source>Unbekannter Lehrgangstyp</source>
             <translation>Tipo di corso sconosciuto</translation>
         </message>
-            <message>
+        <message>
             <source>Es wurde möglicherweise bereits ein Lehrgang mit diesen Angaben gefunden.</source>
             <translation>Potrebbe già esistere un corso con questi dati.</translation>
         </message>
@@ -2790,6 +2802,10 @@ I dati storici dei corsi saranno mantenuti.</translation>
             <source>Mögliche Dublette</source>
             <translation>Possibile duplicato</translation>
         </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestato rilasciato</translation>
+        </message>
     </context>
     <context>
         <name>PhoneNumberDialog</name>
@@ -2924,6 +2940,10 @@ I dati storici dei corsi saranno mantenuti.</translation>
             <location filename="../../gui/pruefungsergebnis_dialog.py" line="163" />
             <source>Abbrechen</source>
             <translation>Annulla</translation>
+        </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestato rilasciato</translation>
         </message>
     </context>
     <context>
@@ -3495,7 +3515,7 @@ Continuare davvero?</translation>
             <source>Mögliche Dublette</source>
             <translation>Possibile duplicato</translation>
         </message>
-            <message>
+        <message>
             <source>Löschen</source>
             <translation>Elimina</translation>
         </message>

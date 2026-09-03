@@ -2,7 +2,7 @@ from datetime import datetime
 import sqlite3
 
 from dfg_kursverwaltung.core.database import DatabaseManager
-from dfg_kursverwaltung.core.models import ExamResult
+from dfg_kursverwaltung.core.models import CourseResultType, ExamResult
 
 
 class ExamResultRepository:
@@ -22,7 +22,7 @@ class ExamResultRepository:
                 INSERT INTO pruefungsergebnisse (
                     id,
                     kurszuordnung_id,
-                    bestanden,
+                    ergebnis,
                     note,
                     bemerkungen,
                     created_at,
@@ -33,7 +33,7 @@ class ExamResultRepository:
                 (
                     exam_result.id,
                     exam_result.kurszuordnung_id,
-                    int(exam_result.bestanden),
+                    exam_result.ergebnis.value,
                     exam_result.note,
                     exam_result.bemerkungen,
                     self._datetime_to_db(
@@ -118,7 +118,7 @@ class ExamResultRepository:
                 UPDATE pruefungsergebnisse
                 SET
                     kurszuordnung_id = ?,
-                    bestanden = ?,
+                    ergebnis = ?,
                     note = ?,
                     bemerkungen = ?,
                     updated_at = ?
@@ -126,7 +126,7 @@ class ExamResultRepository:
                 """,
                 (
                     exam_result.kurszuordnung_id,
-                    int(exam_result.bestanden),
+                    exam_result.ergebnis.value,
                     exam_result.note,
                     exam_result.bemerkungen,
                     self._datetime_to_db(
@@ -176,8 +176,8 @@ class ExamResultRepository:
             kurszuordnung_id=row[
                 "kurszuordnung_id"
             ],
-            bestanden=bool(
-                row["bestanden"]
+            ergebnis=CourseResultType(
+                row["ergebnis"]
             ),
             note=row["note"],
             bemerkungen=row["bemerkungen"],

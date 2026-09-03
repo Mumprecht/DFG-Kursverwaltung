@@ -14,7 +14,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from dfg_kursverwaltung.core.models import User
+from dfg_kursverwaltung.core.models import (
+    CourseResultType,
+    User,
+)
 from dfg_kursverwaltung.core.permissions import (
     Permission,
     has_permission,
@@ -481,7 +484,7 @@ class ImportWidget(QWidget):
             headers = [
                 self.tr("Zeile"),
                 self.tr("Aktion"),
-                self.tr("Bestanden"),
+                self.tr("Ergebnis"),
                 self.tr("Note"),
                 self.tr("ID"),
             ]
@@ -788,9 +791,15 @@ class ImportWidget(QWidget):
                     ),
                     action_text,
                     (
-                        self.tr("Ja")
-                        if row.bestanden
-                        else self.tr("Nein")
+                        self.tr("Bestanden")
+                        if row.ergebnis
+                        == CourseResultType.PASSED
+                        else (
+                            self.tr("Nicht bestanden")
+                            if row.ergebnis
+                            == CourseResultType.FAILED
+                            else self.tr("Attest erteilt")
+                        )
                     ),
                     row.note or "",
                     row.exam_result_id or "",

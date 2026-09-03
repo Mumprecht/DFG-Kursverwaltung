@@ -8,6 +8,7 @@ from dfg_kursverwaltung.core.models import (
     User,
     CourseAssignmentRole,
     CourseAssignmentStatus,
+    CourseResultType,
     PhoneNumberType,
 )
 from dfg_kursverwaltung.core.permissions import (
@@ -325,7 +326,7 @@ class ExamResultImportRow:
 
     assignment_id: str
 
-    bestanden: bool
+    ergebnis: CourseResultType
     note: str | None
     bemerkungen: str | None
 
@@ -455,7 +456,7 @@ class ImportService:
         "Ende",
         "Kurstag Bezeichnung",
         "Rolle",
-        "Bestanden",
+        "Ergebnis",
         "Note",
         "Bemerkungen",
     }
@@ -1604,7 +1605,7 @@ class ImportService:
                     self.exam_result_service.create_exam_result(
                         actor=actor,
                         kurszuordnung_id=row.assignment_id,
-                        bestanden=row.bestanden,
+                        ergebnis=row.ergebnis,
                         note=row.note,
                         bemerkungen=row.bemerkungen,
                     )
@@ -1635,7 +1636,7 @@ class ImportService:
                     # Die historische Kurszuordnung
                     # bleibt bei einem Update bewusst
                     # unverändert.
-                    existing.bestanden = row.bestanden
+                    existing.ergebnis = row.ergebnis
                     existing.note = row.note
                     existing.bemerkungen = (
                         row.bemerkungen
@@ -2788,10 +2789,32 @@ class ImportService:
         # Ergebnisdaten
         # ----------------------------------------------------
 
-        bestanden = self._parse_bool(
-            csv_row.get("Bestanden"),
-            "Bestanden",
+        ergebnis_text = self._clean_optional(
+            csv_row.get("Ergebnis")
         )
+
+        if ergebnis_text is None:
+            raise ValueError(
+                "Das Feld 'Ergebnis' darf nicht leer sein."
+            )
+
+        ergebnis_mapping = {
+            "bestanden": CourseResultType.PASSED,
+            "nicht bestanden": CourseResultType.FAILED,
+            "attest erteilt": CourseResultType.ATTESTED,
+        }
+
+        ergebnis = ergebnis_mapping.get(
+            ergebnis_text.casefold()
+        )
+
+        if ergebnis is None:
+            raise ValueError(
+                "Ungültiger Wert im Feld 'Ergebnis': "
+                f"{ergebnis_text}. Erlaubt sind "
+                "Bestanden, Nicht bestanden oder "
+                "Attest erteilt."
+            )
 
         note = self._clean_optional(
             csv_row.get("Note")
@@ -2808,7 +2831,7 @@ class ImportService:
             ),
             action=action,
             assignment_id=assignment_id,
-            bestanden=bestanden,
+            ergebnis=ergebnis,
             note=note,
             bemerkungen=bemerkungen,
         )

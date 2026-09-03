@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 )
 
 from dfg_kursverwaltung.core.models import (
+    CourseResultType,
     Drone,
     Person,
     PhoneNumber,
@@ -1009,13 +1010,28 @@ class PersonenWidget(QWidget):
             note_text = ""
 
             if exam_result is not None:
-                if exam_result.bestanden:
+                if (
+                    exam_result.ergebnis
+                    == CourseResultType.PASSED
+                ):
                     result_text = self.tr(
                         "Bestanden"
                     )
-                else:
+
+                elif (
+                    exam_result.ergebnis
+                    == CourseResultType.FAILED
+                ):
                     result_text = self.tr(
                         "Nicht bestanden"
+                    )
+
+                elif (
+                    exam_result.ergebnis
+                    == CourseResultType.ATTESTED
+                ):
+                    result_text = self.tr(
+                        "Attest erteilt"
                     )
 
                 note_text = (

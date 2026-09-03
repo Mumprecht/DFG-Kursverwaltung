@@ -36,7 +36,7 @@ class _TransactionConnectionProxy:
         pass
 
 
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 
 
 class DatabaseManager:
@@ -252,6 +252,10 @@ class DatabaseManager:
         if current_version == 7:
             self._migrate_7_to_8()
             current_version = 8
+
+        if current_version == 8:
+            self._migrate_8_to_9()
+            current_version = 9
 
         if current_version != SCHEMA_VERSION:
             raise RuntimeError(
@@ -1230,6 +1234,254 @@ class DatabaseManager:
 
         finally:
             connection.close()
+
+    def _migrate_8_to_9(
+        self,
+    ) -> None:
+        connection = sqlite3.connect(
+            self.database_path
+        )
+
+        connection.row_factory = (
+            sqlite3.Row
+        )
+
+        try:
+            connection.execute(
+                "PRAGMA foreign_keys = ON;"
+            )
+
+            connection.execute(
+                "BEGIN IMMEDIATE;"
+            )
+
+            old_count = connection.execute(
+                """
+                SELECT COUNT(*)
+                FROM pruefungsergebnisse;
+                """
+            ).fetchone()[0]
+
+            invalid_count = connection.execute(
+                """
+                SELECT COUNT(*)
+                FROM pruefungsergebnisse
+                WHERE
+                    bestanden IS NULL
+                    OR bestanden NOT IN (0, 1);
+                """
+            ).fetchone()[0]
+
+            if invalid_count != 0:
+                raise RuntimeError(
+                    "Die Migration von Schema 8 "
+                    "auf Schema 9 kann nicht "
+                    "durchgeführt werden, weil "
+                    "ungültige Kursergebnisse "
+                    "vorhanden sind. Anzahl: "
+                    f"{invalid_count}"
+                )
+
+            connection.execute(
+                """
+                CREATE TABLE
+                    pruefungsergebnisse_neu (
+                    id TEXT PRIMARY KEY,
+
+                    kurszuordnung_id TEXT NOT NULL,
+
+                    ergebnis TEXT NOT NULL,
+
+                    note TEXT,
+                    bemerkungen TEXT,
+
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+
+                    FOREIGN KEY (
+                        kurszuordnung_id
+                    )
+                        REFERENCES
+                            kurszuordnungen(id)
+                        ON DELETE RESTRICT,
+
+                    CHECK (
+                        ergebnis IN (
+                            'passed',
+                            'failed',
+                            'attested'
+                        )
+                    ),
+
+                    UNIQUE (
+                        kurszuordnung_id
+                    )
+                );
+                """
+            )
+
+            connection.execute(
+                """
+                INSERT INTO
+                    pruefungsergebnisse_neu (
+                        id,
+                        kurszuordnung_id,
+                        ergebnis,
+                        note,
+                        bemerkungen,
+                        created_at,
+                        updated_at
+                    )
+                SELECT
+                    id,
+                    kurszuordnung_id,
+                    CASE bestanden
+                        WHEN 1 THEN 'passed'
+                        WHEN 0 THEN 'failed'
+                    END,
+                    note,
+                    bemerkungen,
+                    created_at,
+                    updated_at
+                FROM pruefungsergebnisse;
+                """
+            )
+
+            connection.execute(
+                """
+                DROP TABLE pruefungsergebnisse;
+                """
+            )
+
+            connection.execute(
+                """
+                ALTER TABLE
+                    pruefungsergebnisse_neu
+                RENAME TO pruefungsergebnisse;
+                """
+            )
+
+            connection.execute(
+                """
+                CREATE INDEX
+                    idx_pruefungsergebnisse_kurszuordnung
+                ON pruefungsergebnisse(
+                    kurszuordnung_id
+                );
+                """
+            )
+
+            new_count = connection.execute(
+                """
+                SELECT COUNT(*)
+                FROM pruefungsergebnisse;
+                """
+            ).fetchone()[0]
+
+            if new_count != old_count:
+                raise RuntimeError(
+                    "Bei der Migration der "
+                    "Kursergebnisse ist ein "
+                    "Datenverlust aufgetreten. "
+                    f"Vorher: {old_count}, "
+                    f"nachher: {new_count}."
+                )
+
+            columns = {
+                row["name"]
+                for row in connection.execute(
+                    """
+                    PRAGMA table_info(
+                        pruefungsergebnisse
+                    );
+                    """
+                ).fetchall()
+            }
+
+            expected_columns = {
+                "id",
+                "kurszuordnung_id",
+                "ergebnis",
+                "note",
+                "bemerkungen",
+                "created_at",
+                "updated_at",
+            }
+
+            if columns != expected_columns:
+                raise RuntimeError(
+                    "Die Tabelle "
+                    "pruefungsergebnisse besitzt "
+                    "nach der Migration nicht die "
+                    "erwartete Struktur."
+                )
+
+            invalid_results = connection.execute(
+                """
+                SELECT COUNT(*)
+                FROM pruefungsergebnisse
+                WHERE ergebnis NOT IN (
+                    'passed',
+                    'failed',
+                    'attested'
+                );
+                """
+            ).fetchone()[0]
+
+            if invalid_results != 0:
+                raise RuntimeError(
+                    "Nach der Migration wurden "
+                    "ungültige Ergebniswerte "
+                    "gefunden. Anzahl: "
+                    f"{invalid_results}"
+                )
+
+            foreign_key_errors = (
+                connection.execute(
+                    """
+                    PRAGMA foreign_key_check;
+                    """
+                ).fetchall()
+            )
+
+            if foreign_key_errors:
+                raise RuntimeError(
+                    "Nach der Migration wurden "
+                    "Foreign-Key-Fehler gefunden: "
+                    f"{len(foreign_key_errors)}"
+                )
+
+            integrity = connection.execute(
+                """
+                PRAGMA integrity_check;
+                """
+            ).fetchone()[0]
+
+            if integrity != "ok":
+                raise RuntimeError(
+                    "Integritätsprüfung nach "
+                    "Migration fehlgeschlagen: "
+                    f"{integrity}"
+                )
+
+            connection.execute(
+                """
+                UPDATE schema_info
+                SET version = 9;
+                """
+            )
+
+            connection.commit()
+
+        except Exception:
+            if connection.in_transaction:
+                connection.rollback()
+
+            raise
+
+        finally:
+            connection.close()
+
 
     @staticmethod
     def _get_schema_version(

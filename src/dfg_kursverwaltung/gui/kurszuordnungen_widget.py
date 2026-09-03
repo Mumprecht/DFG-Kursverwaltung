@@ -19,6 +19,7 @@ from dfg_kursverwaltung.core.models import (
     CourseAssignment,
     CourseAssignmentRole,
     CourseAssignmentStatus,
+    CourseResultType,
     CourseDay,
     User,
 )
@@ -546,6 +547,7 @@ class KurszuordnungenWidget(QWidget):
 
         passed_count = 0
         failed_count = 0
+        attested_count = 0
         without_result_count = 0
 
         for assignment in assignments:
@@ -624,17 +626,32 @@ class KurszuordnungenWidget(QWidget):
                     without_result_count += 1
 
                 else:
-                    if exam_result.bestanden:
+                    if (
+                        exam_result.ergebnis
+                        == CourseResultType.PASSED
+                    ):
                         result_text = self.tr(
                             "Bestanden"
                         )
                         passed_count += 1
 
-                    else:
+                    elif (
+                        exam_result.ergebnis
+                        == CourseResultType.FAILED
+                    ):
                         result_text = self.tr(
                             "Nicht bestanden"
                         )
                         failed_count += 1
+
+                    elif (
+                        exam_result.ergebnis
+                        == CourseResultType.ATTESTED
+                    ):
+                        result_text = self.tr(
+                            "Attest erteilt"
+                        )
+                        attested_count += 1
 
                     note_text = (
                         exam_result.note or ""
@@ -682,6 +699,10 @@ class KurszuordnungenWidget(QWidget):
             (
                 f"{self.tr('Nicht bestanden')}: "
                 f"{failed_count}"
+            ),
+            (
+                f"{self.tr('Attest erteilt')}: "
+                f"{attested_count}"
             ),
             (
                 f"{self.tr('Ohne Ergebnis')}: "
@@ -1195,7 +1216,7 @@ class KurszuordnungenWidget(QWidget):
         data = dialog.get_data()
 
         try:
-            if data["bestanden"] is None:
+            if data["ergebnis"] is None:
                 if exam_result is not None:
                     self.exam_result_service.delete_exam_result(
                         self.authenticated_user,
@@ -1206,14 +1227,14 @@ class KurszuordnungenWidget(QWidget):
                 self.exam_result_service.create_exam_result(
                     actor=self.authenticated_user,
                     kurszuordnung_id=assignment.id,
-                    bestanden=data["bestanden"],
+                    ergebnis=data["ergebnis"],
                     note=data["note"],
                     bemerkungen=data["bemerkungen"],
                 )
 
             else:
-                exam_result.bestanden = data[
-                    "bestanden"
+                exam_result.ergebnis = data[
+                    "ergebnis"
                 ]
                 exam_result.note = data[
                     "note"

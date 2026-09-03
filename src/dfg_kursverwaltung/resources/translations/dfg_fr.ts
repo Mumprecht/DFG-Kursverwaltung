@@ -1083,6 +1083,14 @@
             <source>Aktualisiert: %1</source>
             <translation>Mis à jour : %1</translation>
         </message>
+        <message>
+            <source>Ergebnis</source>
+            <translation>Résultat</translation>
+        </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestation délivrée</translation>
+        </message>
     </context>
     <context>
         <name>KurstagDialog</name>
@@ -1589,6 +1597,10 @@
             <source>Abgemeldet</source>
             <translation>Désinscrit</translation>
         </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestation délivrée</translation>
+        </message>
     </context>
     <context>
         <name>LehrgaengeWidget</name>
@@ -1714,7 +1726,7 @@
             <source>Unbekannter Lehrgangstyp</source>
             <translation>Type de cours inconnu</translation>
         </message>
-            <message>
+        <message>
             <source>Es wurde möglicherweise bereits ein Lehrgang mit diesen Angaben gefunden.</source>
             <translation>Un cours avec ces informations existe peut-être déjà.</translation>
         </message>
@@ -2790,6 +2802,10 @@ Les données historiques des cours seront conservées.</translation>
             <source>Mögliche Dublette</source>
             <translation>Doublon possible</translation>
         </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestation délivrée</translation>
+        </message>
     </context>
     <context>
         <name>PhoneNumberDialog</name>
@@ -2924,6 +2940,10 @@ Les données historiques des cours seront conservées.</translation>
             <location filename="../../gui/pruefungsergebnis_dialog.py" line="163" />
             <source>Abbrechen</source>
             <translation>Annuler</translation>
+        </message>
+        <message>
+            <source>Attest erteilt</source>
+            <translation>Attestation délivrée</translation>
         </message>
     </context>
     <context>
@@ -3495,7 +3515,7 @@ Voulez-vous vraiment continuer ?</translation>
             <source>Mögliche Dublette</source>
             <translation>Doublon possible</translation>
         </message>
-            <message>
+        <message>
             <source>Löschen</source>
             <translation>Supprimer</translation>
         </message>

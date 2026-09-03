@@ -30,6 +30,12 @@ class CourseAssignmentStatus(StrEnum):
     CANCELLED = "cancelled"
 
 
+class CourseResultType(StrEnum):
+    PASSED = "passed"
+    FAILED = "failed"
+    ATTESTED = "attested"
+
+
 @dataclass(slots=True)
 class User:
     id: str
@@ -262,7 +268,7 @@ class ExamResult:
 
     kurszuordnung_id: str
 
-    bestanden: bool
+    ergebnis: CourseResultType
 
     note: str | None = None
     bemerkungen: str | None = None

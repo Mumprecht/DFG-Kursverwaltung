@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from dfg_kursverwaltung.core.models import ExamResult
+from dfg_kursverwaltung.core.models import CourseResultType, ExamResult
 
 
 class PruefungsergebnisDialog(QDialog):
@@ -70,6 +70,10 @@ class PruefungsergebnisDialog(QDialog):
             self.tr("Nicht bestanden")
         )
 
+        self.attested_radio = QRadioButton(
+            self.tr("Attest erteilt")
+        )
+
         self.result_group = QButtonGroup(
             self
         )
@@ -86,6 +90,10 @@ class PruefungsergebnisDialog(QDialog):
             self.failed_radio
         )
 
+        self.result_group.addButton(
+            self.attested_radio
+        )
+
         self.clear_result_button = QPushButton(
             self.tr("Auswahl löschen")
         )
@@ -100,6 +108,10 @@ class PruefungsergebnisDialog(QDialog):
 
         result_layout.addWidget(
             self.failed_radio
+        )
+
+        result_layout.addWidget(
+            self.attested_radio
         )
 
         result_layout.addWidget(
@@ -182,12 +194,27 @@ class PruefungsergebnisDialog(QDialog):
         if self.exam_result is None:
             return
 
-        if self.exam_result.bestanden:
+        if (
+            self.exam_result.ergebnis
+            == CourseResultType.PASSED
+        ):
             self.passed_radio.setChecked(
                 True
             )
-        else:
+
+        elif (
+            self.exam_result.ergebnis
+            == CourseResultType.FAILED
+        ):
             self.failed_radio.setChecked(
+                True
+            )
+
+        elif (
+            self.exam_result.ergebnis
+            == CourseResultType.ATTESTED
+        ):
+            self.attested_radio.setChecked(
                 True
             )
 
@@ -212,22 +239,29 @@ class PruefungsergebnisDialog(QDialog):
             False
         )
 
+        self.attested_radio.setChecked(
+            False
+        )
+
         self.result_group.setExclusive(
             True
         )
 
     def get_data(self) -> dict:
         if self.passed_radio.isChecked():
-            bestanden = True
+            ergebnis = CourseResultType.PASSED
 
         elif self.failed_radio.isChecked():
-            bestanden = False
+            ergebnis = CourseResultType.FAILED
+
+        elif self.attested_radio.isChecked():
+            ergebnis = CourseResultType.ATTESTED
 
         else:
-            bestanden = None
+            ergebnis = None
 
         return {
-            "bestanden": bestanden,
+            "ergebnis": ergebnis,
             "note": self._optional_text(
                 self.grade_edit.text()
             ),

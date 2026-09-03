@@ -376,7 +376,7 @@ CREATE TABLE IF NOT EXISTS pruefungsergebnisse (
 
     kurszuordnung_id TEXT NOT NULL,
 
-    bestanden INTEGER NOT NULL,
+    ergebnis TEXT NOT NULL,
 
     note TEXT,
 
@@ -389,7 +389,13 @@ CREATE TABLE IF NOT EXISTS pruefungsergebnisse (
         REFERENCES kurszuordnungen(id)
         ON DELETE RESTRICT,
 
-    CHECK (bestanden IN (0, 1)),
+    CHECK (
+        ergebnis IN (
+            'passed',
+            'failed',
+            'attested'
+        )
+    ),
 
     UNIQUE (
         kurszuordnung_id
