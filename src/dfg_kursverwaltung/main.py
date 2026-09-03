@@ -110,15 +110,43 @@ from dfg_kursverwaltung.services.telefonnummern_service import (
 
 
 def get_icon_path() -> Path:
+    icon_name = (
+        "DFG-Kursverwaltung.ico"
+        if sys.platform == "win32"
+        else "DFG-Kursverwaltung.png"
+    )
+
+    if getattr(sys, "frozen", False):
+        base_path = (
+            Path(sys._MEIPASS)
+            / "dfg_kursverwaltung"
+        )
+    else:
+        base_path = (
+            Path(__file__).resolve().parent
+        )
+
     return (
-        Path(__file__).resolve().parent
+        base_path
         / "resources"
         / "icons"
-        / "DFG-Kursverwaltung.png"
+        / icon_name
+    )
+
+def set_windows_app_id() -> None:
+    if sys.platform != "win32":
+        return
+
+    import ctypes
+
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+        "DFG.Pfannenstiel.Kursverwaltung"
     )
 
 
 def main():
+    set_windows_app_id()
+
     app = QApplication(
         sys.argv
     )
