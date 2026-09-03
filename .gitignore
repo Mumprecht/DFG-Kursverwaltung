@@ -47,3 +47,10 @@ DFG-*.csv
 
 # Lokale Migrationstests
 Migration-Test/
+
+# Node.js / Web
+node_modules/
+web/frontend/dist/
+web/backend/dist/
+.env
+.env.*
